@@ -3,8 +3,8 @@ NTIMES=2
 
 rule all:
     input:
-        expand("{PATHROOT}/output/new.bg", PATHROOT={PATHROOT}),
-        expand("{PATHROOT}/output/benchmark_plot_{type}.png", PATHROOT={PATHROOT}, type=["time", "mem"])
+        expand("{PATHROOT}/output/new{implementation}.bg", implementation=(1,2), PATHROOT={PATHROOT}),
+        expand("{PATHROOT}/output/benchmark_plot_{type}.png", type=["time", "mem"], PATHROOT={PATHROOT})
 
 
 rule bamCoverage1:
@@ -19,7 +19,7 @@ rule bamCoverage1:
     threads: 1
     shell:
         """
-        bamCoverage1 -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
         """
 
 
@@ -41,12 +41,15 @@ rule bamCoverage2:
 
 rule plot_benchmarks:
     input:
-        benchmark = "{PATHROOT}/output/benchmark.txt"
+        benchmark1 = "{PATHROOT}/output/benchmark_bamCoverage1.txt",
+        benchmark2 = "{PATHROOT}/output/benchmark_bamCoverage2.txt"
     output:
         time_plot = "{PATHROOT}/output/benchmark_plot_time.png",
         mem_plot = "{PATHROOT}/output/benchmark_plot_mem.png"
+    params:
+        outputtemplate = "{PATHROOT}/output/benchmark_plot.png"
     shell:
         """
-        scripts/bench_plot.py {input.benchmark} {PATHROOT}/output/benchmark_plot.png
+        scripts/bench_plot.py {params.outputtemplate} {input.benchmark1} {input.benchmark2}
         """
 

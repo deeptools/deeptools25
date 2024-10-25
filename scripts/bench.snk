@@ -1,20 +1,18 @@
-PATHROOT = "/data/manke/processing/salatino/deepdev/deeptools25/work-dir/testfiles"
-NTIMES = 2
-BINSIZE = 1
+configfile: "bench.cfg"
 
 rule all:
     input:
-        expand("{PATHROOT}/output/benchmark_plot_{type}.png", type=["time", "mem"], PATHROOT=PATHROOT)
+        expand("{PATHROOT}/output/benchmark_plot_{type}.png", type=["time", "mem"], PATHROOT=config["pathroot"])
 
 rule bamCoverage:
     params:
-        binsize = BINSIZE
+        binsize = config["binsize"]
     input:
         bam = "{PATHROOT}/S2_H2AZ.bam"
     output:
         bed = "{PATHROOT}/output/new{implementation}.bg"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_bamCoverage{implementation}.txt", NTIMES)
+        repeat("{PATHROOT}/output/benchmark_bamCoverage{implementation}.txt", config["ntimes"])
     threads: 1
     shell:
         """

@@ -7,14 +7,22 @@
 1. _(mac only: `xcode-select --install`)_
 1. `sudo apt install clang`
 1. create and activate a conda env with `python==3.9.12 deeptools==3.5.5 pybigwig==0.3.22`
-1. `git clone git@github.com:WardDeb/deepTools.git deepToolsWard && cd deepToolsWard`
+1. `git clone git@github.com:WardDeb/deepTools.git ../deepToolsWard && cd ../deepToolsWard`
 1. `git checkout -b maturin && pip install -e .`
+1. for benchmarking we are using `snakemake==8.24.1`, install it.
+
+### Run benchmark
+
+```{bash}
+cp -r ./data/testfiles /tmp/
+rmdir work-dir && ln -s /tmp/testfiles work-dir  # avoid NFS
+snakemake --forcerun --snakefile scripts/bench.snk --benchmark-extended --cores 1
+```
+
+> [!NOTE]
+> Adjust `./bench.cfg` as desired.
 
 ## Contents
-
-#### work-dir/
-
-Its contents are ignored by git. Stay there.
 
 #### data/
 
@@ -22,10 +30,10 @@ Symlink to where all bam files, bigwig files etc are stored. Keep actual data ou
 
 #### scripts/
 
-- `bench.snk` - Snakemake workflow for running benchmarks on different datasets. We are using `snakemake==8.24.1`. Runs rust and legacy deeptools, compares outputs, plots average memory used and time. **USAGE:** `snakemake --forcerun --snakefile scripts/bench.snk --benchmark-extended --cores 1`
+* `bench.snk` - Snakemake workflow for running benchmarks on different datasets. Runs rust and legacy deeptools, compares outputs, plots average memory used and time.
 
-  - `diffbed.py` - Script to parse diff between  2 bedgraph files (new vs. old algorithm), and filter out 'false positives'. Important, when running diff, rust bedgraph should come first, and 'legacy' deeptools is second. *USAGE:* `diff rust.bedgraph original.bedgraph | python3 scripts/diffbed.py`
+>  - `diffbed.py` - Script to parse diff between  2 bedgraph files (new vs. old algorithm), and filter out 'false positives'. Important, when running diff, rust bedgraph should come first, and 'legacy' deeptools is second. *USAGE:* `diff rust.bedgraph original.bedgraph | python3 scripts/diffbed.py`
+>
+>  - `bench_plot.py` - Parses benchmark logs from `bench.snk` and plots runtimes, memory usage etc. across multiple runs. *USAGE:* `scripts/bench_plot.py plot_template_name.png benchmark1.txt benchmark2.txt`
 
-  - `bench_plot.py` - Parses benchmark logs from `bench.snk` and plots runtimes, memory usage etc. across multiple runs. *USAGE:* `scripts/bench_plot.py plot_template_name.png benchmark1.txt benchmark2.txt`
-
-- `profile.sh` - Relies on external tool, `samply`, it will open in your web browser a flamegraph profile of the rust deeptools algorithm. Useful for identifying hotspots and optimizing. Install with `cargo install --locked samply && sudo sysctl kernel.perf_event_paranoid=1 && sudo sysctl kernel.perf_event_mlock_kb=2048` (see repo's readme for details).
+* `profile.sh` - Relies on external tool, `samply`, it will open in your web browser a flamegraph profile of the rust deeptools algorithm. Useful for identifying hotspots and optimizing. Install with `cargo install --locked samply && sudo sysctl kernel.perf_event_paranoid=1 && sudo sysctl kernel.perf_event_mlock_kb=2048` (see repo's readme for details).

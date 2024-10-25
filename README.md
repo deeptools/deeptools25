@@ -22,6 +22,9 @@ Symlink to where all bam files, bigwig files etc are stored. Keep actual data ou
 
 #### scripts/
 
-`diffbed.py` - Script to parse diff between  2 bedgraph files (new vs. old algorithm), and filter out 'false positives'. Important, when running diff, rust bedgraph should come first, and 'legacy' deeptools is second. **USAGE:** `diff rust.bedgraph original.bedgraph | python3 scripts/diffbed.py`
+- `bench.snk` - Snakemake workflow for running benchmarks on different datasets. We are using `snakemake==8.24.1`. Downloads data, runs rust and legacy deeptools, compares outputs, plots average memory used and time.
 
+  - `diffbed.py` - Script to parse diff between  2 bedgraph files (new vs. old algorithm), and filter out 'false positives'. Important, when running diff, rust bedgraph should come first, and 'legacy' deeptools is second. **USAGE:** `diff rust.bedgraph original.bedgraph | python3 scripts/diffbed.py`
+
+- `profile.sh` - Relies on external tool, `samply`, it will open in your web browser a flamegraph profile of the rust deeptools algorithm. Useful for identifying hotspots and optimizing. Install with `cargo install --locked samply`.
 

@@ -1,43 +1,31 @@
-PATHROOT="/data/manke/processing/salatino/deepdev/deeptools25/work-dir/testfiles"
-NTIMES=2
+PATHROOT = "/data/manke/processing/salatino/deepdev/deeptools25/work-dir/testfiles"
+NTIMES = 2
+BINSIZE = 1
 
 rule all:
     input:
-        expand("{PATHROOT}/output/new{implementation}.bg", implementation=(1,2), PATHROOT={PATHROOT}),
-        expand("{PATHROOT}/output/benchmark_plot_{type}.png", type=["time", "mem"], PATHROOT={PATHROOT})
+        expand("{PATHROOT}/output/new{implementation}.bg", implementation=(1,2), PATHROOT=PATHROOT),
+        expand("{PATHROOT}/output/benchmark_plot_{type}.png", type=["time", "mem"], PATHROOT=PATHROOT)
 
-
-rule bamCoverage1:
+rule bamCoverage:
     params:
-        binsize = 1
+        binsize = BINSIZE
     input:
         bam = "{PATHROOT}/S2_H2AZ.bam"
     output:
-        bed = "{PATHROOT}/output/new1.bg"
+        bed = "{PATHROOT}/output/new{implementation}.bg"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_bamCoverage1.txt", {NTIMES})
+        repeat("{PATHROOT}/output/benchmark_bamCoverage{implementation}.txt", NTIMES)
     threads: 1
     shell:
         """
-        bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        mkdir -p $(dirname {output.bed})
+        if [ "{wildcards.implementation}" = "1" ]; then
+            bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        else
+            bamCoverage2 -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        fi
         """
-
-
-rule bamCoverage2:
-    params:
-        binsize = 1
-    input:
-        bam = "{PATHROOT}/S2_H2AZ.bam"
-    output:
-        bed = "{PATHROOT}/output/new2.bg"
-    benchmark:
-        repeat("{PATHROOT}/output/benchmark_bamCoverage2.txt", {NTIMES})
-    threads: 1
-    shell:
-        """
-        bamCoverage2 -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
-        """
-
 
 rule plot_benchmarks:
     input:
@@ -52,4 +40,3 @@ rule plot_benchmarks:
         """
         scripts/bench_plot.py {params.outputtemplate} {input.benchmark1} {input.benchmark2}
         """
-

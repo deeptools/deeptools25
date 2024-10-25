@@ -22,10 +22,10 @@ Symlink to where all bam files, bigwig files etc are stored. Keep actual data ou
 
 #### scripts/
 
-- `bench.snk` - Snakemake workflow for running benchmarks on different datasets. We are using `snakemake==8.24.1`. Runs rust and legacy deeptools, compares outputs, plots average memory used and time. **USAGE:** `snakemake --forcerun --snakefile scripts/bench.snk`
+- `bench.snk` - Snakemake workflow for running benchmarks on different datasets. We are using `snakemake==8.24.1`. Runs rust and legacy deeptools, compares outputs, plots average memory used and time. **USAGE:** `snakemake --forcerun --snakefile scripts/bench.snk --benchmark-extended`
 
-  - `diffbed.py` - Script to parse diff between  2 bedgraph files (new vs. old algorithm), and filter out 'false positives'. Important, when running diff, rust bedgraph should come first, and 'legacy' deeptools is second. **USAGE:** `diff rust.bedgraph original.bedgraph | python3 scripts/diffbed.py`
+  - `diffbed.py` - Script to parse diff between  2 bedgraph files (new vs. old algorithm), and filter out 'false positives'. Important, when running diff, rust bedgraph should come first, and 'legacy' deeptools is second. *USAGE:* `diff rust.bedgraph original.bedgraph | python3 scripts/diffbed.py`
 
-  - `bench_plot.py` - Parses benchmark logs from `bench.snk` and plots runtimes, memory usage etc. across multiple runs. **USAGE:** `scripts/bench_plot.py plot_template_name.png benchmark1.txt benchmark2.txt`
+  - `bench_plot.py` - Parses benchmark logs from `bench.snk` and plots runtimes, memory usage etc. across multiple runs. *USAGE:* `scripts/bench_plot.py plot_template_name.png benchmark1.txt benchmark2.txt`
 
 - `profile.sh` - Relies on external tool, `samply`, it will open in your web browser a flamegraph profile of the rust deeptools algorithm. Useful for identifying hotspots and optimizing. Install with `cargo install --locked samply && sudo sysctl kernel.perf_event_paranoid=1 && sudo sysctl kernel.perf_event_mlock_kb=2048` (see repo's readme for details).

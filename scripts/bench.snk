@@ -1,0 +1,32 @@
+PATHROOT="/data/manke/processing/salatino/deepdev/deeptools25/work-dir/testfiles"
+
+rule all:
+    input:
+        expand("{PATHROOT}/output/new.bg", PATHROOT={PATHROOT}),
+        expand("{PATHROOT}/output/benchmark_plot.png", PATHROOT={PATHROOT})
+
+rule bamCoverage2:
+    params:
+        binsize = 1
+    input:
+        bam = "{PATHROOT}/S2_H2AZ.bam"
+    output:
+        bed = "{PATHROOT}/output/new.bg"
+    benchmark:
+        repeat("{PATHROOT}/output/benchmark_bamCoverage2.txt", 5)
+    threads: 1
+    shell:
+        """
+        bamCoverage2 -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        """
+
+rule plot_benchmark:
+    input:
+        benchmark = "{PATHROOT}/output/benchmark_bamCoverage2.txt"
+    output:
+        plot = "{PATHROOT}/output/benchmark_plot.png"
+    shell:
+        """
+        scripts/bench_plot.py {input.benchmark} {output.plot}
+        """
+

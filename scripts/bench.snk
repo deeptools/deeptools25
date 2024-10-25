@@ -1,9 +1,27 @@
 PATHROOT="/data/manke/processing/salatino/deepdev/deeptools25/work-dir/testfiles"
+NTIMES=2
 
 rule all:
     input:
         expand("{PATHROOT}/output/new.bg", PATHROOT={PATHROOT}),
-        expand("{PATHROOT}/output/benchmark_plot.png", PATHROOT={PATHROOT})
+        expand("{PATHROOT}/output/benchmark_plot_{type}.png", PATHROOT={PATHROOT}, type=["time", "mem"])
+
+
+rule bamCoverage1:
+    params:
+        binsize = 1
+    input:
+        bam = "{PATHROOT}/S2_H2AZ.bam"
+    output:
+        bed = "{PATHROOT}/output/new1.bg"
+    benchmark:
+        repeat("{PATHROOT}/output/benchmark_bamCoverage1.txt", {NTIMES})
+    threads: 1
+    shell:
+        """
+        bamCoverage1 -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        """
+
 
 rule bamCoverage2:
     params:
@@ -11,22 +29,24 @@ rule bamCoverage2:
     input:
         bam = "{PATHROOT}/S2_H2AZ.bam"
     output:
-        bed = "{PATHROOT}/output/new.bg"
+        bed = "{PATHROOT}/output/new2.bg"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_bamCoverage2.txt", 5)
+        repeat("{PATHROOT}/output/benchmark_bamCoverage2.txt", {NTIMES})
     threads: 1
     shell:
         """
         bamCoverage2 -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
         """
 
-rule plot_benchmark:
+
+rule plot_benchmarks:
     input:
-        benchmark = "{PATHROOT}/output/benchmark_bamCoverage2.txt"
+        benchmark = "{PATHROOT}/output/benchmark.txt"
     output:
-        plot = "{PATHROOT}/output/benchmark_plot.png"
+        time_plot = "{PATHROOT}/output/benchmark_plot_time.png",
+        mem_plot = "{PATHROOT}/output/benchmark_plot_mem.png"
     shell:
         """
-        scripts/bench_plot.py {input.benchmark} {output.plot}
+        scripts/bench_plot.py {input.benchmark} {PATHROOT}/output/benchmark_plot.png
         """
 

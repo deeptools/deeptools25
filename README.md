@@ -22,7 +22,7 @@ Symlink to where all bam files, bigwig files etc are stored. Keep actual data ou
 
 #### scripts/
 
-- `bench.snk` - Snakemake workflow for running benchmarks on different datasets. We are using `snakemake==8.24.1`. Runs rust and legacy deeptools, compares outputs, plots average memory used and time. **USAGE:** `snakemake --forcerun --snakefile scripts/bench.snk --benchmark-extended`
+- `bench.snk` - Snakemake workflow for running benchmarks on different datasets. We are using `snakemake==8.24.1`. Runs rust and legacy deeptools, compares outputs, plots average memory used and time. **USAGE:** `snakemake --forcerun --snakefile scripts/bench.snk --benchmark-extended --cores 1`
 
   - `diffbed.py` - Script to parse diff between  2 bedgraph files (new vs. old algorithm), and filter out 'false positives'. Important, when running diff, rust bedgraph should come first, and 'legacy' deeptools is second. *USAGE:* `diff rust.bedgraph original.bedgraph | python3 scripts/diffbed.py`
 

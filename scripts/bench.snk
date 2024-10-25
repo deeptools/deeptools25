@@ -4,7 +4,6 @@ BINSIZE = 1
 
 rule all:
     input:
-        expand("{PATHROOT}/output/new{implementation}.bg", implementation=(1,2), PATHROOT=PATHROOT),
         expand("{PATHROOT}/output/benchmark_plot_{type}.png", type=["time", "mem"], PATHROOT=PATHROOT)
 
 rule bamCoverage:
@@ -29,6 +28,8 @@ rule bamCoverage:
 
 rule plot_benchmarks:
     input:
+        new1 = "{PATHROOT}/output/new1.bg",
+        new2 = "{PATHROOT}/output/new2.bg",
         benchmark1 = "{PATHROOT}/output/benchmark_bamCoverage1.txt",
         benchmark2 = "{PATHROOT}/output/benchmark_bamCoverage2.txt"
     output:
@@ -38,5 +39,7 @@ rule plot_benchmarks:
         outputtemplate = "{PATHROOT}/output/benchmark_plot.png"
     shell:
         """
-        scripts/bench_plot.py {params.outputtemplate} {input.benchmark1} {input.benchmark2}
+        [ $(diff {input.new2} {input.new1} | scripts/diffbed.py | wc -l) -eq 0 ] && \
+            scripts/bench_plot.py {params.outputtemplate} {input.benchmark1} {input.benchmark2} || \
+            echo "BED files are different!"
         """

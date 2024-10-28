@@ -1,19 +1,21 @@
 configfile: "bench.cfg"
 
+BINSIZE = str(config["binsize"])
+
 rule all:
     input:
-        expand("{PATHROOT}/output/benchmark_plot_{type}.png", type=["time", "mem"], PATHROOT=config["pathroot"])
+        expand("{PATHROOT}/output/benchmark_bs" + BINSIZE + "_plot_{type}.png", type=["time", "mem"], PATHROOT=config["pathroot"])
 
 rule bamCoverage:
-    params:
-        binsize = config["binsize"]
     input:
         bam = "{PATHROOT}/S2_H2AZ.bam"
     output:
         bed = "{PATHROOT}/output/new{implementation}.bg"
     benchmark:
         repeat("{PATHROOT}/output/benchmark_bamCoverage{implementation}.txt", config["ntimes"])
-    threads: 1
+    params:
+        binsize = BINSIZE
+    threads: config["threads"]
     shell:
         """
         mkdir -p $(dirname {output.bed})
@@ -31,10 +33,10 @@ rule plot_benchmarks:
         benchmark1 = "{PATHROOT}/output/benchmark_bamCoverage1.txt",
         benchmark2 = "{PATHROOT}/output/benchmark_bamCoverage2.txt"
     output:
-        time_plot = "{PATHROOT}/output/benchmark_plot_time.png",
-        mem_plot = "{PATHROOT}/output/benchmark_plot_mem.png"
+        time_plot = "{PATHROOT}/output/benchmark_bs" + BINSIZE + "_plot_time.png",
+        mem_plot = "{PATHROOT}/output/benchmark_bs" + BINSIZE + "_plot_mem.png"
     params:
-        outputtemplate = "{PATHROOT}/output/benchmark_plot.png"
+        outputtemplate = "{PATHROOT}/output/benchmark_bs" + BINSIZE + "_plot.png"
     shell:
         """
         [ $(diff {input.new2} {input.new1} | scripts/diffbed.py | wc -l) -eq 0 ] && \

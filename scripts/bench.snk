@@ -55,29 +55,31 @@ rule bamCompare:
         """
 
 
-#rule computeMatrix:
-#    input:
-#        bam1 = "{PATHROOT}/H3K27me3.bam",
-#        bam2 = "{PATHROOT}/H3K27me3_input.bam"
-#    output:
-#        bw = "{PATHROOT}/output/computeMatrix{implementation}.bw"
-#    benchmark:
-#        repeat("{PATHROOT}/output/benchmark_computeMatrix{implementation}.txt", config["ntimes"])
-#    params:
-#        binsize = BINSIZE,
-#        upstream = UPSTREAM,
-#        downstream = DOWNSTREAM
-#    threads: config["threads"]
-#    shell:
-#        """
-#        if [ "{wildcards.implementation}" = "1" ]; then
-#            computeMatrix ?? \
-#                -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
-#        else
-#            computeMatrix2 ?? \
-#                -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
-#        fi
-#        """
+rule computeMatrix:
+    input:
+        bw1 = "{PATHROOT}/bamCompare1.bw",
+        bw2 = "{PATHROOT}/bamCompare2.bw",
+        bed1 = "{PATHROOT}/dros_random_a.bed",
+        bed2 = "{PATHROOT}/dros_random_b.bed"
+    output:
+        npz = "{PATHROOT}/output/test_new{implementation}.npz"
+    benchmark:
+        repeat("{PATHROOT}/output/benchmark_computeMatrix{implementation}.txt", config["ntimes"])
+    params:
+        binsize = BINSIZE,
+        upstream = UPSTREAM,
+        downstream = DOWNSTREAM
+    threads: config["threads"]
+    shell:
+        """
+        if [ "{wildcards.implementation}" = "1" ]; then
+            computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
+                -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
+        else
+            computeMatrix2 reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
+                -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
+        fi
+        """
 
 
 rule plot_all_benchmarks:

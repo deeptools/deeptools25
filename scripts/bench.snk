@@ -4,7 +4,8 @@ BINSIZE = str(config["binsize"])
 
 rule all:
     input:
-        expand("{PATHROOT}/output/benchmark_bs" + BINSIZE + "_plot_{type}.png", type=["time", "mem"], PATHROOT=config["pathroot"])
+        expand("{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot_{type}.png",type=["time", "mem"], PATHROOT=config["pathroot"]),
+        expand("{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_{type}.png", type=["time", "mem"], PATHROOT=config["pathroot"])
 
 rule bamCoverage:
     input:
@@ -26,6 +27,27 @@ rule bamCoverage:
         fi
         """
 
+rule bamCompare:
+    input:
+        bam1 = "{PATHROOT}/H3K27me3.bam",
+        bam2 = "{PATHROOT}/H3K27me3_input.bam"
+    output:
+        bw = "{PATHROOT}/output/bamCompare{implementation}.bw"
+    benchmark:
+        repeat("{PATHROOT}/output/benchmark_bamCompare{implementation}.txt", config["ntimes"])
+    params:
+        binsize = BINSIZE
+    threads: config["threads"]
+    shell:
+        """
+        if [ "{wildcards.implementation}" = "1" ]; then
+            bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -p {threads} --exactScaling
+        else
+            bamCompare2 -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -p {threads} --exactScaling
+        fi
+        """
+
+
 rule plot_all_benchmarks:
     input:
         benchmark_bamCoverage1 = "{PATHROOT}/output/benchmark_bamCoverage1.txt",
@@ -34,7 +56,7 @@ rule plot_all_benchmarks:
         benchmark_bamCompare2 = "{PATHROOT}/output/benchmark_bamCompare2.txt"
     output:
         bamCoverage_time_plot = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_time.png",
-        bamCoverage_mem_plot = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_mem.png"
+        bamCoverage_mem_plot = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_mem.png",
         bamCompare_time_plot = "{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot_time.png",
         bamCompare_mem_plot = "{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot_mem.png"
     params:

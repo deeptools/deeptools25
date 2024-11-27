@@ -38,7 +38,7 @@ def read_benchmark(file_path):
 
 def make_boxplot(data1, data2, title, ylabel):
     fig, ax = plt.subplots(figsize=(8, 5))
-    bp = ax.boxplot([data1, data2], patch_artist=True, labels=['bamCoverage1', 'bamCoverage2'])
+    bp = ax.boxplot([data1, data2], patch_artist=True, labels=['Legacy', 'Maturin'])
     ax.set_title(title)
     ax.set_ylabel(ylabel)
     colors = ['lightblue', 'lightgreen']

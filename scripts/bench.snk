@@ -39,7 +39,5 @@ rule plot_benchmarks:
         outputtemplate = "{PATHROOT}/output/benchmark_bs" + BINSIZE + "_plot.png"
     shell:
         """
-        [ $(diff {input.new2} {input.new1} | scripts/diffbed.py | wc -l) -eq 0 ] && \
-            scripts/bench_plot.py {params.outputtemplate} {input.benchmark1} {input.benchmark2} || \
-            echo "BED files are different!"
+            scripts/bench_plot.py {params.outputtemplate} {input.benchmark1} {input.benchmark2}
         """

@@ -61,8 +61,8 @@ rule bamCompare:
 
 rule computeMatrix:
     input:
-        bw1 = "{PATHROOT}/bamCompare1.bw",
-        bw2 = "{PATHROOT}/bamCompare2.bw",
+        bw1 = "{PATHROOT}/output/bamCompare1.bw",
+        bw2 = "{PATHROOT}/output/bamCompare2.bw",
         bed1 = "{PATHROOT}/" + REGION_FNAME1,
         bed2 = "{PATHROOT}/" + REGION_FNAME2
     output:

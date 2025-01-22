@@ -27,7 +27,7 @@ rule bamCoverage2:
     params:
         binsize = BINSIZE
     threads: config["threads"]
-    conda: DT4
+    conda: "DT4"
     shell:
         """
         mkdir -p $(dirname {output.bed})
@@ -44,7 +44,7 @@ rule bamCoverage1:
     params:
         binsize = BINSIZE
     threads: config["threads"]
-    conda: DT3
+    conda: "DT3"
     shell:
         """
         mkdir -p $(dirname {output.bed})
@@ -63,7 +63,7 @@ rule bamCompare2:
     params:
         binsize = BINSIZE
     threads: config["threads"]
-    conda: DT4
+    conda: "DT4"
     shell:
         """
         bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
@@ -80,7 +80,7 @@ rule bamCompare1:
     params:
         binsize = BINSIZE
     threads: config["threads"]
-    conda: DT3
+    conda: "DT3"
     shell:
         """
         bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
@@ -102,7 +102,7 @@ rule computeMatrix2:
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
     threads: config["threads"]
-    conda: DT4
+    conda: "DT4"
     shell:
         """
         computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
@@ -124,7 +124,7 @@ rule computeMatrix1:
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
     threads: config["threads"]
-    conda: DT3
+    conda: "DT3"
     shell:
         """
         computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \

@@ -14,9 +14,9 @@ cd deepToolsWard && git checkout -b maturin && pip install -e .
 
 ```{bash}
 cp -r /data/manke/processing/deboutte/tmp/testfiles /tmp/
-snakemake --forcerun --snakefile scripts/bench.snk --benchmark-extended --cores 1
+snakemake --forcerun --use-conda --snakefile scripts/bench.snk --benchmark-extended --cores 1
 rm ./output/*.{png,txt} && cp -v /tmp/testfiles/output/*.{png,txt} ./output/
 ```
 
 > [!NOTE]
-> Adjust `./bench.cfg` as desired.
+> Adjust `./bench.cfg` as desired (E.g. a symlink to any of the CFG files bundled within)

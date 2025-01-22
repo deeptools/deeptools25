@@ -27,7 +27,7 @@ def read_benchmark(file_path):
             mean_load.append(float(parts[8]))  # 'mean_load'
             cpu_time.append(float(parts[9]))   # 'cpu_time'
             # Clean up the string and convert to float
-            cpu_val = parts[15].strip("'{}").replace("'", "")
+            cpu_val = parts[15].strip("'{}").replace("'", "").replace(",", "")
             cpu_usage.append(float(cpu_val))   # 'cpu_usage'
             
     return {

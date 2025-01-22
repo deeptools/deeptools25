@@ -136,17 +136,18 @@ rule multiBamSummary2:
         bam2 = "{PATHROOT}/" + FILENAME2
     output:
         npz = "{PATHROOT}/output/mb_summary2.npz",
-        outraw = "{PATHROOT}/output/mb_summary2.outraw.tab"
+#        outraw = "{PATHROOT}/output/mb_summary2.outraw.tab"
     benchmark:
         repeat("{PATHROOT}/output/benchmark_multiBamSummary2.txt", config["ntimes"])
     params:
-        binsize = BINSIZE,
+        binsize = BINSIZE + "000",
     threads: config["threads"]
     conda: "DT4"
     shell:
         """
         multiBamSummary bins --bamfiles {input.bam1} {input.bam2} -o {output.npz} \
            -bs {params.binsize} -p {threads} > /dev/null
+        touch {output.npz}
         """
 
 rule multiBamSummary1:
@@ -155,17 +156,18 @@ rule multiBamSummary1:
         bam2 = "{PATHROOT}/" + FILENAME2
     output:
         npz = "{PATHROOT}/output/mb_summary1.npz",
-        outraw = "{PATHROOT}/output/mb_summary1.outraw.tab"
+#        outraw = "{PATHROOT}/output/mb_summary1.outraw.tab"
     benchmark:
         repeat("{PATHROOT}/output/benchmark_multiBamSummary1.txt", config["ntimes"])
     params:
-        binsize = BINSIZE,
+        binsize = BINSIZE + "000",
     threads: config["threads"]
     conda: "DT3"
     shell:
         """
         multiBamSummary bins --bamfiles {input.bam1} {input.bam2} -o {output.npz} \
            -bs {params.binsize} -p {threads} > /dev/null
+        touch {output.npz}
         """
 
 rule plot_all_benchmarks:

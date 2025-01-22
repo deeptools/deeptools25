@@ -17,72 +17,118 @@ rule all:
         expand("{PATHROOT}/output/benchmark_computeMatrix_bs" + BINSIZE + "_plot_{type}.png",type=["time", "mem"], PATHROOT=config["pathroot"])
 
 
-rule bamCoverage:
+rule bamCoverage2:
     input:
         bam = "{PATHROOT}/" + FILENAME1
     output:
-        bed = "{PATHROOT}/output/new{implementation}.bg"
+        bed = "{PATHROOT}/output/new2.bg"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_bamCoverage{implementation}.txt", config["ntimes"])
+        repeat("{PATHROOT}/output/benchmark_bamCoverage2.txt", config["ntimes"])
     params:
         binsize = BINSIZE
     threads: config["threads"]
+    conda: DT4
     shell:
         """
         mkdir -p $(dirname {output.bed})
-        if [ "{wildcards.implementation}" = "1" ]; then
-            bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
-        else
-            bamCoverage2 -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
-        fi
+        bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        """
+
+rule bamCoverage1:
+    input:
+        bam = "{PATHROOT}/" + FILENAME1
+    output:
+        bed = "{PATHROOT}/output/new1.bg"
+    benchmark:
+        repeat("{PATHROOT}/output/benchmark_bamCoverage1.txt", config["ntimes"])
+    params:
+        binsize = BINSIZE
+    threads: config["threads"]
+    conda: DT3
+    shell:
+        """
+        mkdir -p $(dirname {output.bed})
+        bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
         """
 
 
-rule bamCompare:
+rule bamCompare2:
     input:
         bam1 = "{PATHROOT}/" + FILENAME1,
         bam2 = "{PATHROOT}/" + FILENAME2
     output:
-        bw = "{PATHROOT}/output/bamCompare{implementation}.bw"
+        bw = "{PATHROOT}/output/bamCompare2.bw"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_bamCompare{implementation}.txt", config["ntimes"])
+        repeat("{PATHROOT}/output/benchmark_bamCompare2.txt", config["ntimes"])
     params:
         binsize = BINSIZE
     threads: config["threads"]
+    conda: DT4
     shell:
         """
-        if [ "{wildcards.implementation}" = "1" ]; then
-            bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
-        else
-            bamCompare2 -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
-        fi
+        bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
+        """
+
+rule bamCompare1:
+    input:
+        bam1 = "{PATHROOT}/" + FILENAME1,
+        bam2 = "{PATHROOT}/" + FILENAME2
+    output:
+        bw = "{PATHROOT}/output/bamCompare1.bw"
+    benchmark:
+        repeat("{PATHROOT}/output/benchmark_bamCompare1.txt", config["ntimes"])
+    params:
+        binsize = BINSIZE
+    threads: config["threads"]
+    conda: DT3
+    shell:
+        """
+        bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
         """
 
 
-rule computeMatrix:
+rule computeMatrix2:
     input:
         bw1 = "{PATHROOT}/output/bamCompare1.bw",
         bw2 = "{PATHROOT}/output/bamCompare2.bw",
         bed1 = "{PATHROOT}/" + REGION_FNAME1,
         bed2 = "{PATHROOT}/" + REGION_FNAME2
     output:
-        npz = "{PATHROOT}/output/test_new{implementation}.npz"
+        npz = "{PATHROOT}/output/test_new2.npz"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_computeMatrix{implementation}.txt", config["ntimes"])
+        repeat("{PATHROOT}/output/benchmark_computeMatrix2.txt", config["ntimes"])
     params:
         binsize = BINSIZE,
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
     threads: config["threads"]
+    conda: DT4
     shell:
         """
-        if [ "{wildcards.implementation}" = "1" ]; then
-            computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
-                -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
-        else
-            computeMatrix2 reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
-                -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
-        fi
+        computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
+            -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
+        """
+
+rule computeMatrix1:
+    input:
+        bw1 = "{PATHROOT}/output/bamCompare1.bw",
+        bw2 = "{PATHROOT}/output/bamCompare2.bw",
+        bed1 = "{PATHROOT}/" + REGION_FNAME1,
+        bed2 = "{PATHROOT}/" + REGION_FNAME2
+    output:
+        npz = "{PATHROOT}/output/test_new1.npz"
+    benchmark:
+        repeat("{PATHROOT}/output/benchmark_computeMatrix1.txt", config["ntimes"])
+    params:
+        binsize = BINSIZE,
+        upstream = UPSTREAM,
+        downstream = DOWNSTREAM
+    threads: config["threads"]
+    conda: DT3
+    shell:
+        """
+        computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
+            -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
         """
 
 

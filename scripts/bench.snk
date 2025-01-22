@@ -146,7 +146,6 @@ rule multiBamSummary2:
     shell:
         """
         multiBamSummary bins --bamfiles {input.bam1} {input.bam2} -o {output.npz} \
-           # --outRawCounts {output.outraw} \
            -bs {params.binsize} -p {threads} > /dev/null
         """
 
@@ -166,7 +165,6 @@ rule multiBamSummary1:
     shell:
         """
         multiBamSummary bins --bamfiles {input.bam1} {input.bam2} -o {output.npz} \
-           # --outRawCounts {output.outraw} \
            -bs {params.binsize} -p {threads} > /dev/null
         """
 
@@ -179,7 +177,7 @@ rule plot_all_benchmarks:
         benchmark_computeMatrix1 = "{PATHROOT}/output/benchmark_computeMatrix1.txt",
         benchmark_computeMatrix2 = "{PATHROOT}/output/benchmark_computeMatrix2.txt",
         benchmark_multiBamSummary2 = "{PATHROOT}/output/benchmark_multiBamSummary2.txt",
-        benchmark_multiBamSummary2 = "{PATHROOT}/output/benchmark_multiBamSummary1.txt"
+        benchmark_multiBamSummary1 = "{PATHROOT}/output/benchmark_multiBamSummary1.txt"
     output:
         bamCoverage_time_plot = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_time.png",
         bamCoverage_mem_plot = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_mem.png",

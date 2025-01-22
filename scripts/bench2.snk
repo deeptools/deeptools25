@@ -1,0 +1,114 @@
+configfile: "bench.cfg"
+
+
+FILENAME1 = str(config["filename1"])
+FILENAME2 = str(config["filename2"])
+REGION_FNAME1 = str(config["regionfname1"])
+REGION_FNAME2 = str(config["regionfname2"])
+BINSIZE = str(config["binsize"])
+UPSTREAM = str(config["upstream"])
+DOWNSTREAM = str(config["downstream"])
+
+
+rule all:
+    input:
+        expand("{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_{type}.png", type=["time", "mem"], PATHROOT=config["pathroot"]),
+        expand("{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot_{type}.png",type=["time", "mem"], PATHROOT=config["pathroot"]),
+        expand("{PATHROOT}/output/benchmark_computeMatrix_bs" + BINSIZE + "_plot_{type}.png",type=["time", "mem"], PATHROOT=config["pathroot"])
+
+
+rule bamCoverage:
+    input:
+        bam = "{PATHROOT}/" + FILENAME1
+    output:
+        bed = "{PATHROOT}/output/new{implementation}.bg"
+    benchmark:
+        repeat("{PATHROOT}/output/benchmark_bamCoverage{implementation}.txt", config["ntimes"])
+    params:
+        binsize = BINSIZE
+    threads: config["threads"]
+    shell:
+        """
+        mkdir -p $(dirname {output.bed})
+        if [ "{wildcards.implementation}" = "1" ]; then
+            bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        else
+            bamCoverage2 -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        fi
+        """
+
+
+rule bamCompare:
+    input:
+        bam1 = "{PATHROOT}/" + FILENAME1,
+        bam2 = "{PATHROOT}/" + FILENAME2
+    output:
+        bw = "{PATHROOT}/output/bamCompare{implementation}.bw"
+    benchmark:
+        repeat("{PATHROOT}/output/benchmark_bamCompare{implementation}.txt", config["ntimes"])
+    params:
+        binsize = BINSIZE
+    threads: config["threads"]
+    shell:
+        """
+        if [ "{wildcards.implementation}" = "1" ]; then
+            bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
+        else
+            bamCompare2 -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
+        fi
+        """
+
+
+rule computeMatrix:
+    input:
+        bw1 = "{PATHROOT}/output/bamCompare1.bw",
+        bw2 = "{PATHROOT}/output/bamCompare2.bw",
+        bed1 = "{PATHROOT}/" + REGION_FNAME1,
+        bed2 = "{PATHROOT}/" + REGION_FNAME2
+    output:
+        npz = "{PATHROOT}/output/test_new{implementation}.npz"
+    benchmark:
+        repeat("{PATHROOT}/output/benchmark_computeMatrix{implementation}.txt", config["ntimes"])
+    params:
+        binsize = BINSIZE,
+        upstream = UPSTREAM,
+        downstream = DOWNSTREAM
+    threads: config["threads"]
+    shell:
+        """
+        if [ "{wildcards.implementation}" = "1" ]; then
+            computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
+                -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
+        else
+            computeMatrix2 reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
+                -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
+        fi
+        """
+
+
+rule plot_all_benchmarks:
+    input:
+        benchmark_bamCoverage1 = "{PATHROOT}/output/benchmark_bamCoverage1.txt",
+        benchmark_bamCoverage2 = "{PATHROOT}/output/benchmark_bamCoverage2.txt",
+        benchmark_bamCompare1 = "{PATHROOT}/output/benchmark_bamCompare1.txt",
+        benchmark_bamCompare2 = "{PATHROOT}/output/benchmark_bamCompare2.txt",
+        benchmark_computeMatrix1 = "{PATHROOT}/output/benchmark_computeMatrix1.txt",
+        benchmark_computeMatrix2 = "{PATHROOT}/output/benchmark_computeMatrix2.txt"
+    output:
+        bamCoverage_time_plot = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_time.png",
+        bamCoverage_mem_plot = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_mem.png",
+        bamCompare_time_plot = "{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot_time.png",
+        bamCompare_mem_plot = "{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot_mem.png",
+        computeMatrix_time_plot = "{PATHROOT}/output/benchmark_computeMatrix_bs" + BINSIZE + "_plot_time.png",
+        computeMatrix_mem_plot = "{PATHROOT}/output/benchmark_computeMatrix_bs" + BINSIZE + "_plot_mem.png"
+    params:
+        bamCoverage_template = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot.png",
+        bamCompare_template = "{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot.png",
+        computeMatrix_template = "{PATHROOT}/output/benchmark_computeMatrix_bs" + BINSIZE + "_plot.png"
+    shell:
+        """
+            scripts/bench_plot.py {params.bamCoverage_template} {input.benchmark_bamCoverage1} {input.benchmark_bamCoverage2}
+            scripts/bench_plot.py {params.bamCompare_template} {input.benchmark_bamCompare1} {input.benchmark_bamCompare2}
+            scripts/bench_plot.py {params.computeMatrix_template} {input.benchmark_computeMatrix1} {input.benchmark_computeMatrix2}
+        """
+

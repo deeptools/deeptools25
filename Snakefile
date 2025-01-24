@@ -1,4 +1,4 @@
-shell.executable("/bin/zsh")
+# shell.executable("/bin/zsh")
 configfile: "bench.cfg"
 
 FILENAME1 = str(config["filename1"])
@@ -26,7 +26,7 @@ rule bamCoverage2:
     params:
         binsize = BINSIZE
     threads: config["threads"]
-    conda: "DT4"
+    conda: "v4.env.yaml"
     shell:
         """
         mkdir -p $(dirname {output.bed})
@@ -43,7 +43,7 @@ rule bamCoverage1:
     params:
         binsize = BINSIZE
     threads: config["threads"]
-    conda: "DT3"
+    conda: "v3.env.yaml"
     shell:
         """
         mkdir -p $(dirname {output.bed})
@@ -62,7 +62,7 @@ rule bamCompare2:
     params:
         binsize = BINSIZE
     threads: config["threads"]
-    conda: "DT4"
+    conda: "v4.env.yaml"
     shell:
         """
         bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
@@ -79,7 +79,7 @@ rule bamCompare1:
     params:
         binsize = BINSIZE
     threads: config["threads"]
-    conda: "DT3"
+    conda: "v3.env.yaml"
     shell:
         """
         bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
@@ -101,7 +101,7 @@ rule computeMatrix2:
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
     threads: config["threads"]
-    conda: "DT4"
+    conda: "v4.env.yaml"
     shell:
         """
         computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
@@ -123,12 +123,13 @@ rule computeMatrix1:
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
     threads: config["threads"]
-    conda: "DT3"
+    conda: "v3.env.yaml"
     shell:
         """
         computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
         """
+
 
 rule multiBamSummary2:
     input:
@@ -136,13 +137,13 @@ rule multiBamSummary2:
         bam2 = "{PATHROOT}/" + FILENAME2
     output:
         npz = "{PATHROOT}/output/mb_summary2.npz",
-#        outraw = "{PATHROOT}/output/mb_summary2.outraw.tab"
+        #outraw = "{PATHROOT}/output/mb_summary2.outraw.tab"
     benchmark:
         repeat("{PATHROOT}/output/benchmark_multiBamSummary2.txt", config["ntimes"])
     params:
-        binsize = BINSIZE + "000",
+        binsize = BINSIZE + "0000",
     threads: config["threads"]
-    conda: "DT4"
+    conda: "v4.env.yaml"
     shell:
         """
         multiBamSummary bins --bamfiles {input.bam1} {input.bam2} -o {output.npz} \
@@ -156,19 +157,20 @@ rule multiBamSummary1:
         bam2 = "{PATHROOT}/" + FILENAME2
     output:
         npz = "{PATHROOT}/output/mb_summary1.npz",
-#        outraw = "{PATHROOT}/output/mb_summary1.outraw.tab"
+        #outraw = "{PATHROOT}/output/mb_summary1.outraw.tab"
     benchmark:
         repeat("{PATHROOT}/output/benchmark_multiBamSummary1.txt", config["ntimes"])
     params:
-        binsize = BINSIZE + "000",
+        binsize = BINSIZE + "0000",
     threads: config["threads"]
-    conda: "DT3"
+    conda: "v3.env.yaml"
     shell:
         """
         multiBamSummary bins --bamfiles {input.bam1} {input.bam2} -o {output.npz} \
            -bs {params.binsize} -p {threads} > /dev/null
         touch {output.npz}
         """
+
 
 rule plot_all_benchmarks:
     input:
@@ -191,7 +193,7 @@ rule plot_all_benchmarks:
         bamCoverage_template = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot.png",
         bamCompare_template = "{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot.png",
         computeMatrix_template = "{PATHROOT}/output/benchmark_computeMatrix_bs" + BINSIZE + "_plot.png"
-    conda: "DT4"
+    conda: "v4.env.yaml"
     shell:
         """
             scripts/bench_plot.py {params.bamCoverage_template} {input.benchmark_bamCoverage1} {input.benchmark_bamCoverage2}

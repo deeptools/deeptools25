@@ -1,22 +1,26 @@
-# deeptools25
-
-> repo for benchmarking, comparison, test data and reference construction for the 25 remake.
-
-## Install
+### Preparation
 
 ```{bash}
-mamba create -n deeptools25 clang-19 python~=3.9 deeptools~=3.5 pybigwig~=0.3 snakemake~=8.24
-git clone git@github.com:WardDeb/deepTools.git deepToolsWard
-cd deepToolsWard && git checkout -b maturin && pip install -e .
+conda create -n snakemake snakemake
+conda activate snakemake
 ```
 
-### Run benchmark
+#### Download data
 
-```{bash}
-cp -r /data/manke/processing/deboutte/tmp/testfiles /tmp/
-snakemake --forcerun --use-conda --snakefile scripts/bench.snk --benchmark-extended --cores 1
-rm ./output/*.{png,txt} && cp -v /tmp/testfiles/output/*.{png,txt} ./output/
-```
+> WIP.
+
+## Run benchmark
 
 > [!NOTE]
-> Adjust `./bench.cfg` as desired (E.g. a symlink to any of the CFG files bundled within)
+> First, adjust `./bench.cfg` as desired with a symlink to any of the CFG files bundled within,
+> for example, to use our `olddata/`: `ln -sf old.cfg bench.cfg`
+
+`snakemake --forcerun --use-conda --benchmark-extended --cores 12`
+
+
+#### Clean
+
+```{bash}
+rm ./output/*.{png,txt}
+cp -v /tmp/testfiles/output/*.{png,txt} ./output/
+```

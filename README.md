@@ -18,7 +18,7 @@ conda activate snakemake
 > First, adjust `./bench.cfg` as desired with a symlink to any of the CFG files bundled within,
 > for example, to use our `olddata/`, execute this: `ln -sf old.cfg bench.cfg`
 
-`snakemake --forcerun --use-conda --benchmark-extended --cores 12`
+`snakemake --forcerun --use-conda --conda-frontend mamba --benchmark-extended --cores 12`
 
 
 #### Clean

@@ -1,4 +1,6 @@
 work-dir/
+zenodo/
+data/
+olddata/
 output/
 .snakemake
-olddata/

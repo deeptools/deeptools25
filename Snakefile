@@ -1,31 +1,47 @@
-# shell.executable("/bin/zsh")
-configfile: "bench.cfg"
+FILES = {
+    "bam_human_chip": "zenodo/human_chip_SRR28592124.bam",
+    "bam_human_rna": "zenodo/human_rna_SRR28012902.bam",
+    "bam_human_wgs": "zenodo/human_wgs_SRR15494527.bam",
+    "bam_triticum_chip": "zenodo/triticum_chip_SRR1686799.bam",
+    "bam_triticum_rna": "zenodo/triticum_rna_SRR27822150.bam",
+    "bam_triticum_wgs": "zenodo/triticum_wgs_SRR27887047.bam"
+}
 
-FILENAME1 = str(config["filename1"])
-FILENAME2 = str(config["filename2"])
-REGION_FNAME1 = str(config["regionfname1"])
-REGION_FNAME2 = str(config["regionfname2"])
-BINSIZE = str(config["binsize"])
-UPSTREAM = str(config["upstream"])
-DOWNSTREAM = str(config["downstream"])
+USE_THIS_BAM = FILES["bam_human_chip"]
+
+ORGANISM = "human"
+BINSIZE = 10
+UPSTREAM = 500
+DOWNSTREAM = 1500
+
+Ntimes = 1
+Nthreads = 4
+
+FULL_GTF = False
+if FULL_GTF:
+    GTF = { "human": "regions/homo.v91.full.gtf", "wheat": "regions/triticum.v60.full.gtf" }
+else:
+    # These were generated via: grep 'transcript_id' full.gtf | shuf | head -n 1000 > sample.gtf
+    GTF = { "human": "regions/homo.v91.sample.gtf", "wheat": "regions/triticum.v60.sample.gtf" }
+
 
 rule all:
     input:
-        expand("{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_{type}.png", type=["time", "mem"], PATHROOT=config["pathroot"]),
-        expand("{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot_{type}.png",type=["time", "mem"], PATHROOT=config["pathroot"]),
-        expand("{PATHROOT}/output/benchmark_computeMatrix_bs" + BINSIZE + "_plot_{type}.png",type=["time", "mem"], PATHROOT=config["pathroot"])
+        expand("output/benchmark_bamCoverage_bs" + str(BINSIZE) + "_plot_{type}.png", type=["time", "mem"]),
+        expand("output/benchmark_bamCompare_bs" + str(BINSIZE) + "_plot_{type}.png",type=["time", "mem"]),
+        expand("output/benchmark_computeMatrix_bs" + str(BINSIZE) + "_plot_{type}.png",type=["time", "mem"])
 
 
 rule bamCoverage2:
     input:
-        bam = "{PATHROOT}/" + FILENAME1
+        bam = USE_THIS_BAM
     output:
-        bed = "{PATHROOT}/output/new2.bg"
+        bed = "output/new2.bg"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_bamCoverage2.txt", config["ntimes"])
+        repeat("output/benchmark_bamCoverage2.txt", Ntimes)
     params:
         binsize = BINSIZE
-    threads: config["threads"]
+    threads: Nthreads
     conda: "v4.env.yaml"
     shell:
         """
@@ -35,14 +51,14 @@ rule bamCoverage2:
 
 rule bamCoverage1:
     input:
-        bam = "{PATHROOT}/" + FILENAME1
+        bam = USE_THIS_BAM
     output:
-        bed = "{PATHROOT}/output/new1.bg"
+        bed = "output/new1.bg"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_bamCoverage1.txt", config["ntimes"])
+        repeat("output/benchmark_bamCoverage1.txt", Ntimes)
     params:
         binsize = BINSIZE
-    threads: config["threads"]
+    threads: Nthreads
     conda: "v3.env.yaml"
     shell:
         """
@@ -53,151 +69,147 @@ rule bamCoverage1:
 
 rule bamCompare2:
     input:
-        bam1 = "{PATHROOT}/" + FILENAME1,
-        bam2 = "{PATHROOT}/" + FILENAME2
+        bam = USE_THIS_BAM
     output:
-        bw = "{PATHROOT}/output/bamCompare2.bw"
+        bw = "output/bamCompare2.bw"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_bamCompare2.txt", config["ntimes"])
+        repeat("output/benchmark_bamCompare2.txt", Ntimes)
     params:
         binsize = BINSIZE
-    threads: config["threads"]
+    threads: Nthreads
     conda: "v4.env.yaml"
     shell:
         """
-        bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
+        bamCompare -b1 {input.bam} -b2 {input.bam} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
         """
 
 rule bamCompare1:
     input:
-        bam1 = "{PATHROOT}/" + FILENAME1,
-        bam2 = "{PATHROOT}/" + FILENAME2
+        bam = USE_THIS_BAM,
     output:
-        bw = "{PATHROOT}/output/bamCompare1.bw"
+        bw = "output/bamCompare1.bw"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_bamCompare1.txt", config["ntimes"])
+        repeat("output/benchmark_bamCompare1.txt", Ntimes)
     params:
         binsize = BINSIZE
-    threads: config["threads"]
+    threads: Nthreads
     conda: "v3.env.yaml"
     shell:
         """
-        bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
+        bamCompare -b1 {input.bam} -b2 {input.bam} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
         """
 
 
 rule computeMatrix2:
     input:
-        bw1 = "{PATHROOT}/output/bamCompare1.bw",
-        bw2 = "{PATHROOT}/output/bamCompare2.bw",
-        bed1 = "{PATHROOT}/" + REGION_FNAME1,
-        bed2 = "{PATHROOT}/" + REGION_FNAME2
+        bw1 = "output/bamCompare1.bw",
+        bw2 = "output/bamCompare2.bw",
+        bed = GTF[ORGANISM]
     output:
-        npz = "{PATHROOT}/output/test_new2.npz"
+        npz = "output/test_new2.npz"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_computeMatrix2.txt", config["ntimes"])
+        repeat("output/benchmark_computeMatrix2.txt", Ntimes)
     params:
         binsize = BINSIZE,
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
-    threads: config["threads"]
+    threads: Nthreads
     conda: "v4.env.yaml"
     shell:
         """
-        computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
+        computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
         """
 
 rule computeMatrix1:
     input:
-        bw1 = "{PATHROOT}/output/bamCompare1.bw",
-        bw2 = "{PATHROOT}/output/bamCompare2.bw",
-        bed1 = "{PATHROOT}/" + REGION_FNAME1,
-        bed2 = "{PATHROOT}/" + REGION_FNAME2
+        bw1 = "output/bamCompare1.bw",
+        bw2 = "output/bamCompare2.bw",
+        bed = GTF[ORGANISM]
     output:
-        npz = "{PATHROOT}/output/test_new1.npz"
+        npz = "output/test_new1.npz"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_computeMatrix1.txt", config["ntimes"])
+        repeat("output/benchmark_computeMatrix1.txt", Ntimes)
     params:
         binsize = BINSIZE,
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
-    threads: config["threads"]
+    threads: Nthreads
     conda: "v3.env.yaml"
     shell:
         """
-        computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed1} {input.bed2} -o {output.npz} \
+        computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
         """
 
 
 rule multiBamSummary2:
     input:
-        bam1 = "{PATHROOT}/" + FILENAME1,
-        bam2 = "{PATHROOT}/" + FILENAME2
+        bam = USE_THIS_BAM
     output:
-        npz = "{PATHROOT}/output/mb_summary2.npz",
-        #outraw = "{PATHROOT}/output/mb_summary2.outraw.tab"
+        npz = "output/mb_summary2.npz",
+        outraw = "output/mb_summary2.outraw.tab"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_multiBamSummary2.txt", config["ntimes"])
+        repeat("output/benchmark_multiBamSummary2.txt", Ntimes)
     params:
-        binsize = BINSIZE + "0000",
-    threads: config["threads"]
+        binsize = BINSIZE * 10000,
+    threads: Nthreads
     conda: "v4.env.yaml"
     shell:
         """
-        multiBamSummary bins --bamfiles {input.bam1} {input.bam2} -o {output.npz} \
-           -bs {params.binsize} -p {threads} > /dev/null
+        multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
+            --outRawCounts {output.outraw} \
+            -bs {params.binsize} -p {threads} > /dev/null
         touch {output.npz}
         """
 
 rule multiBamSummary1:
     input:
-        bam1 = "{PATHROOT}/" + FILENAME1,
-        bam2 = "{PATHROOT}/" + FILENAME2
+        bam = USE_THIS_BAM
     output:
-        npz = "{PATHROOT}/output/mb_summary1.npz",
-        #outraw = "{PATHROOT}/output/mb_summary1.outraw.tab"
+        npz = "output/mb_summary1.npz",
+        outraw = "output/mb_summary1.outraw.tab"
     benchmark:
-        repeat("{PATHROOT}/output/benchmark_multiBamSummary1.txt", config["ntimes"])
+        repeat("output/benchmark_multiBamSummary1.txt", Ntimes)
     params:
-        binsize = BINSIZE + "0000",
-    threads: config["threads"]
+        binsize = BINSIZE * 10000,
+    threads: Nthreads
     conda: "v3.env.yaml"
     shell:
         """
-        multiBamSummary bins --bamfiles {input.bam1} {input.bam2} -o {output.npz} \
-           -bs {params.binsize} -p {threads} > /dev/null
+        multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
+            --outRawCounts {output.outraw} \
+            -bs {params.binsize} -p {threads} > /dev/null
         touch {output.npz}
         """
 
 
 rule plot_all_benchmarks:
     input:
-        benchmark_bamCoverage1 = "{PATHROOT}/output/benchmark_bamCoverage1.txt",
-        benchmark_bamCoverage2 = "{PATHROOT}/output/benchmark_bamCoverage2.txt",
-        benchmark_bamCompare1 = "{PATHROOT}/output/benchmark_bamCompare1.txt",
-        benchmark_bamCompare2 = "{PATHROOT}/output/benchmark_bamCompare2.txt",
-        benchmark_computeMatrix1 = "{PATHROOT}/output/benchmark_computeMatrix1.txt",
-        benchmark_computeMatrix2 = "{PATHROOT}/output/benchmark_computeMatrix2.txt",
-        benchmark_multiBamSummary2 = "{PATHROOT}/output/benchmark_multiBamSummary2.txt",
-        benchmark_multiBamSummary1 = "{PATHROOT}/output/benchmark_multiBamSummary1.txt"
+        benchmark_bamCoverage1 = "output/benchmark_bamCoverage1.txt",
+        benchmark_bamCoverage2 = "output/benchmark_bamCoverage2.txt",
+        benchmark_bamCompare1 = "output/benchmark_bamCompare1.txt",
+        benchmark_bamCompare2 = "output/benchmark_bamCompare2.txt",
+        benchmark_computeMatrix1 = "output/benchmark_computeMatrix1.txt",
+        benchmark_computeMatrix2 = "output/benchmark_computeMatrix2.txt",
+        benchmark_multiBamSummary1 = "output/benchmark_multiBamSummary1.txt",
+        benchmark_multiBamSummary2 = "output/benchmark_multiBamSummary2.txt"
     output:
-        bamCoverage_time_plot = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_time.png",
-        bamCoverage_mem_plot = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot_mem.png",
-        bamCompare_time_plot = "{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot_time.png",
-        bamCompare_mem_plot = "{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot_mem.png",
-        computeMatrix_time_plot = "{PATHROOT}/output/benchmark_computeMatrix_bs" + BINSIZE + "_plot_time.png",
-        computeMatrix_mem_plot = "{PATHROOT}/output/benchmark_computeMatrix_bs" + BINSIZE + "_plot_mem.png"
+        bamCoverage_time_plot = "output/benchmark_bamCoverage_bs" + str(BINSIZE) + "_plot_time.png",
+        bamCoverage_mem_plot = "output/benchmark_bamCoverage_bs" + str(BINSIZE) + "_plot_mem.png",
+        bamCompare_time_plot = "output/benchmark_bamCompare_bs" + str(BINSIZE) + "_plot_time.png",
+        bamCompare_mem_plot = "output/benchmark_bamCompare_bs" + str(BINSIZE) + "_plot_mem.png",
+        computeMatrix_time_plot = "output/benchmark_computeMatrix_bs" + str(BINSIZE) + "_plot_time.png",
+        computeMatrix_mem_plot = "output/benchmark_computeMatrix_bs" + str(BINSIZE) + "_plot_mem.png"
     params:
-        bamCoverage_template = "{PATHROOT}/output/benchmark_bamCoverage_bs" + BINSIZE + "_plot.png",
-        bamCompare_template = "{PATHROOT}/output/benchmark_bamCompare_bs" + BINSIZE + "_plot.png",
-        computeMatrix_template = "{PATHROOT}/output/benchmark_computeMatrix_bs" + BINSIZE + "_plot.png"
+        bamCoverage_template = "output/benchmark_bamCoverage_bs" + str(BINSIZE) + "_plot.png",
+        bamCompare_template = "output/benchmark_bamCompare_bs" + str(BINSIZE) + "_plot.png",
+        computeMatrix_template = "output/benchmark_computeMatrix_bs" + str(BINSIZE) + "_plot.png"
     conda: "v4.env.yaml"
     shell:
         """
-            scripts/bench_plot.py {params.bamCoverage_template} {input.benchmark_bamCoverage1} {input.benchmark_bamCoverage2}
-            scripts/bench_plot.py {params.bamCompare_template} {input.benchmark_bamCompare1} {input.benchmark_bamCompare2}
-            scripts/bench_plot.py {params.computeMatrix_template} {input.benchmark_computeMatrix1} {input.benchmark_computeMatrix2}
+            plot.py {params.bamCoverage_template} {input.benchmark_bamCoverage1} {input.benchmark_bamCoverage2}
+            plot.py {params.bamCompare_template} {input.benchmark_bamCompare1} {input.benchmark_bamCompare2}
+            plot.py {params.computeMatrix_template} {input.benchmark_computeMatrix1} {input.benchmark_computeMatrix2}
         """
 

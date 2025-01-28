@@ -1,6 +1,4 @@
-work-dir/
 zenodo/
-data/
-olddata/
+regions/
 output/
 .snakemake

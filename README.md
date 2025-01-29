@@ -1,17 +1,19 @@
-### Preparation
+### Dependencies
+
+Just use an IDE that supports devcontainers. Or...
+
+#### Manually
 
 1. Install `rustc` >= 1.73
-1. Install `Clang` and `Snakemake`. For example:
+1. Install `Clang` and `Snakemake`. For example: `conda create -n snkmk clang-19 snakemake`
 
-```{bash}
-conda create -n snakemake clang-19 snakemake
-conda activate snakemake
-```
-
-#### Download data
+### Download data
 
 > WIP.
 
 ## Run benchmark
 
-`snakemake --forcerun --use-conda --benchmark-extended --cores 12`
+```{bash}
+conda activate snkmk
+snakemake --forcerun --use-conda --benchmark-extended --cores 12
+```

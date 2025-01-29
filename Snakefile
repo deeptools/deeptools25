@@ -1,15 +1,7 @@
-FILES = {
-    "bam_human_chip": "zenodo/human_chip_SRR28592124.bam",
-    "bam_human_rna": "zenodo/human_rna_SRR28012902.bam",
-    "bam_human_wgs": "zenodo/human_wgs_SRR15494527.bam",
-    "bam_triticum_chip": "zenodo/triticum_chip_SRR1686799.bam",
-    "bam_triticum_rna": "zenodo/triticum_rna_SRR27822150.bam",
-    "bam_triticum_wgs": "zenodo/triticum_wgs_SRR27887047.bam"
-}
-
-USE_THIS_BAM = FILES["bam_human_chip"]
-
+# Adjust these if you want
 ORGANISM = "human"
+PROTOCOL = "chip"
+FULL_GTF = False
 BINSIZE = 10
 UPSTREAM = 500
 DOWNSTREAM = 1500
@@ -17,12 +9,22 @@ DOWNSTREAM = 1500
 Ntimes = 1
 Nthreads = 4
 
-FULL_GTF = False
+
+# Do not edit any further
 if FULL_GTF:
     GTF = { "human": "regions/homo.v91.full.gtf", "wheat": "regions/triticum.v60.full.gtf" }
 else:
     # These were generated via: grep 'transcript_id' full.gtf | shuf | head -n 1000 > sample.gtf
     GTF = { "human": "regions/homo.v91.sample.gtf", "wheat": "regions/triticum.v60.sample.gtf" }
+
+FILES = {
+    "human_chip": "zenodo/human_chip_SRR28592124.bam",
+    "human_rna": "zenodo/human_rna_SRR28012902.bam",
+    "human_wgs": "zenodo/human_wgs_SRR15494527.bam",
+    "triticum_chip": "zenodo/triticum_chip_SRR1686799.bam",
+    "triticum_rna": "zenodo/triticum_rna_SRR27822150.bam",
+    "triticum_wgs": "zenodo/triticum_wgs_SRR27887047.bam"
+}
 
 
 rule all:
@@ -34,7 +36,7 @@ rule all:
 
 rule bamCoverage2:
     input:
-        bam = USE_THIS_BAM
+        bam = FILES[ORGANISM + "_" + PROTOCOL]
     output:
         bed = "output/new2.bg"
     benchmark:
@@ -51,7 +53,7 @@ rule bamCoverage2:
 
 rule bamCoverage1:
     input:
-        bam = USE_THIS_BAM
+        bam = FILES[ORGANISM + "_" + PROTOCOL]
     output:
         bed = "output/new1.bg"
     benchmark:
@@ -69,7 +71,7 @@ rule bamCoverage1:
 
 rule bamCompare2:
     input:
-        bam = USE_THIS_BAM
+        bam = FILES[ORGANISM + "_" + PROTOCOL]
     output:
         bw = "output/bamCompare2.bw"
     benchmark:
@@ -85,7 +87,7 @@ rule bamCompare2:
 
 rule bamCompare1:
     input:
-        bam = USE_THIS_BAM,
+        bam = FILES[ORGANISM + "_" + PROTOCOL],
     output:
         bw = "output/bamCompare1.bw"
     benchmark:
@@ -145,7 +147,7 @@ rule computeMatrix1:
 
 rule multiBamSummary2:
     input:
-        bam = USE_THIS_BAM
+        bam = FILES[ORGANISM + "_" + PROTOCOL]
     output:
         npz = "output/mb_summary2.npz",
         outraw = "output/mb_summary2.outraw.tab"
@@ -165,7 +167,7 @@ rule multiBamSummary2:
 
 rule multiBamSummary1:
     input:
-        bam = USE_THIS_BAM
+        bam = FILES[ORGANISM + "_" + PROTOCOL]
     output:
         npz = "output/mb_summary1.npz",
         outraw = "output/mb_summary1.outraw.tab"

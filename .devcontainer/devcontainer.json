@@ -1,0 +1,18 @@
+{
+	"name": "DeepTools Benchmark",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": "..",
+		"args": {
+			"USERNAME": "${localEnv:USER}"
+		}
+	},
+	// "remoteUser": "${localEnv:USER}",
+	// "updateRemoteUserUID": true,
+	"features": {
+		"ghcr.io/devcontainers/features/rust:1": {
+			"version": "latest",
+			"profile": "default"
+		}
+	}
+}

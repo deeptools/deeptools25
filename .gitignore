@@ -1,4 +1,5 @@
+*.swp
+.snakemake/
 zenodo/
 regions/
 output/
-.snakemake

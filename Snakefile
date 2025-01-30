@@ -7,14 +7,13 @@ UPSTREAM = 500
 DOWNSTREAM = 1500
 
 Ntimes = 1
-Nthreads = 4
+Nthreads = 12
 
 
 # Do not edit any further
 if FULL_GTF:
     GTF = { "human": "regions/homo.v91.full.gtf", "wheat": "regions/triticum.v60.full.gtf" }
 else:
-    # These were generated via: grep 'transcript_id' full.gtf | shuf | head -n 1000 > sample.gtf
     GTF = { "human": "regions/homo.v91.sample.gtf", "wheat": "regions/triticum.v60.sample.gtf" }
 
 FILES = {
@@ -104,7 +103,6 @@ rule bamCompare1:
 
 rule computeMatrix2:
     input:
-        bw1 = "output/bamCompare1.bw",
         bw2 = "output/bamCompare2.bw",
         bed = GTF[ORGANISM]
     output:
@@ -119,14 +117,13 @@ rule computeMatrix2:
     conda: "v4.env.yaml"
     shell:
         """
-        computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
+        computeMatrix reference-point -S {input.bw2} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
         """
 
 rule computeMatrix1:
     input:
         bw1 = "output/bamCompare1.bw",
-        bw2 = "output/bamCompare2.bw",
         bed = GTF[ORGANISM]
     output:
         npz = "output/test_new1.npz"
@@ -140,7 +137,7 @@ rule computeMatrix1:
     conda: "v3.env.yaml"
     shell:
         """
-        computeMatrix reference-point -S {input.bw1} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
+        computeMatrix reference-point -S {input.bw1} {input.bw1} -R {input.bed} {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
         """
 

@@ -11,6 +11,8 @@ Just use an IDE that supports devcontainers. Or...
 
 > WIP.
 
+1. Get GTF files from Ensembl for human and/ or wheat. If you are not inclined into benchmarking on full transcriptome, downsample them: `grep 'transcript_id' homo.v91.full.gtf | shuf | head -n 1000 | bedtools sort -i - > homo.v91.sample.gtf`
+
 ## Run benchmark
 
 ```{bash}

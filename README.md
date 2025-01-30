@@ -9,9 +9,8 @@ Just use an IDE that supports devcontainers. Or...
 
 ### Download data
 
-> WIP.
-
-1. Get GTF files from Ensembl for human and/ or wheat. If you are not inclined into benchmarking on full transcriptome, downsample them: `grep 'transcript_id' homo.v91.full.gtf | shuf | head -n 1000 | bedtools sort -i - > homo.v91.sample.gtf`
+1. Download the data from [here](https://zenodo.org/record/14760356) (`10.5281/zenodo.14760356`), put these BAM files under `zenodo/` directory.
+1. Get GTF files from Ensembl for human and/ or wheat, put them under `regions/` directory. If you are not inclined into benchmarking on full transcriptome, downsample: `grep 'transcript_id' homo.v91.full.gtf | shuf | head -n 1000 | bedtools sort -i - > homo.v91.sample.gtf`
 
 ## Run benchmark
 

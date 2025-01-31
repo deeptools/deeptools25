@@ -17,18 +17,16 @@ def read_benchmark(file_path):
     with open(file_path, 'r') as file:
         header = next(file)
         for line in file:
-            parts = line.split()
-            times.append(float(parts[0]))      # 's'
-            memory.append(float(parts[2]))     # 'max_rss'
-            max_uss.append(float(parts[4]))    # 'max_uss'
-            max_pss.append(float(parts[5]))    # 'max_pss'
-            io_in.append(float(parts[6]))      # 'io_in'
-            io_out.append(float(parts[7]))     # 'io_out'
-            mean_load.append(float(parts[8]))  # 'mean_load'
-            cpu_time.append(float(parts[9]))   # 'cpu_time'
-            # Clean up the string and convert to float
-            cpu_val = parts[15].strip("'{}").replace("'", "").replace(",", "")
-            cpu_usage.append(float(cpu_val))   # 'cpu_usage'
+            parts = line.strip().split('\t')
+            times.append(float(parts[0]))
+            memory.append(float(parts[2]))
+            max_uss.append(float(parts[4]))
+            max_pss.append(float(parts[5]))
+            io_in.append(float(parts[6]))
+            io_out.append(float(parts[7]))
+            mean_load.append(float(parts[8]))
+            cpu_time.append(float(parts[9]))
+            cpu_usage.append(float(parts[15].split()[0]))
             
     return {
         'times': times, 'memory': memory, 'cpu_usage': cpu_usage,

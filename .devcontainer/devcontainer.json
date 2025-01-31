@@ -13,7 +13,7 @@
 			"profile": "default"
 		}
 	},
-	"postCreateCommand": "sudo chown -R ${localEnv:USER}:${localEnv:USER} /usr/local/cargo",
+	"postCreateCommand": "chown -R ${localEnv:USER}:${localEnv:USER} /usr/local/cargo",
 	"remoteUser": "${localEnv:USER}",
 	"updateRemoteUserUID": true
 }

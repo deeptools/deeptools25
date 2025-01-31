@@ -188,17 +188,6 @@ rule multiBamSummary1:
         """
 
 
-        # computeMatrix1 = "output/computeMatrix1.txt",
-        # computeMatrix2 = "output/computeMatrix2.txt"
-
-        # computeMatrix_time_plot = "output/computeMatrix_bs{BINSIZE}_plot_time.png",
-        # computeMatrix_mem_plot = "output/computeMatrix_bs{BINSIZE}_plot_mem.png"
-
-        # computeMatrix_template = "output/computeMatrix_bs{BINSIZE}_plot.png"
-
-        # plot.py {params.computeMatrix_template} {input.computeMatrix1} {input.computeMatrix2}
-
-
 rule plot_all_benchmarks:
     input:
         bamCoverage1_chip = "output/bamCoverage1_chip.txt",
@@ -214,14 +203,17 @@ rule plot_all_benchmarks:
         bamCoverage_mem_plot = "output/bamCoverage_{ORGANISM}_bs{BINSIZE}_plot_mem.png",
         bamCompare_time_plot = "output/bamCompare_{ORGANISM}_bs{BINSIZE}_plot_time.png",
         bamCompare_mem_plot = "output/bamCompare_{ORGANISM}_bs{BINSIZE}_plot_mem.png",
+        computeMatrix_time_plot = "output/computeMatrix_bs{BINSIZE}_plot_time.png",
+        computeMatrix_mem_plot = "output/computeMatrix_bs{BINSIZE}_plot_mem.png",
     params:
         bamCoverage_template = "output/bamCoverage_{ORGANISM}_bs{BINSIZE}_plot.png",
         bamCompare_template = "output/bamCompare_{ORGANISM}_bs{BINSIZE}_plot.png",
+        computeMatrix_template = "output/computeMatrix_bs{BINSIZE}_plot.png",
     shell:
         """
         python3 plot.py {params.bamCoverage_template} \
-            {input.bamCoverage1_chip},{input.bamCoverage1_rna},{input.bamCoverage1_wgs} \
-            {input.bamCoverage2_chip},{input.bamCoverage2_rna},{input.bamCoverage2_wgs}
-        python3 plot.py {params.bamCompare_template} {input.bamCompare1} {input.bamCompare2}
+            {input.benchmark_bamCoverage1[0]},{input.benchmark_bamCoverage1[1]},{input.benchmark_bamCoverage1[2]} \
+            {input.benchmark_bamCoverage2[0]},{input.benchmark_bamCoverage2[1]},{input.benchmark_bamCoverage2[2]}
+        python3 plot.py {params.bamCompare_template} {input.benchmark_bamCompare1} {input.benchmark_bamCompare2}
+        python3 plot.py {params.computeMatrix_template} {input.computeMatrix1} {input.computeMatrix2}
         """
-

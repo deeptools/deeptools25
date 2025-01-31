@@ -2,4 +2,4 @@
 .snakemake/
 zenodo/
 regions/
-output/
+output*/

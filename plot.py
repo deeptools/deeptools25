@@ -49,58 +49,6 @@ def make_boxplot(data1, data2, title, ylabel):
     plt.setp(bp['fliers'], marker='o', markerfacecolor='red', alpha=0.5)
     return fig
 
-def plot_cpu_usage_time(times, cpu_usage, title="CPU Usage Over Time"):
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(range(len(times)), cpu_usage, marker='o', linestyle='-', color='blue')
-    ax.set_title(title)
-    ax.set_xlabel("Run Number")
-    ax.set_ylabel("CPU Usage (%)")
-    ax.grid(True)
-    return fig
-
-def plot_io_performance(io_in, io_out, title="I/O Performance"):
-    fig, ax = plt.subplots(figsize=(8, 6))
-    x = np.arange(2)
-    ax.bar(x, [np.mean(io_in), np.mean(io_out)], yerr=[np.std(io_in), np.std(io_out)])
-    ax.set_xticks(x)
-    ax.set_xticklabels(['IO In', 'IO Out'])
-    ax.set_title(title)
-    ax.set_ylabel('MB')
-    return fig
-
-def plot_memory_composition(rss, uss, pss, title="Memory Usage Composition"):
-    fig, ax = plt.subplots(figsize=(10, 6))
-    x = np.arange(len(rss))
-    width = 0.25
-    ax.bar(x - width, rss, width, label='RSS')
-    ax.bar(x, uss, width, label='USS')
-    ax.bar(x + width, pss, width, label='PSS')
-    ax.set_title(title)
-    ax.set_ylabel('Memory (MB)')
-    ax.set_xlabel('Run Number')
-    ax.legend()
-    return fig
-
-def plot_cpu_load_dist(mean_load, title="CPU Load Distribution"):
-    fig, ax = plt.subplots(figsize=(8, 6))
-    ax.hist(mean_load, bins=20, color='green', alpha=0.7)
-    ax.set_title(title)
-    ax.set_xlabel('Mean Load (%)')
-    ax.set_ylabel('Frequency')
-    return fig
-
-def plot_efficiency(wall_time, cpu_time, title="CPU Efficiency"):
-    fig, ax = plt.subplots(figsize=(8, 6))
-    ax.scatter(wall_time, cpu_time, alpha=0.6)
-    ax.set_title(title)
-    ax.set_xlabel('Wall Time (s)')
-    ax.set_ylabel('CPU Time (s)')
-    # Add diagonal line for perfect efficiency
-    max_val = max(max(wall_time), max(cpu_time))
-    ax.plot([0, max_val], [0, max_val], 'r--', label='Perfect Scaling')
-    ax.legend()
-    return fig
-
 def make_protocol_boxplots(data1_files, data2_files, title, ylabel, protocols=['ChIP', 'RNA', 'WGS']):
     fig, axes = plt.subplots(1, len(protocols), figsize=(15, 5))
     fig.suptitle(title)

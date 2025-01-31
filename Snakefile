@@ -201,17 +201,17 @@ rule plot_all_benchmarks:
         computeMatrix1 = "output/computeMatrix1.txt",
         computeMatrix2 = "output/computeMatrix2.txt",
     output:
-        bamCoverage_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_plot_time.png",
-        bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_plot_mem.png",
-        bamCompare_time_plot = f"output/bamCompare_{ORGANISM}_bs{BINSIZE}_plot_time.png",
-        bamCompare_mem_plot = f"output/bamCompare_{ORGANISM}_bs{BINSIZE}_plot_mem.png",
-        computeMatrix_time_plot = f"output/computeMatrix_bs{BINSIZE}_plot_time.png",
-        computeMatrix_mem_plot = f"output/computeMatrix_bs{BINSIZE}_plot_mem.png",
+        bamCoverage_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_time.png",
+        bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_mem.png",
+        bamCompare_time_plot = f"output/bamCompare_{ORGANISM}_bs{BINSIZE}_time.png",
+        bamCompare_mem_plot = f"output/bamCompare_{ORGANISM}_bs{BINSIZE}_mem.png",
+        computeMatrix_time_plot = f"output/computeMatrix_bs{BINSIZE}_time.png",
+        computeMatrix_mem_plot = f"output/computeMatrix_bs{BINSIZE}_mem.png",
     shell:
         """
-        python3 plot.py output/bamCoverage_{ORGANISM}_bs{BINSIZE}_plot \
+        python3 plot.py output/bamCoverage_{ORGANISM}_bs{BINSIZE}.png \
             {input.bamCoverage1_chip},{input.bamCoverage1_rna},{input.bamCoverage1_wgs} \
             {input.bamCoverage2_chip},{input.bamCoverage2_rna},{input.bamCoverage2_wgs}
-        python3 plot.py output/bamCompare_{ORGANISM}_bs{BINSIZE}_plot {input.bamCompare1} {input.bamCompare2}
-        python3 plot.py output/computeMatrix_{ORGANISM}_bs{BINSIZE}_plot {input.computeMatrix1} {input.computeMatrix2}
+        python3 plot.py output/bamCompare_{ORGANISM}_bs{BINSIZE}.png {input.bamCompare1} {input.bamCompare2}
+        python3 plot.py output/computeMatrix_{ORGANISM}_bs{BINSIZE}.png {input.computeMatrix1} {input.computeMatrix2}
         """

@@ -207,8 +207,8 @@ rule plot_all_benchmarks:
     conda: "v4.env.yaml"
     shell:
         """
-            plot.py {params.bamCoverage_template} {input.benchmark_bamCoverage1} {input.benchmark_bamCoverage2}
-            plot.py {params.bamCompare_template} {input.benchmark_bamCompare1} {input.benchmark_bamCompare2}
-            plot.py {params.computeMatrix_template} {input.benchmark_computeMatrix1} {input.benchmark_computeMatrix2}
+            ./plot.py {params.bamCoverage_template} {input.benchmark_bamCoverage1} {input.benchmark_bamCoverage2}
+            ./plot.py {params.bamCompare_template} {input.benchmark_bamCompare1} {input.benchmark_bamCompare2}
+            ./plot.py {params.computeMatrix_template} {input.benchmark_computeMatrix1} {input.benchmark_computeMatrix2}
         """
 

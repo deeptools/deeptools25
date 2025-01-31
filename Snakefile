@@ -28,13 +28,12 @@ FILES = {
 
 rule all:
     input:
-        expand("output/bamCoverage_{organism}_bs{binsize}_plot_{type}.png", 
+        expand("output/bamCoverage_{organism}_bs{binsize}_{type}.png", 
                organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"]),
-        expand("output/bamCompare_{organism}_bs{binsize}_plot_{type}.png", 
+        expand("output/bamCompare_{organism}_bs{binsize}_{type}.png", 
+               organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"]),
+        expand("output/computeMatrix_{organism}_bs{binsize}_{type}.png", 
                organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"])
-        # expand("output/new1_{protocol}.bg", protocol=PROTOCOLS),
-        # expand("output/new2_{protocol}.bg", protocol=PROTOCOLS),
-        # expand("output/computeMatrix_bs" + str(BINSIZE) + "_plot_{type}.png", type=["time", "mem"])
 
 
 rule bamCoverage2:
@@ -205,8 +204,8 @@ rule plot_all_benchmarks:
         bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_mem.png",
         bamCompare_time_plot = f"output/bamCompare_{ORGANISM}_bs{BINSIZE}_time.png",
         bamCompare_mem_plot = f"output/bamCompare_{ORGANISM}_bs{BINSIZE}_mem.png",
-        computeMatrix_time_plot = f"output/computeMatrix_bs{BINSIZE}_time.png",
-        computeMatrix_mem_plot = f"output/computeMatrix_bs{BINSIZE}_mem.png",
+        computeMatrix_time_plot = f"output/computeMatrix_{ORGANISM}_bs{BINSIZE}_time.png",
+        computeMatrix_mem_plot = f"output/computeMatrix_{ORGANISM}_bs{BINSIZE}_mem.png",
     shell:
         """
         python3 plot.py output/bamCoverage_{ORGANISM}_bs{BINSIZE}.png \

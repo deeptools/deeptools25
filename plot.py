@@ -103,29 +103,44 @@ def plot_efficiency(wall_time, cpu_time, title="CPU Efficiency"):
     ax.legend()
     return fig
 
+def make_protocol_boxplots(data1_files, data2_files, title, ylabel, protocols=['ChIP', 'RNA', 'WGS']):
+    fig, axes = plt.subplots(1, len(protocols), figsize=(15, 5))
+    fig.suptitle(title)
+    
+    for idx, (protocol, d1_file, d2_file) in enumerate(zip(protocols, data1_files.split(','), data2_files.split(','))):
+        data1 = read_benchmark(d1_file)
+        data2 = read_benchmark(d2_file)
+        
+        bp = axes[idx].boxplot([data1['times'], data2['times']], patch_artist=True, labels=['Legacy', 'Maturin'])
+        axes[idx].set_title(f'{protocol}')
+        axes[idx].set_ylabel(ylabel if idx == 0 else '')
+        
+        colors = ['lightblue', 'lightgreen']
+        for patch, color in zip(bp['boxes'], colors):
+            patch.set_facecolor(color)
+            patch.set_alpha(0.7)
+        plt.setp(bp['medians'], color='navy')
+        plt.setp(bp['whiskers'], color='navy')
+        plt.setp(bp['caps'], color='navy')
+        plt.setp(bp['fliers'], marker='o', markerfacecolor='red', alpha=0.5)
+    
+    plt.tight_layout()
+    return fig
+
 
 if __name__ == '__main__':
     output_template = sys.argv[1]
-    data1 = read_benchmark(sys.argv[2])
-    data2 = read_benchmark(sys.argv[3])
-
-    time_fig = make_boxplot(data1['times'], data2['times'], 'Execution Time Comparison', 'Time (s)')
-    time_fig.savefig(output_template.replace('.png', '_time.png'))
-
-    mem_fig = make_boxplot(data1['memory'], data2['memory'], 'Memory Usage Comparison', 'Memory (MB)')
-    mem_fig.savefig(output_template.replace('.png', '_mem.png'))
-
-    cpu_usage_fig = plot_cpu_usage_time(data1['times'], data1['cpu_usage'])
-    cpu_usage_fig.savefig(output_template.replace('.png', '_cpu_usage.png'))
-
-    io_fig = plot_io_performance(data1['io_in'], data1['io_out'])
-    io_fig.savefig(output_template.replace('.png', '_io.png'))
-
-    mem_comp_fig = plot_memory_composition(data1['memory'], data1['max_uss'], data1['max_pss'])
-    mem_comp_fig.savefig(output_template.replace('.png', '_mem_composition.png'))
-
-    load_fig = plot_cpu_load_dist(data1['mean_load'])
-    load_fig.savefig(output_template.replace('.png', '_cpu_load.png'))
-
-    eff_fig = plot_efficiency(data1['times'], data1['cpu_time'])
-    eff_fig.savefig(output_template.replace('.png', '_efficiency.png'))
+    if ',' in sys.argv[2]:
+        time_fig = make_protocol_boxplots(sys.argv[2], sys.argv[3], 'Execution Time Comparison', 'Time (s)')
+        time_fig.savefig(output_template.replace('.png', '_time.png'))
+        mem_fig = make_protocol_boxplots(sys.argv[2], sys.argv[3], 'Memory Usage Comparison', 'Memory (MB)')
+        mem_fig.savefig(output_template.replace('.png', '_mem.png'))
+    else:
+        data1 = read_benchmark(sys.argv[2])
+        data2 = read_benchmark(sys.argv[3])
+        
+        time_fig = make_boxplot(data1['times'], data2['times'], 'Execution Time Comparison', 'Time (s)')
+        time_fig.savefig(output_template.replace('.png', '_time.png'))
+        
+        mem_fig = make_boxplot(data1['memory'], data2['memory'], 'Memory Usage Comparison', 'Memory (MB)')
+        mem_fig.savefig(output_template.replace('.png', '_mem.png'))

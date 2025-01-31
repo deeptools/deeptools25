@@ -9,14 +9,13 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 # Conda package-management
 RUN /opt/conda/bin/conda create -n snkmk -c conda-forge -c bioconda \
     --strict-channel-priority --override-channels \
-    numpy \
+    bedtools \
     matplotlib \
-    snakemake
+    snakemake \
+    ucsc-bigwiginfo
 
 # Ad-hoc solutions
 ARG USERNAME
 RUN useradd -m -s /bin/bash ${USERNAME} \
-    && chown -R ${USERNAME}:${USERNAME} /opt/conda/pkgs \
-    && mkdir -p /usr/local/cargo \
-    && chown -R ${USERNAME}:${USERNAME} /usr/local/cargo
+    && chown -R ${USERNAME}:${USERNAME} /opt/conda/pkgs
 USER ${USERNAME}

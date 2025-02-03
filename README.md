@@ -1,18 +1,46 @@
 ### Dependencies
 
-Just use an IDE that supports devcontainers. Or...
-
 #### Manually
 
 1. Install `rustc` >= 1.73
 1. Install `Clang` and `Snakemake`. For example: `conda create -n snkmk clang-19 snakemake`
 
+#### Devcontainer
+
+Alternatively, you can use any modern IDE with [Devcontainers](https://code.visualstudio.com/docs/devcontainers/containers) support. DISCLAIMER: The benchmarking was only run on native Linux.
+
 ### Download data
 
-1. Download the data from [here](https://zenodo.org/record/14760356) (`10.5281/zenodo.14760356`), put these BAM files under `zenodo/` directory.
-1. Get GTF files from Ensembl for human and/ or wheat, put them under `regions/` directory. If you are not inclined into benchmarking on full transcriptome, downsample: `grep 'transcript_id' homo.v91.full.gtf | shuf | head -n 1000 | bedtools sort -i - > homo.v91.sample.gtf`
+1. **Download the data from [here](https://zenodo.org/record/14760356)** (`10.5281/zenodo.14760356`), put these BAM files under `zenodo/` directory.
+1. **Get GTF files from Ensembl for human and/ or wheat**. Put these under `regions/` directory. If you are not inclined into benchmarking on full transcriptome, downsample those files like this: `grep 'transcript_id' homo.v91.full.gtf | shuf | head -n 1000 | bedtools sort -i - > homo.v91.sample.gtf`
+
+This is how it should look like:
+
+```
+.
+├── regions
+│   ├── homo.v91.full.gtf
+│   ├── homo.v91.sample.gtf
+│   ├── triticum.v60.full.gtf
+│   └── triticum.v60.sample.gtf
+└── zenodo
+    ├── human_chip_SRR28592124.bam
+    ├── human_chip_SRR28592124.bam.bai
+    ├── human_rna_SRR28012902.bam
+    ├── human_rna_SRR28012902.bam.bai
+    ├── human_wgs_SRR15494527.bam
+    ├── human_wgs_SRR15494527.bam.bai
+    ├── triticum_chip_SRR1686799.bam
+    ├── triticum_chip_SRR1686799.bam.csi
+    ├── triticum_rna_SRR27822150.bam
+    ├── triticum_rna_SRR27822150.bam.csi
+    ├── triticum_wgs_SRR27887047.bam
+    └── triticum_wgs_SRR27887047.bam.csi
+```
 
 ## Run benchmark
+
+Adjust the variables at the top of `Snakefile` however you like it, and run:
 
 ```{bash}
 conda activate snkmk

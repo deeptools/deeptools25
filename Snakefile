@@ -42,7 +42,7 @@ rule bamCoverage2:
     output:
         bed = "output/new2_{protocol}.bg"
     benchmark:
-        repeat("output/bamCoverage2_{protocol}.txt", Ntimes)
+        repeat(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{wildcards.protocol}.txt", Ntimes)
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -59,7 +59,7 @@ rule bamCoverage1:
     output:
         bed = "output/new1_{protocol}.bg"
     benchmark:
-        repeat("output/bamCoverage1_{protocol}.txt", Ntimes)
+        repeat(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{wildcards.protocol}.txt", Ntimes)
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -79,7 +79,7 @@ rule bamCompare2:
     output:
         bw = "output/bamCompare2.bw"
     benchmark:
-        repeat("output/bamCompare2.txt", Ntimes)
+        repeat(f"output/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -96,7 +96,7 @@ rule bamCompare1:
     output:
         bw = "output/bamCompare1.bw"
     benchmark:
-        repeat("output/bamCompare1.txt", Ntimes)
+        repeat(f"output/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -114,7 +114,7 @@ rule computeMatrix2:
     output:
         npz = "output/test_new2.npz"
     benchmark:
-        repeat("output/computeMatrix2.txt", Ntimes)
+        repeat(f"output/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
         binsize = BINSIZE,
         upstream = UPSTREAM,
@@ -134,7 +134,7 @@ rule computeMatrix1:
     output:
         npz = "output/test_new1.npz"
     benchmark:
-        repeat("output/computeMatrix1.txt", Ntimes)
+        repeat(f"output/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
         binsize = BINSIZE,
         upstream = UPSTREAM,
@@ -155,7 +155,7 @@ rule multiBamSummary2:
         npz = "output/mb_summary2.npz",
         outraw = "output/mb_summary2.outraw.tab"
     benchmark:
-        repeat("output/multiBamSummary2.txt", Ntimes)
+        repeat(f"output/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
         binsize = BINSIZE * 10000,
     threads: Nthreads
@@ -174,7 +174,7 @@ rule multiBamSummary1:
         npz = "output/mb_summary1.npz",
         outraw = "output/mb_summary1.outraw.tab"
     benchmark:
-        repeat("output/multiBamSummary1.txt", Ntimes)
+        repeat(f"output/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
         binsize = BINSIZE * 10000,
     threads: Nthreads
@@ -189,16 +189,16 @@ rule multiBamSummary1:
 
 rule plot_all_benchmarks:
     input:
-        bamCoverage1_chip = "output/bamCoverage1_chip.txt",
-        bamCoverage1_rna = "output/bamCoverage1_rna.txt",
-        bamCoverage1_wgs = "output/bamCoverage1_wgs.txt",
-        bamCoverage2_chip = "output/bamCoverage2_chip.txt",
-        bamCoverage2_rna = "output/bamCoverage2_rna.txt",
-        bamCoverage2_wgs = "output/bamCoverage2_wgs.txt",
-        bamCompare1 = "output/bamCompare1.txt",
-        bamCompare2 = "output/bamCompare2.txt",
-        computeMatrix1 = "output/computeMatrix1.txt",
-        computeMatrix2 = "output/computeMatrix2.txt",
+        bamCoverage1_chip = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_chip.txt",
+        bamCoverage1_rna = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_rna.txt",
+        bamCoverage1_wgs = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_wgs.txt",
+        bamCoverage2_chip = f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_chip.txt",
+        bamCoverage2_rna = f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_rna.txt",
+        bamCoverage2_wgs = f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_wgs.txt",
+        bamCompare1 = f"output/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt",
+        bamCompare2 = f"output/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt",
+        computeMatrix1 = f"output/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt",
+        computeMatrix2 = f"output/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt"
     output:
         bamCoverage_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_time.png",
         bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_mem.png",

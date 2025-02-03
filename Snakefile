@@ -33,8 +33,9 @@ rule all:
         expand("output/bamCompare_{organism}_bs{binsize}_{type}.png", 
                organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"]),
         expand("output/computeMatrix_{organism}_bs{binsize}_{type}.png", 
+               organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"]),
+        expand("output/multiBamSummary_{organism}_bs{binsize}_{type}.png",
                organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"])
-
 
 rule bamCoverage2:
     input:
@@ -198,7 +199,9 @@ rule plot_all_benchmarks:
         bamCompare1 = f"output/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt",
         bamCompare2 = f"output/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt",
         computeMatrix1 = f"output/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt",
-        computeMatrix2 = f"output/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt"
+        computeMatrix2 = f"output/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt",
+        multiBamSummary1 = f"output/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt",
+        multiBamSummary2 = f"output/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt"
     output:
         bamCoverage_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_time.png",
         bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_mem.png",
@@ -206,6 +209,8 @@ rule plot_all_benchmarks:
         bamCompare_mem_plot = f"output/bamCompare_{ORGANISM}_bs{BINSIZE}_mem.png",
         computeMatrix_time_plot = f"output/computeMatrix_{ORGANISM}_bs{BINSIZE}_time.png",
         computeMatrix_mem_plot = f"output/computeMatrix_{ORGANISM}_bs{BINSIZE}_mem.png",
+        multiBamSummary_time_plot = f"output/multiBamSummary_{ORGANISM}_bs{BINSIZE}_time.png",
+        multiBamSummary_mem_plot = f"output/multiBamSummary_{ORGANISM}_bs{BINSIZE}_mem.png"
     shell:
         """
         python3 plot.py output/bamCoverage_{ORGANISM}_bs{BINSIZE}.png \
@@ -213,4 +218,5 @@ rule plot_all_benchmarks:
             {input.bamCoverage2_chip},{input.bamCoverage2_rna},{input.bamCoverage2_wgs}
         python3 plot.py output/bamCompare_{ORGANISM}_bs{BINSIZE}.png {input.bamCompare1} {input.bamCompare2}
         python3 plot.py output/computeMatrix_{ORGANISM}_bs{BINSIZE}.png {input.computeMatrix1} {input.computeMatrix2}
+        python3 plot.py output/multiBamSummary_{ORGANISM}_bs{BINSIZE}.png {input.multiBamSummary1} {input.multiBamSummary2}
         """

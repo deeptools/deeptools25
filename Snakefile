@@ -43,7 +43,7 @@ rule bamCoverage2:
     output:
         bed = "output/new2_{protocol}.bg"
     benchmark:
-        repeat(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{wildcards.protocol}.txt", Ntimes)
+        repeat(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{protocol}.txt", Ntimes)
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -60,7 +60,7 @@ rule bamCoverage1:
     output:
         bed = "output/new1_{protocol}.bg"
     benchmark:
-        repeat(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{wildcards.protocol}.txt", Ntimes)
+        repeat(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{protocol}.txt", Ntimes)
     params:
         binsize = BINSIZE
     threads: Nthreads

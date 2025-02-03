@@ -49,7 +49,7 @@ def make_boxplot(data1, data2, title, ylabel):
     plt.setp(bp['fliers'], marker='o', markerfacecolor='red', alpha=0.5)
     return fig
 
-def make_protocol_boxplots(data1_files, data2_files, title, ylabel, protocols=['ChIP', 'RNA', 'WGS']):
+def make_protocol_boxplots(data1_files, data2_files, title, ylabel, metric='times', protocols=['ChIP', 'RNA', 'WGS']):
     fig, axes = plt.subplots(1, len(protocols), figsize=(15, 5))
     fig.suptitle(title)
     
@@ -57,7 +57,7 @@ def make_protocol_boxplots(data1_files, data2_files, title, ylabel, protocols=['
         data1 = read_benchmark(d1_file)
         data2 = read_benchmark(d2_file)
         
-        bp = axes[idx].boxplot([data1['times'], data2['times']], patch_artist=True, labels=['Legacy', 'Maturin'])
+        bp = axes[idx].boxplot([data1[metric], data2[metric]], patch_artist=True, labels=['Legacy', 'Maturin'])
         axes[idx].set_title(f'{protocol}')
         axes[idx].set_ylabel(ylabel if idx == 0 else '')
         
@@ -77,9 +77,9 @@ def make_protocol_boxplots(data1_files, data2_files, title, ylabel, protocols=['
 if __name__ == '__main__':
     output_template = sys.argv[1]
     if ',' in sys.argv[2]:
-        time_fig = make_protocol_boxplots(sys.argv[2], sys.argv[3], 'Execution Time Comparison', 'Time (s)')
+        time_fig = make_protocol_boxplots(sys.argv[2], sys.argv[3], 'Execution Time Comparison', 'Time (s)', metric='times')
         time_fig.savefig(output_template.replace('.png', '_time.png'))
-        mem_fig = make_protocol_boxplots(sys.argv[2], sys.argv[3], 'Memory Usage Comparison', 'Memory (MB)')
+        mem_fig = make_protocol_boxplots(sys.argv[2], sys.argv[3], 'Memory Usage Comparison', 'Memory (MB)', metric='memory')
         mem_fig.savefig(output_template.replace('.png', '_mem.png'))
     else:
         data1 = read_benchmark(sys.argv[2])

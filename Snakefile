@@ -20,9 +20,9 @@ FILES = {
     "human_chip": "zenodo/human_chip_SRR28592124.bam",
     "human_rna": "zenodo/human_rna_SRR28012902.bam",
     "human_wgs": "zenodo/human_wgs_SRR15494527.bam",
-    "triticum_chip": "zenodo/triticum_chip_SRR1686799.bam",
-    "triticum_rna": "zenodo/triticum_rna_SRR27822150.bam",
-    "triticum_wgs": "zenodo/triticum_wgs_SRR27887047.bam"
+    "wheat_chip": "zenodo/triticum_chip_SRR1686799.bam",
+    "wheat_rna": "zenodo/triticum_rna_SRR27822150.bam",
+    "wheat_wgs": "zenodo/triticum_wgs_SRR27887047.bam"
 }
 
 

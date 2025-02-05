@@ -87,7 +87,7 @@ rule bamCompare2:
     conda: "v4.env.yaml"
     shell:
         """
-        bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling
+        bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads}
         """
 
 rule bamCompare1:

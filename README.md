@@ -3,7 +3,7 @@
 #### Manually
 
 1. Install `rustc` >= 1.73
-1. Install `Clang` and `Snakemake`. For example: `conda create -n snkmk clang-19 snakemake`
+1. Install `Clang`, `matplotlib` and `Snakemake`. For example: `conda create -n snkmk clang-19 matplotlib snakemake bedtools ucsc-bigwiginfo`
 
 #### Devcontainer
 

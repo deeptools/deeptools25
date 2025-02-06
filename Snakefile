@@ -41,7 +41,7 @@ rule bamCoverage2:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/new2_{protocol}.bgi"
+        bed = "output/new2_{protocol}.bg"
     log:
         repeat(f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.txt", Ntimes)
     benchmark:
@@ -76,7 +76,6 @@ rule bamCoverage1:
         """
 
 
-
 rule bamCompare2:
     input:
         bam1 = FILES[ORGANISM + "_chip"],
@@ -93,11 +92,7 @@ rule bamCompare2:
     conda: "v4.env.yaml"
     shell:
         """
-<<<<<<< HEAD
         /usr/bin/time -al bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} >{log} 2>&1 
-=======
-        bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads}
->>>>>>> 54b282832170d04592d234b5b354e2390d4195d4
         """
 
 rule bamCompare1:
@@ -120,51 +115,50 @@ rule bamCompare1:
         """
 
 
-# Rule to compute matrix for the second set of bamCompare outputs
 rule computeMatrix2:
     input:
-        bw2 = "output/bamCompare2.bw",  # Input bigWig file from bamCompare2
-        bed = GTF[ORGANISM]  # Input GTF file based on the organism
+        bw2 = "output/bamCompare2.bw",
+        bed = GTF[ORGANISM]
     output:
-        npz = "output/test_new2.npz"  # Output npz file
+        npz = "output/test_new2.npz"
     log:
         repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}_time.txt", Ntimes)
     benchmark:
-        repeat(f"output/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)  # Benchmark file
+        repeat(f"output/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE,  # Bin size parameter
-        upstream = UPSTREAM,  # Upstream parameter
-        downstream = DOWNSTREAM  # Downstream parameter
-    threads: Nthreads  # Number of threads to use
-    conda: "v4.env.yaml"  # Conda environment
+        binsize = BINSIZE,
+        upstream = UPSTREAM,
+        downstream = DOWNSTREAM
+    threads: Nthreads
+    conda: "v4.env.yaml"
     shell:
         """
         /usr/bin/time -al computeMatrix reference-point -S {input.bw2} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero >{log} 2>&1
         """
 
-# Rule to compute matrix for the first set of bamCompare outputs
 rule computeMatrix1:
     input:
-        bw1 = "output/bamCompare1.bw",  # Input bigWig file from bamCompare1
-        bed = GTF[ORGANISM]  # Input GTF file based on the organism
+        bw1 = "output/bamCompare1.bw",
+        bed = GTF[ORGANISM]
     output:
-        npz = "output/test_new1.npz"  # Output npz file
+        npz = "output/test_new1.npz"
     log:
         repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}_time.txt", Ntimes)
     benchmark:
-        repeat(f"output/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)  # Benchmark file
+        repeat(f"output/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE,  # Bin size parameter
-        upstream = UPSTREAM,  # Upstream parameter
-        downstream = DOWNSTREAM  # Downstream parameter
-    threads: Nthreads  # Number of threads to use
-    conda: "v3.env.yaml"  # Conda environment
+        binsize = BINSIZE,
+        upstream = UPSTREAM,
+        downstream = DOWNSTREAM
+    threads: Nthreads
+    conda: "v3.env.yaml"
     shell:
         """
         /usr/bin/time -al computeMatrix reference-point -S {input.bw1} {input.bw1} -R {input.bed} {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero >{log} 2>&1
         """
+
 
 rule multiBamSummary2:
     input:

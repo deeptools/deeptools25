@@ -1,7 +1,7 @@
 # Adjust these if you want
-ORGANISM = "human"
+ORGANISM = "triticum"
 FULL_GTF = False
-BINSIZE = 10
+BINSIZE = 1
 UPSTREAM = 500
 DOWNSTREAM = 1500
 
@@ -11,9 +11,9 @@ Nthreads = 16
 
 # Do not edit any further
 if FULL_GTF:
-    GTF = { "human": "regions/homo.v91.full.gtf", "wheat": "regions/triticum.v60.full.gtf" }
+    GTF = { "human": "regions/homo.v91.full.gtf", "triticum": "regions/triticum.v60.full.gtf" }
 else:
-    GTF = { "human": "regions/homo.v91.sample.gtf", "wheat": "regions/triticum.v60.sample.gtf" }
+    GTF = { "human": "regions/homo.v91.sample.gtf", "triticum": "regions/triticum.v60.sample.gtf" }
 
 PROTOCOLS = ["chip", "rna", "wgs"]
 FILES = {
@@ -42,6 +42,8 @@ rule bamCoverage2:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
         bed = "output/new2_{protocol}.bg"
+    log:
+        repeat(f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.txt", Ntimes)
     benchmark:
         repeat(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
@@ -51,7 +53,7 @@ rule bamCoverage2:
     shell:
         """
         mkdir -p $(dirname {output.bed})
-        bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        /usr/bin/time -al bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads} >{log} 2>&1 
         """
 
 rule bamCoverage1:
@@ -59,6 +61,8 @@ rule bamCoverage1:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
         bed = "output/new1_{protocol}.bg"
+    log:
+        repeat(f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.txt", Ntimes)
     benchmark:
         repeat(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
@@ -68,9 +72,8 @@ rule bamCoverage1:
     shell:
         """
         mkdir -p $(dirname {output.bed})
-        bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads} > /dev/null
+        /usr/bin/time -al bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}  >{log} 2>&1
         """
-
 
 
 rule bamCompare2:
@@ -79,6 +82,8 @@ rule bamCompare2:
         bam2 = FILES[ORGANISM + "_wgs"]
     output:
         bw = "output/bamCompare2.bw"
+    log:
+        repeat(f"logs/bamCompare2_{ORGANISM}_bs{BINSIZE}_time.txt", Ntimes)
     benchmark:
         repeat(f"output/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -87,7 +92,7 @@ rule bamCompare2:
     conda: "v4.env.yaml"
     shell:
         """
-        bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads}
+        /usr/bin/time -al bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} >{log} 2>&1 
         """
 
 rule bamCompare1:
@@ -96,6 +101,8 @@ rule bamCompare1:
         bam2 = FILES[ORGANISM + "_wgs"]
     output:
         bw = "output/bamCompare1.bw"
+    log:
+        repeat(f"logs/bamCompare1_{ORGANISM}_bs{BINSIZE}_time.txt", Ntimes)
     benchmark:
         repeat(f"output/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -104,7 +111,7 @@ rule bamCompare1:
     conda: "v3.env.yaml"
     shell:
         """
-        bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} --exactScaling > /dev/null
+        /usr/bin/time -al bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} >{log} 2>&1
         """
 
 
@@ -114,6 +121,8 @@ rule computeMatrix2:
         bed = GTF[ORGANISM]
     output:
         npz = "output/test_new2.npz"
+    log:
+        repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}_time.txt", Ntimes)
     benchmark:
         repeat(f"output/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -124,8 +133,8 @@ rule computeMatrix2:
     conda: "v4.env.yaml"
     shell:
         """
-        computeMatrix reference-point -S {input.bw2} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
-            -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero
+        /usr/bin/time -al computeMatrix reference-point -S {input.bw2} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
+            -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero >{log} 2>&1
         """
 
 rule computeMatrix1:
@@ -134,6 +143,8 @@ rule computeMatrix1:
         bed = GTF[ORGANISM]
     output:
         npz = "output/test_new1.npz"
+    log:
+        repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}_time.txt", Ntimes)
     benchmark:
         repeat(f"output/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -144,8 +155,8 @@ rule computeMatrix1:
     conda: "v3.env.yaml"
     shell:
         """
-        computeMatrix reference-point -S {input.bw1} {input.bw1} -R {input.bed} {input.bed} -o {output.npz} \
-            -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero > /dev/null
+        /usr/bin/time -al computeMatrix reference-point -S {input.bw1} {input.bw1} -R {input.bed} {input.bed} -o {output.npz} \
+            -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero >{log} 2>&1
         """
 
 
@@ -155,6 +166,8 @@ rule multiBamSummary2:
     output:
         npz = "output/mb_summary2.npz",
         outraw = "output/mb_summary2.outraw.tab"
+    log:
+        repeat(f"logs/multiBamSummary2__{ORGANISM}_bs{BINSIZE}_time.txt", Ntimes)
     benchmark:
         repeat(f"output/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -163,9 +176,9 @@ rule multiBamSummary2:
     conda: "v4.env.yaml"
     shell:
         """
-        multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
+        /usr/bin/time -al multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
             --outRawCounts {output.outraw} \
-            -bs {params.binsize} -p {threads}
+            -bs {params.binsize} -p {threads} >{log} 2>&1
         """
 
 rule multiBamSummary1:
@@ -174,6 +187,8 @@ rule multiBamSummary1:
     output:
         npz = "output/mb_summary1.npz",
         outraw = "output/mb_summary1.outraw.tab"
+    log:
+        repeat(f"logs/multiBamSummary1__{ORGANISM}_bs{BINSIZE}_time.txt", Ntimes)
     benchmark:
         repeat(f"output/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -182,9 +197,9 @@ rule multiBamSummary1:
     conda: "v3.env.yaml"
     shell:
         """
-        multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
+         /usr/bin/time -al multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
             --outRawCounts {output.outraw} \
-            -bs {params.binsize} -p {threads} > /dev/null
+            -bs {params.binsize} -p {threads} > /dev/null >{log} 2>&1
         """
 
 

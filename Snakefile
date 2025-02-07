@@ -10,6 +10,14 @@ Nthreads = 16
 
 
 # Do not edit any further
+import platform
+if platform.system() == "Linux":
+    timeCmd = "/usr/bin/time -v"
+elif platform.system() == "Darwin":
+    timeCmd = "/usr/bin/time -al"
+else:
+    Raise ValueError("Unknown platform")
+
 if FULL_GTF:
     GTF = { "homo": "regions/homo.v91.full.gtf", "triticum": "regions/triticum.v60.full.gtf" }
 else:
@@ -53,7 +61,7 @@ rule bamCoverage2:
     shell:
         """
         mkdir -p $(dirname {output.bed})
-        /usr/bin/time -al bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads} >{log} 2>&1 
+        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads} >{log} 2>&1 
         """
 
 rule bamCoverage1:
@@ -72,7 +80,7 @@ rule bamCoverage1:
     shell:
         """
         mkdir -p $(dirname {output.bed})
-        /usr/bin/time -al bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}  >{log} 2>&1
+        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}  >{log} 2>&1
         """
 
 
@@ -92,7 +100,7 @@ rule bamCompare2:
     conda: "v4.env.yaml"
     shell:
         """
-        /usr/bin/time -al bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} >{log} 2>&1 
+        {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} >{log} 2>&1 
         """
 
 rule bamCompare1:
@@ -111,7 +119,7 @@ rule bamCompare1:
     conda: "v3.env.yaml"
     shell:
         """
-        /usr/bin/time -al bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} >{log} 2>&1
+        {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} -o {output.bw} -bs {params.binsize} -p {threads} >{log} 2>&1
         """
 
 
@@ -133,7 +141,7 @@ rule computeMatrix2:
     conda: "v4.env.yaml"
     shell:
         """
-        /usr/bin/time -al computeMatrix reference-point -S {input.bw2} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
+        {timeCmd} computeMatrix reference-point -S {input.bw2} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero >{log} 2>&1
         """
 
@@ -155,7 +163,7 @@ rule computeMatrix1:
     conda: "v3.env.yaml"
     shell:
         """
-        /usr/bin/time -al computeMatrix reference-point -S {input.bw1} {input.bw1} -R {input.bed} {input.bed} -o {output.npz} \
+        {timeCmd} computeMatrix reference-point -S {input.bw1} {input.bw1} -R {input.bed} {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero >{log} 2>&1
         """
 
@@ -176,7 +184,7 @@ rule multiBamSummary2:
     conda: "v4.env.yaml"
     shell:
         """
-        /usr/bin/time -al multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
+        {timeCmd} multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
             --outRawCounts {output.outraw} \
             -bs {params.binsize} -p {threads} >{log} 2>&1
         """
@@ -197,7 +205,7 @@ rule multiBamSummary1:
     conda: "v3.env.yaml"
     shell:
         """
-         /usr/bin/time -al multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
+         {timeCmd} multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
             --outRawCounts {output.outraw} \
             -bs {params.binsize} -p {threads} >{log} 2>&1
         """

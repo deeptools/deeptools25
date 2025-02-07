@@ -11,18 +11,18 @@ Nthreads = 16
 
 # Do not edit any further
 if FULL_GTF:
-    GTF = { "human": "regions/homo.v91.full.gtf", "triticum": "regions/triticum.v60.full.gtf" }
+    GTF = { "homo": "regions/homo.v91.full.gtf", "triticum": "regions/triticum.v60.full.gtf" }
 else:
-    GTF = { "human": "regions/homo.v91.sample.gtf", "triticum": "regions/triticum.v60.sample.gtf" }
+    GTF = { "homo": "regions/homo.v91.sample.gtf", "triticum": "regions/triticum.v60.sample.gtf" }
 
 PROTOCOLS = ["chip", "rna", "wgs"]
 FILES = {
-    "human_chip": "zenodo/human_chip_SRR28592124.bam",
-    "human_rna": "zenodo/human_rna_SRR28012902.bam",
-    "human_wgs": "zenodo/human_wgs_SRR15494527.bam",
-    "wheat_chip": "zenodo/triticum_chip_SRR1686799.bam",
-    "wheat_rna": "zenodo/triticum_rna_SRR27822150.bam",
-    "wheat_wgs": "zenodo/triticum_wgs_SRR27887047.bam"
+    "homo_chip": "zenodo/human_chip_SRR28592124.bam",
+    "homo_rna": "zenodo/human_rna_SRR28012902.bam",
+    "homo_wgs": "zenodo/human_wgs_SRR15494527.bam",
+    "triticum_chip": "zenodo/triticum_chip_SRR1686799.bam",
+    "triticum_rna": "zenodo/triticum_rna_SRR27822150.bam",
+    "triticum_wgs": "zenodo/triticum_wgs_SRR27887047.bam"
 }
 
 
@@ -199,7 +199,7 @@ rule multiBamSummary1:
         """
          /usr/bin/time -al multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
             --outRawCounts {output.outraw} \
-            -bs {params.binsize} -p {threads} > /dev/null >{log} 2>&1
+            -bs {params.binsize} -p {threads} >{log} 2>&1
         """
 
 

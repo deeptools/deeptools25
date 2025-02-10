@@ -145,92 +145,92 @@ rule bamCompare1:
         """
 
 
-# rule computeMatrix2:
-#     input:
-#         bw2 = "output/bamCompare2.bw",
-#         bed = GTF[ORGANISM]
-#     output:
-#         npz = "output/computeMatrix2.npz"
-#     log:
-#         f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
-#     benchmark:
-#         repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
-#     params:
-#         binsize = BINSIZE,
-#         upstream = UPSTREAM,
-#         downstream = DOWNSTREAM
-#     threads: Nthreads
-#     conda: "v4.env.yaml"
-#     shell:
-#         """
-#         {timeCmd} computeMatrix reference-point -S {input.bw2} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
-#             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero >{log} 2>&1
-#         """
+rule computeMatrix2:
+    input:
+        bw2 = "output/bamCompare2.bw",
+        bed = GTF[ORGANISM]
+    output:
+        npz = "output/computeMatrix2.npz"
+    log:
+        f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
+    benchmark:
+        repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
+    params:
+        binsize = BINSIZE,
+        upstream = UPSTREAM,
+        downstream = DOWNSTREAM
+    threads: Nthreads
+    conda: "v4.env.yaml"
+    shell:
+        """
+        {timeCmd} computeMatrix reference-point -S {input.bw2} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
+            -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero >{log} 2>&1
+        """
 
-# rule computeMatrix1:
-#     input:
-#         bw1 = "output/bamCompare1.bw",
-#         bed = GTF[ORGANISM]
-#     output:
-#         npz = "output/computeMatrix1.npz"
-#     log:
-#         f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
-#     benchmark:
-#         repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
-#     params:
-#         binsize = BINSIZE,
-#         upstream = UPSTREAM,
-#         downstream = DOWNSTREAM
-#     threads: Nthreads
-#     conda: "v3.env.yaml"
-#     shell:
-#         """
-#         {timeCmd} computeMatrix reference-point -S {input.bw1} {input.bw1} -R {input.bed} {input.bed} -o {output.npz} \
-#             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero >{log} 2>&1
-#         """
+rule computeMatrix1:
+    input:
+        bw1 = "output/bamCompare1.bw",
+        bed = GTF[ORGANISM]
+    output:
+        npz = "output/computeMatrix1.npz"
+    log:
+        f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
+    benchmark:
+        repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
+    params:
+        binsize = BINSIZE,
+        upstream = UPSTREAM,
+        downstream = DOWNSTREAM
+    threads: Nthreads
+    conda: "v3.env.yaml"
+    shell:
+        """
+        {timeCmd} computeMatrix reference-point -S {input.bw1} {input.bw1} -R {input.bed} {input.bed} -o {output.npz} \
+            -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero >{log} 2>&1
+        """
 
 
-# rule multiBamSummary2:
-#     input:
-#         bam = FILES[ORGANISM + "_" + "wgs"]
-#     output:
-#         npz = "output/multiBamSummary2.npz",
-#         outraw = "output/multiBamSummary2.outraw.tab"
-#     log:
-#         f"logs/multiBamSummary2__{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
-#     benchmark:
-#         repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
-#     params:
-#         binsize = BINSIZE * 10000,
-#     threads: Nthreads
-#     conda: "v4.env.yaml"
-#     shell:
-#         """
-#         {timeCmd} multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
-#             --outRawCounts {output.outraw} \
-#             -bs {params.binsize} -p {threads} >{log} 2>&1
-#         """
+rule multiBamSummary2:
+    input:
+        bam = FILES[ORGANISM + "_" + "wgs"]
+    output:
+        npz = "output/multiBamSummary2.npz",
+        outraw = "output/multiBamSummary2.outraw.tab"
+    log:
+        f"logs/multiBamSummary2__{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
+    benchmark:
+        repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
+    params:
+        binsize = BINSIZE * 10000,
+    threads: Nthreads
+    conda: "v4.env.yaml"
+    shell:
+        """
+        {timeCmd} multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
+            --outRawCounts {output.outraw} \
+            -bs {params.binsize} -p {threads} >{log} 2>&1
+        """
 
-# rule multiBamSummary1:
-#     input:
-#         bam = FILES[ORGANISM + "_" + "wgs"]
-#     output:
-#         npz = "output/multiBamSummary1.npz",
-#         outraw = "output/multiBamSummary1.outraw.tab"
-#     log:
-#         f"logs/multiBamSummary1__{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
-#     benchmark:
-#         repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
-#     params:
-#         binsize = BINSIZE * 10000,
-#     threads: Nthreads
-#     conda: "v3.env.yaml"
-#     shell:
-#         """
-#          {timeCmd} multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
-#             --outRawCounts {output.outraw} \
-#             -bs {params.binsize} -p {threads} >{log} 2>&1
-#         """
+rule multiBamSummary1:
+    input:
+        bam = FILES[ORGANISM + "_" + "wgs"]
+    output:
+        npz = "output/multiBamSummary1.npz",
+        outraw = "output/multiBamSummary1.outraw.tab"
+    log:
+        f"logs/multiBamSummary1__{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
+    benchmark:
+        repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
+    params:
+        binsize = BINSIZE * 10000,
+    threads: Nthreads
+    conda: "v3.env.yaml"
+    shell:
+        """
+         {timeCmd} multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
+            --outRawCounts {output.outraw} \
+            -bs {params.binsize} -p {threads} >{log} 2>&1
+        """
 
 
 rule plot_all_benchmarks:

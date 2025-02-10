@@ -53,9 +53,9 @@ rule bamCoverage2:
     output:
         bed = "output/new2_{protocol}.bg"
     log:
-        f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{wildcards.repeat}}.txt"
+        f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{iter}}.txt"
     benchmark:
-        repeat(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
+        f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.{{iter}}.txt"
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -72,9 +72,9 @@ rule bamCoverage1:
     output:
         bed = "output/new1_{protocol}.bg"
     log:
-        f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{wildcards.repeat}}.txt"
+        f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{iter}}.txt"
     benchmark:
-        repeat(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
+        f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.{{iter}}.txt"
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -215,8 +215,10 @@ rule bamCoverage1:
 
 rule plot_all_benchmarks:
     input:
-        bamCoverage1_chip = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_chip.txt",
-        bamCoverage2_chip = f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_chip.txt",
+        bamCoverage1_chip = expand(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_chip.{iter}.txt",
+                                    organism=ORGANISM, binsize=BINSIZE, iter=range(Ntimes)),
+        bamCoverage2_chip = expand(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_chip.{iter}.txt",
+                                    organism=ORGANISM, binsize=BINSIZE, iter=range(Ntimes)),
         # bamCoverage1_rna = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_rna.txt",
         # bamCoverage2_rna = f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_rna.txt",
         # bamCoverage1_wgs = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_wgs.txt",

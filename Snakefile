@@ -1,7 +1,7 @@
 # Adjust these if you want
 ORGANISM = "homo"
 FULL_GTF = False
-BINSIZE = 1
+BINSIZE = 100
 UPSTREAM = 500
 DOWNSTREAM = 1500
 
@@ -107,7 +107,7 @@ rule bamCompare2:
     benchmark:
         repeat(f"logs/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE
+        binsize = BINSIZE * 100
     threads: Nthreads
     conda: "v4.env.yaml"
     shell:
@@ -131,7 +131,7 @@ rule bamCompare1:
     benchmark:
         repeat(f"logs/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE
+        binsize = BINSIZE * 100
     threads: Nthreads
     conda: "v3.env.yaml"
     shell:
@@ -156,7 +156,7 @@ rule computeMatrix2:
     benchmark:
         repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE,
+        binsize = BINSIZE * 100,
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
     threads: Nthreads
@@ -182,7 +182,7 @@ rule computeMatrix1:
     benchmark:
         repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE,
+        binsize = BINSIZE * 100,
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
     threads: Nthreads

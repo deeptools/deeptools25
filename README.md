@@ -40,9 +40,4 @@ This is how it should look like:
 
 ## Run benchmark
 
-Adjust the variables at the top of `Snakefile` however you like it, and run:
-
-```{bash}
-conda activate snkmk
-snakemake --forcerun --use-conda --benchmark-extended --cores 12
-```
+Adjust the variables at the top of `Snakefile` however you like it, and then just `$ run.sh` ;)

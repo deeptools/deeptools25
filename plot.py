@@ -36,7 +36,7 @@ def read_benchmark(file_path):
     if platform.system() == "Darwin":
         Ntimes = len(memory)
         assert sum(memory) == 0, "Memory values are not all zeroes"
-        log_files = glob.glob("logs/*.txt")
+        log_files = glob.glob("logs/*_[0-9].txt")
         memory = parse_memory_from_logs(log_files)
         assert len(memory) == Ntimes, "Expected {} memory values, got {}".format(Ntimes, len(memory))
 

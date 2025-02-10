@@ -52,7 +52,7 @@ rule bamCoverage2:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/new2_{protocol}.bg",
+        bed = "output/bamCoverage2_{protocol}.bg",
         iter_file = "output/benchmark_iteration_bamCoverage2_{protocol}.txt"
     log:
         expand("logs/bamCoverage2_{protocol}_{n}.txt", protocol="{protocol}", n=range(1, Ntimes + 1))
@@ -75,7 +75,7 @@ rule bamCoverage1:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/new1_{protocol}.bg",
+        bed = "output/bamCoverage1_{protocol}.bg",
         iter_file = "output/benchmark_iteration_bamCoverage1_{protocol}.txt"
     log:
         expand("logs/bamCoverage1_{protocol}_{n}.txt", protocol="{protocol}", n=range(1, Ntimes + 1))
@@ -138,7 +138,7 @@ rule bamCoverage1:
 #         bw2 = "output/bamCompare2.bw",
 #         bed = GTF[ORGANISM]
 #     output:
-#         npz = "output/test_new2.npz"
+#         npz = "output/computeMatrix2.npz"
 #     log:
 #         f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
 #     benchmark:
@@ -160,7 +160,7 @@ rule bamCoverage1:
 #         bw1 = "output/bamCompare1.bw",
 #         bed = GTF[ORGANISM]
 #     output:
-#         npz = "output/test_new1.npz"
+#         npz = "output/computeMatrix1.npz"
 #     log:
 #         f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
 #     benchmark:
@@ -182,8 +182,8 @@ rule bamCoverage1:
 #     input:
 #         bam = FILES[ORGANISM + "_" + "wgs"]
 #     output:
-#         npz = "output/mb_summary2.npz",
-#         outraw = "output/mb_summary2.outraw.tab"
+#         npz = "output/multiBamSummary2.npz",
+#         outraw = "output/multiBamSummary2.outraw.tab"
 #     log:
 #         f"logs/multiBamSummary2__{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
 #     benchmark:
@@ -203,8 +203,8 @@ rule bamCoverage1:
 #     input:
 #         bam = FILES[ORGANISM + "_" + "wgs"]
 #     output:
-#         npz = "output/mb_summary1.npz",
-#         outraw = "output/mb_summary1.outraw.tab"
+#         npz = "output/multiBamSummary1.npz",
+#         outraw = "output/multiBamSummary1.outraw.tab"
 #     log:
 #         f"logs/multiBamSummary1__{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
 #     benchmark:

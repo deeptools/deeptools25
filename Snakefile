@@ -11,12 +11,14 @@ Nthreads = 16
 
 # Do not edit any further
 import platform
-if platform.system() == "Linux":
+system = platform.system()
+if system == "Linux":
     timeCmd = "/usr/bin/time -v"
-elif platform.system() == "Darwin":
+elif system == "Darwin":
     timeCmd = "/usr/bin/time -al"
 else:
-    raise ValueError("Unknown platform")
+    raise ValueError(f"Unsupported platform: {system}")
+
 
 if FULL_GTF:
     GTF = { "homo": "regions/homo.v91.full.gtf", "triticum": "regions/triticum.v60.full.gtf" }

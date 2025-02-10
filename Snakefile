@@ -223,18 +223,18 @@ rule bamCoverage1:
 
 rule plot_all_benchmarks:
     input:
-        bamCoverage1_chip = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_chip.txt",
-        bamCoverage2_chip = f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_chip.txt",
-        # bamCoverage1_rna = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_rna.txt",
-        # bamCoverage2_rna = f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_rna.txt",
-        # bamCoverage1_wgs = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_wgs.txt",
-        # bamCoverage2_wgs = f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_wgs.txt",
-        # bamCompare1 = f"output/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt",
-        # bamCompare2 = f"output/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt",
-        # computeMatrix1 = f"output/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt",
-        # computeMatrix2 = f"output/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt",
-        # multiBamSummary1 = f"output/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt",
-        # multiBamSummary2 = f"output/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt"
+        bamCoverage1_chip = f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_chip.txt",
+        bamCoverage2_chip = f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_chip.txt",
+        # bamCoverage1_rna = f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_rna.txt",
+        # bamCoverage2_rna = f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_rna.txt",
+        # bamCoverage1_wgs = f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_wgs.txt",
+        # bamCoverage2_wgs = f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_wgs.txt",
+        # bamCompare1 = f"logs/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt",
+        # bamCompare2 = f"logs/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt",
+        # computeMatrix1 = f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt",
+        # computeMatrix2 = f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt",
+        # multiBamSummary1 = f"logs/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt",
+        # multiBamSummary2 = f"logs/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt"
     output:
         bamCoverage_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_time.png",
         bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_mem.png",

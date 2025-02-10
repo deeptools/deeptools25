@@ -51,11 +51,9 @@ rule bamCoverage2:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/new2_{protocol}.{iter}.bg"
-    log:
-        f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{iter}}.txt"
+        bed = "output/new2_{protocol}.bg"
     benchmark:
-        f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.{{iter}}.txt"
+        repeat(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -63,18 +61,17 @@ rule bamCoverage2:
     shell:
         """
         mkdir -p $(dirname {output.bed})
-        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads} >{log} 2>&1 
+        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        echo "Current repeat: {wildcards.repeat}"
         """
 
 rule bamCoverage1:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/new1_{protocol}.{iter}.bg"
-    log:
-        f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{iter}}.txt"
+        bed = "output/new1_{protocol}.bg"
     benchmark:
-        f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.{{iter}}.txt"
+        repeat(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -82,7 +79,8 @@ rule bamCoverage1:
     shell:
         """
         mkdir -p $(dirname {output.bed})
-        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}  >{log} 2>&1
+        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
+        echo "Current repeat: {wildcards.repeat}"
         """
 
 
@@ -215,10 +213,8 @@ rule bamCoverage1:
 
 rule plot_all_benchmarks:
     input:
-        bamCoverage1_chip = expand(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_chip.{iter}.txt",
-                                    organism=ORGANISM, binsize=BINSIZE, iter=range(Ntimes)),
-        bamCoverage2_chip = expand(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_chip.{iter}.txt",
-                                    organism=ORGANISM, binsize=BINSIZE, iter=range(Ntimes)),
+        bamCoverage1_chip = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_chip.txt"
+        bamCoverage2_chip = f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_chip.txt"
         # bamCoverage1_rna = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_rna.txt",
         # bamCoverage2_rna = f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_rna.txt",
         # bamCoverage1_wgs = f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_wgs.txt",

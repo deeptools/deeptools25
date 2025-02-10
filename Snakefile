@@ -57,7 +57,7 @@ rule bamCoverage2:
     log:
         expand("logs/bamCoverage2_{protocol}_{n}.txt", protocol="{protocol}", n=range(1, Ntimes + 1))
     benchmark:
-        repeat(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
+        repeat(f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -80,7 +80,7 @@ rule bamCoverage1:
     log:
         expand("logs/bamCoverage1_{protocol}_{n}.txt", protocol="{protocol}", n=range(1, Ntimes + 1))
     benchmark:
-        repeat(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
+        repeat(f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
         binsize = BINSIZE
     threads: Nthreads
@@ -103,7 +103,7 @@ rule bamCoverage1:
 #     log:
 #         f"logs/bamCompare2_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
 #     benchmark:
-#         repeat(f"output/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
+#         repeat(f"logs/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
 #     params:
 #         binsize = BINSIZE
 #     threads: Nthreads
@@ -122,7 +122,7 @@ rule bamCoverage1:
 #     log:
 #         f"logs/bamCompare1_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
 #     benchmark:
-#         repeat(f"output/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
+#         repeat(f"logs/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
 #     params:
 #         binsize = BINSIZE
 #     threads: Nthreads
@@ -142,7 +142,7 @@ rule bamCoverage1:
 #     log:
 #         f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
 #     benchmark:
-#         repeat(f"output/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
+#         repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
 #     params:
 #         binsize = BINSIZE,
 #         upstream = UPSTREAM,
@@ -164,7 +164,7 @@ rule bamCoverage1:
 #     log:
 #         f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
 #     benchmark:
-#         repeat(f"output/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
+#         repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
 #     params:
 #         binsize = BINSIZE,
 #         upstream = UPSTREAM,
@@ -187,7 +187,7 @@ rule bamCoverage1:
 #     log:
 #         f"logs/multiBamSummary2__{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
 #     benchmark:
-#         repeat(f"output/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
+#         repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
 #     params:
 #         binsize = BINSIZE * 10000,
 #     threads: Nthreads
@@ -208,7 +208,7 @@ rule bamCoverage1:
 #     log:
 #         f"logs/multiBamSummary1__{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
 #     benchmark:
-#         repeat(f"output/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
+#         repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
 #     params:
 #         binsize = BINSIZE * 10000,
 #     threads: Nthreads

@@ -1,11 +1,11 @@
 # Adjust these if you want
-ORGANISM = "triticum"
+ORGANISM = "homo"
 FULL_GTF = False
 BINSIZE = 1
 UPSTREAM = 500
 DOWNSTREAM = 1500
 
-Ntimes = 1
+Ntimes = 3
 Nthreads = 16
 
 
@@ -16,7 +16,7 @@ if platform.system() == "Linux":
 elif platform.system() == "Darwin":
     timeCmd = "/usr/bin/time -al"
 else:
-    Raise ValueError("Unknown platform")
+    raise ValueError("Unknown platform")
 
 if FULL_GTF:
     GTF = { "homo": "regions/homo.v91.full.gtf", "triticum": "regions/triticum.v60.full.gtf" }
@@ -51,7 +51,7 @@ rule bamCoverage2:
     output:
         bed = "output/new2_{protocol}.bg"
     log:
-        repeat(f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{i}}.txt", i=range(Ntimes))
+        f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{wildcards.repeat}}.txt"
     benchmark:
         repeat(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
@@ -70,7 +70,7 @@ rule bamCoverage1:
     output:
         bed = "output/new1_{protocol}.bg"
     log:
-        repeat(f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{i}}.txt", i=range(Ntimes))
+        f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{wildcards.repeat}}.txt"
     benchmark:
         repeat(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
@@ -91,7 +91,7 @@ rule bamCompare2:
     output:
         bw = "output/bamCompare2.bw"
     log:
-        repeat(f"logs/bamCompare2_{ORGANISM}_bs{BINSIZE}_time.{{i}}.txt", i=range(Ntimes))
+        f"logs/bamCompare2_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
     benchmark:
         repeat(f"output/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -110,7 +110,7 @@ rule bamCompare1:
     output:
         bw = "output/bamCompare1.bw"
     log:
-        repeat(f"logs/bamCompare1_{ORGANISM}_bs{BINSIZE}_time.{{i}}.txt", i=range(Ntimes))
+        f"logs/bamCompare1_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
     benchmark:
         repeat(f"output/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -130,7 +130,7 @@ rule computeMatrix2:
     output:
         npz = "output/test_new2.npz"
     log:
-        repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}_time.{{i}}.txt", i=range(Ntimes))
+        f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
     benchmark:
         repeat(f"output/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -152,7 +152,7 @@ rule computeMatrix1:
     output:
         npz = "output/test_new1.npz"
     log:
-        repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}_time.{{i}}.txt", i=range(Ntimes))
+        f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
     benchmark:
         repeat(f"output/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -175,7 +175,7 @@ rule multiBamSummary2:
         npz = "output/mb_summary2.npz",
         outraw = "output/mb_summary2.outraw.tab"
     log:
-        repeat(f"logs/multiBamSummary2__{ORGANISM}_bs{BINSIZE}_time.{{i}}.txt", i=range(Ntimes))
+        f"logs/multiBamSummary2__{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
     benchmark:
         repeat(f"output/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -196,7 +196,7 @@ rule multiBamSummary1:
         npz = "output/mb_summary1.npz",
         outraw = "output/mb_summary1.outraw.tab"
     log:
-        repeat(f"logs/multiBamSummary1__{ORGANISM}_bs{BINSIZE}_time.{{i}}.txt", i=range(Ntimes))
+        f"logs/multiBamSummary1__{ORGANISM}_bs{BINSIZE}_time.{{wildcards.repeat}}.txt"
     benchmark:
         repeat(f"output/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:

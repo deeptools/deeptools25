@@ -51,7 +51,7 @@ rule bamCoverage2:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/new2_{protocol}.bg"
+        bed = "output/new2_{protocol}.{iter}.bg"
     log:
         f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{iter}}.txt"
     benchmark:
@@ -70,7 +70,7 @@ rule bamCoverage1:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/new1_{protocol}.bg"
+        bed = "output/new1_{protocol}.{iter}.bg"
     log:
         f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}_time.{{iter}}.txt"
     benchmark:

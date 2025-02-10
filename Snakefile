@@ -47,11 +47,15 @@ rule all:
         # expand("output/multiBamSummary_{organism}_bs{binsize}_{type}.png",
         #        organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"])
 
+
 rule bamCoverage2:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/new2_{protocol}.bg"
+        bed = "output/new2_{protocol}.bg",
+        iter_file = "output/benchmark_iteration_bamCoverage2_{protocol}.txt"
+    log:
+        expand("logs/bamCoverage2_{n}.txt", n=range(1, Ntimes + 1))
     benchmark:
         repeat(f"output/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
@@ -61,15 +65,20 @@ rule bamCoverage2:
     shell:
         """
         mkdir -p $(dirname {output.bed})
-        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
-        echo "Current repeat: {wildcards.repeat}"
+        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads} >logs/bamCoverage2_${{curr_iter}}.txt 2>&1
+        echo $curr_iter > {output.iter_file}
         """
+
 
 rule bamCoverage1:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
         bed = "output/new1_{protocol}.bg"
+        iter_file = "output/benchmark_iteration_bamCoverage1_{protocol}.txt"
+    log:
+        expand("logs/bamCoverage1_{n}.txt", n=range(1, Ntimes + 1))
     benchmark:
         repeat(f"output/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
@@ -79,8 +88,9 @@ rule bamCoverage1:
     shell:
         """
         mkdir -p $(dirname {output.bed})
-        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads}
-        echo "Current repeat: {wildcards.repeat}"
+        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph -bs {params.binsize} -p {threads} >logs/bamCoverage1_${{curr_iter}}.txt 2>&1
+        echo $curr_iter > {output.iter_file}
         """
 
 

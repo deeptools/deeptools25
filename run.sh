@@ -1,10 +1,6 @@
 #!/bin/bash
-\rm -rf ./output/*
-\rm -rf ./logs/*
-git pull || :
-snakemake \
-    --cores $(nproc --all) \
-    --latency-wait 120 \
-    --forcerun \
-    --use-conda \
-    --benchmark-extended
+set -euo pipefail
+mkdir -p ./{output,logs} && rm -rf ./{output,logs}/*
+git pull && snakemake --use-conda \
+    --forcerun --benchmark-extended \
+    --cores $(nproc --all)

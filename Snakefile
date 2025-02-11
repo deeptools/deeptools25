@@ -3,7 +3,7 @@ ORGANISM = "homo"
 FULL_GTF = False
 BINSIZE = 100
 UPSTREAM = 500
-DOWNSTREAM = 1500
+DOWNSTREAM = 2000
 
 Ntimes = 2
 Nthreads = 16
@@ -156,7 +156,7 @@ rule computeMatrix2:
     benchmark:
         repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 100,
+        binsize = BINSIZE * 10,
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
     threads: Nthreads
@@ -182,7 +182,7 @@ rule computeMatrix1:
     benchmark:
         repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 100,
+        binsize = BINSIZE * 10,
         upstream = UPSTREAM,
         downstream = DOWNSTREAM
     threads: Nthreads

@@ -69,11 +69,7 @@ rule bamCoverage2:
     conda: "v4.env.yaml"
     shell:
         """
-        if [ -f {output.iter_file} ]; then
-            curr_iter=$(cat {output.iter_file})
-        else
-            curr_iter=1
-        fi
+        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph \
             -bs {params.binsize} -p {threads} \
                 >logs/bamCoverage2_{wildcards.protocol}_${{curr_iter}}.txt 2>&1
@@ -95,11 +91,7 @@ rule bamCoverage1:
     conda: "v3.env.yaml"
     shell:
         """
-        if [ -f {output.iter_file} ]; then
-            curr_iter=$(cat {output.iter_file})
-        else
-            curr_iter=1
-        fi
+        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph \
             -bs {params.binsize} -p {threads} \
                 >logs/bamCoverage1_{wildcards.protocol}_${{curr_iter}}.txt 2>&1
@@ -122,11 +114,7 @@ rule bamCompare2:
     conda: "v4.env.yaml"
     shell:
         """
-        if [ -f {output.iter_file} ]; then
-            curr_iter=$(cat {output.iter_file})
-        else
-            curr_iter=1
-        fi
+        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o {output.bw} -bs {params.binsize} -p {threads} \
                 >logs/bamCompare2_${{curr_iter}}.txt 2>&1
@@ -149,11 +137,7 @@ rule bamCompare1:
     conda: "v3.env.yaml"
     shell:
         """
-        if [ -f {output.iter_file} ]; then
-            curr_iter=$(cat {output.iter_file})
-        else
-            curr_iter=1
-        fi
+        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o {output.bw} -bs {params.binsize} -p {threads} \
                 >logs/bamCompare1_${{curr_iter}}.txt 2>&1
@@ -180,11 +164,7 @@ rule computeMatrix2:
     conda: "v4.env.yaml"
     shell:
         """
-        if [ -f {output.iter_file} ]; then
-            curr_iter=$(cat {output.iter_file})
-        else
-            curr_iter=1
-        fi
+        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         {timeCmd} computeMatrix reference-point -S {input.bw2} -R {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                 >logs/computeMatrix2_${{curr_iter}}.txt 2>&1
@@ -211,11 +191,7 @@ rule computeMatrix1:
     conda: "v3.env.yaml"
     shell:
         """
-        if [ -f {output.iter_file} ]; then
-            curr_iter=$(cat {output.iter_file})
-        else
-            curr_iter=1
-        fi
+        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         {timeCmd} computeMatrix reference-point -S {input.bw1} -R {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                 >logs/computeMatrix1_${{curr_iter}}.txt 2>&1
@@ -240,11 +216,7 @@ rule multiBamSummary2:
     conda: "v4.env.yaml"
     shell:
         """
-        if [ -f {output.iter_file} ]; then
-            curr_iter=$(cat {output.iter_file})
-        else
-            curr_iter=1
-        fi
+        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         {timeCmd} multiBamSummary bins -b {input.bam} -o {output.npz} --outRawCounts {output.outraw} \
             -bs {params.binsize} -p {threads} \
                 >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
@@ -269,11 +241,7 @@ rule multiBamSummary1:
     conda: "v3.env.yaml"
     shell:
         """
-        if [ -f {output.iter_file} ]; then
-            curr_iter=$(cat {output.iter_file})
-        else
-            curr_iter=1
-        fi
+        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         {timeCmd} multiBamSummary bins -b {input.bam} -o {output.npz} --outRawCounts {output.outraw} \
             -bs {params.binsize} -p {threads} \
                 >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1

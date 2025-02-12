@@ -2,6 +2,7 @@
 import glob
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import platform
 import sys
 
@@ -57,6 +58,28 @@ def parse_memory_from_logs(log_files):
                     memory_values.append(memory_value)
                     break  # Go to next log file
     return memory_values
+
+def create_benchmark_df(file_paths_python, file_paths_rust):
+    dfs = []
+    for cmd in ['bamCoverage', 'bamCompare', 'computeMatrix', 'multiBamSummary']:
+        data_py = read_benchmark(file_paths_python[cmd])
+        df_py = pd.DataFrame({
+            'Cmd': cmd,
+            'Backend': 'Python',
+            'Trial': range(1, len(data_py['times']) + 1),
+            'Time': data_py['times'],
+            'Memory': data_py['memory']
+        })
+        data_rust = read_benchmark(file_paths_rust[cmd])
+        df_rust = pd.DataFrame({
+            'Cmd': cmd,
+            'Backend': 'Rust',
+            'Trial': range(1, len(data_rust['times']) + 1),
+            'Time': data_rust['times'],
+            'Memory': data_rust['memory']
+        })
+        dfs.extend([df_py, df_rust])
+    return pd.concat(dfs, ignore_index=True)
 
 def make_boxplot(data1, data2, title, ylabel):
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -114,3 +137,16 @@ if __name__ == '__main__':
         
         mem_fig = make_boxplot(data1['memory'], data2['memory'], 'Memory Usage Comparison', 'Memory (MB)')
         mem_fig.savefig(output_template.replace('.png', '_mem.png'))
+    
+    dfs = []
+    for cmd_pair in zip(['bamCoverage', 'bamCompare', 'computeMatrix', 'multiBamSummary'], 
+                        sys.argv[2].split(','), 
+                        sys.argv[3].split(',')):
+        cmd, py_file, rust_file = cmd_pair
+        dfs.append(create_benchmark_df(py_file, cmd, 'Python', 1))
+        dfs.append(create_benchmark_df(py_file, cmd, 'Python', 2))
+        dfs.append(create_benchmark_df(rust_file, cmd, 'Rust', 1))
+        dfs.append(create_benchmark_df(rust_file, cmd, 'Rust', 2))
+
+    final_df = pd.concat(dfs, ignore_index=True)
+    final_df.to_csv('benchmark_results.csv', index=False)

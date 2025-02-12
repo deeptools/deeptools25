@@ -1,9 +1,15 @@
 # Adjust these if you want
 ORGANISM = "homo"
 FULL_GTF = False
-BINSIZE = 100
-UPSTREAM = 1000
-DOWNSTREAM = 2000
+BINSIZE = 10
+
+# Actual bin size will be the result of multiplication by these
+BinFactors = {
+    "bamCoverage": 50,
+    "bamCompare": 100,
+    "computeMatrix": 100,
+    "multiBamSummary": 500,
+}
 
 Ntimes = 2
 Nthreads = 16
@@ -56,7 +62,7 @@ rule bamCoverage2:
     benchmark:
         repeat(f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
-        binsize = BINSIZE
+        binsize = BINSIZE * BinFactors["bamCoverage"]
     threads: Nthreads
     conda: "v4.env.yaml"
     shell:
@@ -78,7 +84,7 @@ rule bamCoverage1:
     benchmark:
         repeat(f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
-        binsize = BINSIZE
+        binsize = BINSIZE * BinFactors["bamCoverage"]
     threads: Nthreads
     conda: "v3.env.yaml"
     shell:
@@ -101,7 +107,7 @@ rule bamCompare2:
     benchmark:
         repeat(f"logs/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 100
+        binsize = BINSIZE * BinFactors["bamCompare"]
     threads: Nthreads
     conda: "v4.env.yaml"
     shell:
@@ -124,7 +130,7 @@ rule bamCompare1:
     benchmark:
         repeat(f"logs/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 100
+        binsize = BINSIZE * BinFactors["bamCompare"]
     threads: Nthreads
     conda: "v3.env.yaml"
     shell:
@@ -149,9 +155,9 @@ rule computeMatrix2:
     benchmark:
         repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 10,
-        upstream = UPSTREAM,
-        downstream = DOWNSTREAM
+        binsize = BINSIZE * BinFactors["computeMatrix"],
+        upstream = 2 * BINSIZE * BinFactors["computeMatrix"],
+        downstream = 2 * BINSIZE * BinFactors["computeMatrix"]
     threads: Nthreads
     conda: "v4.env.yaml"
     shell:
@@ -176,9 +182,9 @@ rule computeMatrix1:
     benchmark:
         repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 10,
-        upstream = UPSTREAM,
-        downstream = DOWNSTREAM
+        binsize = BINSIZE * BinFactors["computeMatrix"],
+        upstream = 2 * BINSIZE * BinFactors["computeMatrix"],
+        downstream = 2 * BINSIZE * BinFactors["computeMatrix"]
     threads: Nthreads
     conda: "v3.env.yaml"
     shell:
@@ -203,7 +209,7 @@ rule multiBamSummary2:
     benchmark:
         repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 5000
+        binsize = BINSIZE * BinFactors["multiBamSummary"]
     threads: Nthreads
     conda: "v4.env.yaml"
     shell:
@@ -228,7 +234,7 @@ rule multiBamSummary1:
     benchmark:
         repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 5000
+        binsize = BINSIZE * BinFactors["multiBamSummary"]
     threads: Nthreads
     conda: "v3.env.yaml"
     shell:

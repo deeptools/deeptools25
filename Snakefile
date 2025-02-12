@@ -150,8 +150,6 @@ rule computeMatrix2:
     output:
         npz = "output/computeMatrix2.npz",
         iter_file = "output/benchmark_iteration_computeMatrix2.txt"
-    log:
-        expand("logs/computeMatrix2_{n}.txt", n=range(1, Ntimes + 1))
     benchmark:
         repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -177,8 +175,6 @@ rule computeMatrix1:
     output:
         npz = "output/computeMatrix1.npz",
         iter_file = "output/benchmark_iteration_computeMatrix1.txt"
-    log:
-        expand("logs/computeMatrix1_{n}.txt", n=range(1, Ntimes + 1))
     benchmark:
         repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -204,8 +200,6 @@ rule multiBamSummary2:
         npz = "output/multiBamSummary2.npz",
         outraw = "output/multiBamSummary2.outraw.tab",
         iter_file = "output/benchmark_iteration_multiBamSummary2.txt"
-    log:
-        expand("logs/multiBamSummary2_{n}.txt", n=range(1, Ntimes + 1))
     benchmark:
         repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -229,8 +223,6 @@ rule multiBamSummary1:
         npz = "output/multiBamSummary1.npz",
         outraw = "output/multiBamSummary1.outraw.tab",
         iter_file = "output/benchmark_iteration_multiBamSummary1.txt"
-    log:
-        expand("logs/multiBamSummary1_{n}.txt", n=range(1, Ntimes + 1))
     benchmark:
         repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:

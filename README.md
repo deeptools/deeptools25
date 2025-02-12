@@ -1,15 +1,12 @@
 ### Dependencies
 
-#### Manually
-
 1. Install `rustc` >= 1.73
 1. Install `Clang`, `matplotlib` and `Snakemake`. For example: `conda create -n snkmk clang-19 matplotlib snakemake bedtools ucsc-bigwiginfo`
 
-#### Devcontainer
+> [!NOTE]
+> Alternatively, you can use any modern IDE with [Devcontainers](https://code.visualstudio.com/docs/devcontainers/containers) support.
 
-Alternatively, you can use any modern IDE with [Devcontainers](https://code.visualstudio.com/docs/devcontainers/containers) support. DISCLAIMER: The benchmarking was only run on native Linux.
-
-### Download data
+#### Download data
 
 1. **Download the data from [here](https://zenodo.org/record/14760356)** (`10.5281/zenodo.14760356`), put these BAM files under `zenodo/` directory.
 1. **Get GTF files from Ensembl for human and/ or wheat**. Put these under `regions/` directory. If you are not inclined into benchmarking on full transcriptome, downsample those files like this: `grep 'transcript_id' homo.v91.full.gtf | shuf | head -n 1000 | bedtools sort -i - > homo.v91.sample.gtf`
@@ -40,9 +37,4 @@ This is how it should look like:
 
 ## Run benchmark
 
-Adjust the variables at the top of `Snakefile` however you like it, and run:
-
-```{bash}
-conda activate snkmk
-snakemake --forcerun --use-conda --benchmark-extended --cores 12
-```
+Adjust the variables at the top of `Snakefile` however you like it, and then just `$ run.sh` ;)

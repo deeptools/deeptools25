@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+import glob
 import matplotlib.pyplot as plt
 import numpy as np
+import platform
 import sys
 
 def read_benchmark(file_path):
+    command = file_path.split('/')[1].split('_')[0]
     times = []
     memory = []
     cpu_usage = []
@@ -27,12 +30,33 @@ def read_benchmark(file_path):
             mean_load.append(float(parts[8]))
             cpu_time.append(float(parts[9]))
             cpu_usage.append(float(parts[15].split()[0]))
-            
+
+    # This is a workaround for macOS, where the memory values are all zeroes...
+    # although Snakemake uses psutil, and it seems to work fine on macOS :/
+    # https://psutil.readthedocs.io/en/latest/index.html#psutil.Process.memory_info
+    if platform.system() == "Darwin":
+        Ntimes = len(memory)
+        assert sum(memory) == 0, "Memory values are not all zeroes"
+        log_files = glob.glob(f"logs/{command}[1-2]_[0-9]+.txt")
+        memory = parse_memory_from_logs(log_files)
+        assert len(memory) == Ntimes, "Expected {} memory values, got {}".format(Ntimes, len(memory))
+
     return {
         'times': times, 'memory': memory, 'cpu_usage': cpu_usage,
         'io_in': io_in, 'io_out': io_out, 'mean_load': mean_load,
         'cpu_time': cpu_time, 'max_uss': max_uss, 'max_pss': max_pss
     }
+
+def parse_memory_from_logs(log_files):
+    memory_values = []
+    for log_file in log_files:
+        with open(log_file, 'r') as file:
+            for line in file:
+                if "maximum resident set size" in line:
+                    memory_value = int(line.split()[0])
+                    memory_values.append(memory_value)
+                    break  # Go to next log file
+    return memory_values
 
 def make_boxplot(data1, data2, title, ylabel):
     fig, ax = plt.subplots(figsize=(8, 5))

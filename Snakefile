@@ -8,13 +8,6 @@ DOWNSTREAM = 2000
 Ntimes = 2
 Nthreads = 16
 
-import os
-def get_iteration(file_path):
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
-            return f.read().strip()
-    else:
-        return "1"
 
 # Do not edit any further
 import platform
@@ -25,7 +18,6 @@ elif system == "Darwin":
     timeCmd = "/usr/bin/time -al"
 else:
     raise ValueError(f"Unsupported platform: {system}")
-
 
 if FULL_GTF:
     GTF = { "homo": "regions/homo.v91.full.gtf", "triticum": "regions/triticum.v60.full.gtf" }

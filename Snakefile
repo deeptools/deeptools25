@@ -8,6 +8,13 @@ DOWNSTREAM = 2000
 Ntimes = 2
 Nthreads = 16
 
+import os
+def get_iteration(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            return f.read().strip()
+    else:
+        return "1"
 
 # Do not edit any further
 import platform
@@ -62,10 +69,15 @@ rule bamCoverage2:
     conda: "v4.env.yaml"
     shell:
         """
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        if [ -f {output.iter_file} ]; then
+            curr_iter=$(cat {output.iter_file})
+        else
+            curr_iter=1
+        fi
         {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph \
             -bs {params.binsize} -p {threads} \
                 >logs/bamCoverage2_{wildcards.protocol}_${{curr_iter}}.txt 2>&1
+        curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
 
@@ -83,18 +95,22 @@ rule bamCoverage1:
     conda: "v3.env.yaml"
     shell:
         """
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        if [ -f {output.iter_file} ]; then
+            curr_iter=$(cat {output.iter_file})
+        else
+            curr_iter=1
+        fi
         {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph \
             -bs {params.binsize} -p {threads} \
                 >logs/bamCoverage1_{wildcards.protocol}_${{curr_iter}}.txt 2>&1
+        curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
 
-
 rule bamCompare2:
     input:
-        bam1 = FILES[ORGANISM + "_chip"],
-        bam2 = FILES[ORGANISM + "_wgs"]
+        bam1 = lambda wildcards: FILES[ORGANISM + "_chip"],
+        bam2 = lambda wildcards: FILES[ORGANISM + "_wgs"]
     output:
         bw = "output/bamCompare2.bw",
         iter_file = "output/benchmark_iteration_bamCompare2.txt"
@@ -106,17 +122,22 @@ rule bamCompare2:
     conda: "v4.env.yaml"
     shell:
         """
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        if [ -f {output.iter_file} ]; then
+            curr_iter=$(cat {output.iter_file})
+        else
+            curr_iter=1
+        fi
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o {output.bw} -bs {params.binsize} -p {threads} \
                 >logs/bamCompare2_${{curr_iter}}.txt 2>&1
+        curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
 
 rule bamCompare1:
     input:
-        bam1 = FILES[ORGANISM + "_chip"],
-        bam2 = FILES[ORGANISM + "_wgs"]
+        bam1 = lambda wildcards: FILES[ORGANISM + "_chip"],
+        bam2 = lambda wildcards: FILES[ORGANISM + "_wgs"]
     output:
         bw = "output/bamCompare1.bw",
         iter_file = "output/benchmark_iteration_bamCompare1.txt"
@@ -128,20 +149,24 @@ rule bamCompare1:
     conda: "v3.env.yaml"
     shell:
         """
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        if [ -f {output.iter_file} ]; then
+            curr_iter=$(cat {output.iter_file})
+        else
+            curr_iter=1
+        fi
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o {output.bw} -bs {params.binsize} -p {threads} \
-                >logs/bamCompare2_${{curr_iter}}.txt 2>&1
+                >logs/bamCompare1_${{curr_iter}}.txt 2>&1
+        curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
-
 
 rule computeMatrix2:
     input:
         bw2 = "output/bamCompare2.bw",
         bed = GTF[ORGANISM]
     output:
-        npz = "output/bamCompare2.npz",
+        npz = "output/computeMatrix2.npz",
         iter_file = "output/benchmark_iteration_computeMatrix2.txt"
     log:
         expand("logs/computeMatrix2_{n}.txt", n=range(1, Ntimes + 1))
@@ -155,10 +180,15 @@ rule computeMatrix2:
     conda: "v4.env.yaml"
     shell:
         """
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} computeMatrix reference-point -S {input.bw2} {input.bw2} -R {input.bed} {input.bed} -o {output.npz} \
+        if [ -f {output.iter_file} ]; then
+            curr_iter=$(cat {output.iter_file})
+        else
+            curr_iter=1
+        fi
+        {timeCmd} computeMatrix reference-point -S {input.bw2} -R {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                 >logs/computeMatrix2_${{curr_iter}}.txt 2>&1
+        curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
 
@@ -167,7 +197,7 @@ rule computeMatrix1:
         bw1 = "output/bamCompare1.bw",
         bed = GTF[ORGANISM]
     output:
-        npz = "output/bamCompare1.npz",
+        npz = "output/computeMatrix1.npz",
         iter_file = "output/benchmark_iteration_computeMatrix1.txt"
     log:
         expand("logs/computeMatrix1_{n}.txt", n=range(1, Ntimes + 1))
@@ -181,13 +211,17 @@ rule computeMatrix1:
     conda: "v3.env.yaml"
     shell:
         """
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} computeMatrix reference-point -S {input.bw1} {input.bw1} -R {input.bed} {input.bed} -o {output.npz} \
+        if [ -f {output.iter_file} ]; then
+            curr_iter=$(cat {output.iter_file})
+        else
+            curr_iter=1
+        fi
+        {timeCmd} computeMatrix reference-point -S {input.bw1} -R {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                 >logs/computeMatrix1_${{curr_iter}}.txt 2>&1
+        curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
-
 
 rule multiBamSummary2:
     input:
@@ -201,16 +235,20 @@ rule multiBamSummary2:
     benchmark:
         repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 10000
+        binsize = BINSIZE * 10
     threads: Nthreads
     conda: "v4.env.yaml"
     shell:
         """
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
-            --outRawCounts {output.outraw} \
+        if [ -f {output.iter_file} ]; then
+            curr_iter=$(cat {output.iter_file})
+        else
+            curr_iter=1
+        fi
+        {timeCmd} multiBamSummary bins -b {input.bam} -o {output.npz} --outRawCounts {output.outraw} \
             -bs {params.binsize} -p {threads} \
                 >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
+        curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
 
@@ -226,16 +264,20 @@ rule multiBamSummary1:
     benchmark:
         repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 10000
+        binsize = BINSIZE * 10
     threads: Nthreads
     conda: "v3.env.yaml"
     shell:
         """
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} multiBamSummary bins --bamfiles {input.bam} {input.bam} -o {output.npz} \
-            --outRawCounts {output.outraw} \
+        if [ -f {output.iter_file} ]; then
+            curr_iter=$(cat {output.iter_file})
+        else
+            curr_iter=1
+        fi
+        {timeCmd} multiBamSummary bins -b {input.bam} -o {output.npz} --outRawCounts {output.outraw} \
             -bs {params.binsize} -p {threads} \
                 >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
+        curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
 

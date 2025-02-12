@@ -6,6 +6,7 @@ import platform
 import sys
 
 def read_benchmark(file_path):
+    command = file_path.split('/')[1].split('_')[0]
     times = []
     memory = []
     cpu_usage = []
@@ -36,7 +37,7 @@ def read_benchmark(file_path):
     if platform.system() == "Darwin":
         Ntimes = len(memory)
         assert sum(memory) == 0, "Memory values are not all zeroes"
-        log_files = glob.glob("logs/*_[0-9].txt")
+        log_files = glob.glob(f"logs/{command}[1-2]_[0-9]+.txt")
         memory = parse_memory_from_logs(log_files)
         assert len(memory) == Ntimes, "Expected {} memory values, got {}".format(Ntimes, len(memory))
 

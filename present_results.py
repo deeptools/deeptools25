@@ -33,7 +33,7 @@ def read_benchmark(file_path):
             cpu_usage.append(float(parts[15].split()[0]))
 
     # This is a workaround for macOS, where the memory values are all zeroes...
-    # although Snakemake uses psutil, and it seems to work fine on macOS :/
+    # although Snakemake uses psutil, and it claims to support macOS :/
     # https://psutil.readthedocs.io/en/latest/index.html#psutil.Process.memory_info
     if platform.system() == "Darwin":
         Ntimes = len(memory)

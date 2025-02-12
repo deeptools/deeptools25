@@ -49,10 +49,10 @@ rule all:
                organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"]),
         expand("output/bamCompare_{organism}_bs{binsize}_{type}.png", 
                organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"]),
-        # expand("output/computeMatrix_{organism}_bs{binsize}_{type}.png", 
-        #        organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"]),
-        # expand("output/multiBamSummary_{organism}_bs{binsize}_{type}.png",
-        #        organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"])
+        expand("output/computeMatrix_{organism}_bs{binsize}_{type}.png", 
+               organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"]),
+        expand("output/multiBamSummary_{organism}_bs{binsize}_{type}.png",
+               organism=ORGANISM, binsize=BINSIZE, type=["time", "mem"])
 
 
 rule bamCoverage2:
@@ -260,25 +260,25 @@ rule plot_all_benchmarks:
         bamCoverage2_wgs = f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_wgs.txt",
         bamCompare1 = f"logs/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt",
         bamCompare2 = f"logs/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt",
-        # computeMatrix1 = f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt",
-        # computeMatrix2 = f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt",
-        # multiBamSummary1 = f"logs/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt",
-        # multiBamSummary2 = f"logs/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt"
+        computeMatrix1 = f"logs/computeMatrix1_{ORGANISM}_bs{BINSIZE}.txt",
+        computeMatrix2 = f"logs/computeMatrix2_{ORGANISM}_bs{BINSIZE}.txt",
+        multiBamSummary1 = f"logs/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt",
+        multiBamSummary2 = f"logs/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt"
     output:
         bamCoverage_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_time.png",
         bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BINSIZE}_mem.png",
         bamCompare_time_plot = f"output/bamCompare_{ORGANISM}_bs{BINSIZE}_time.png",
         bamCompare_mem_plot = f"output/bamCompare_{ORGANISM}_bs{BINSIZE}_mem.png",
-        # computeMatrix_time_plot = f"output/computeMatrix_{ORGANISM}_bs{BINSIZE}_time.png",
-        # computeMatrix_mem_plot = f"output/computeMatrix_{ORGANISM}_bs{BINSIZE}_mem.png",
-        # multiBamSummary_time_plot = f"output/multiBamSummary_{ORGANISM}_bs{BINSIZE}_time.png",
-        # multiBamSummary_mem_plot = f"output/multiBamSummary_{ORGANISM}_bs{BINSIZE}_mem.png"
+        computeMatrix_time_plot = f"output/computeMatrix_{ORGANISM}_bs{BINSIZE}_time.png",
+        computeMatrix_mem_plot = f"output/computeMatrix_{ORGANISM}_bs{BINSIZE}_mem.png",
+        multiBamSummary_time_plot = f"output/multiBamSummary_{ORGANISM}_bs{BINSIZE}_time.png",
+        multiBamSummary_mem_plot = f"output/multiBamSummary_{ORGANISM}_bs{BINSIZE}_mem.png"
     shell:
         """
         python3 present_results.py output/bamCoverage_{ORGANISM}_bs{BINSIZE}.png \
             {input.bamCoverage1_chip},{input.bamCoverage1_rna},{input.bamCoverage1_wgs} \
             {input.bamCoverage2_chip},{input.bamCoverage2_rna},{input.bamCoverage2_wgs}
         python3 present_results.py output/bamCompare_{ORGANISM}_bs{BINSIZE}.png {input.bamCompare1} {input.bamCompare2}
-        # python3 present_results.py output/computeMatrix_{ORGANISM}_bs{BINSIZE}.png {input.computeMatrix1} {input.computeMatrix2}
-        # python3 present_results.py output/multiBamSummary_{ORGANISM}_bs{BINSIZE}.png {input.multiBamSummary1} {input.multiBamSummary2}
+        python3 present_results.py output/computeMatrix_{ORGANISM}_bs{BINSIZE}.png {input.computeMatrix1} {input.computeMatrix2}
+        python3 present_results.py output/multiBamSummary_{ORGANISM}_bs{BINSIZE}.png {input.multiBamSummary1} {input.multiBamSummary2}
         """

@@ -52,7 +52,8 @@ rule bamCoverage2:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/bamCoverage2_{protocol}.bg"
+        bed = "output/bamCoverage2_{protocol}.bg",
+        iter_file = "output/benchmark_iteration_bamCoverage2_{protocol}.txt"
     benchmark:
         repeat(f"logs/bamCoverage2_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
@@ -72,7 +73,10 @@ rule bamCoverage1:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/bamCoverage1_{protocol}.bg"
+        bed = "output/bamCoverage1_{protocol}.bg",
+        iter_file = "output/benchmark_iteration_bamCoverage1_{protocol}.txt"
+    log:
+        expand("logs/bamCoverage1_{protocol}_{n}.txt", protocol="{protocol}", n=range(1, Ntimes + 1))
     benchmark:
         repeat(f"logs/bamCoverage1_{ORGANISM}_bs{BINSIZE}_{{protocol}}.txt", Ntimes)
     params:
@@ -94,7 +98,10 @@ rule bamCompare2:
         bam1 = FILES[ORGANISM + "_chip"],
         bam2 = FILES[ORGANISM + "_wgs"]
     output:
-        bw = "output/bamCompare2.bw"
+        bw = "output/bamCompare2.bw",
+        iter_file = "output/benchmark_iteration_bamCompare2.txt"
+    log:
+        expand("logs/bamCompare2_{n}.txt", n=range(1, Ntimes + 1))
     benchmark:
         repeat(f"logs/bamCompare2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
@@ -115,7 +122,10 @@ rule bamCompare1:
         bam1 = FILES[ORGANISM + "_chip"],
         bam2 = FILES[ORGANISM + "_wgs"]
     output:
-        bw = "output/bamCompare1.bw"
+        bw = "output/bamCompare1.bw",
+        iter_file = "output/benchmark_iteration_bamCompare1.txt"
+    log:
+        expand("logs/bamCompare1_{n}.txt", n=range(1, Ntimes + 1))
     benchmark:
         repeat(f"logs/bamCompare1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:

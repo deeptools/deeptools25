@@ -211,7 +211,7 @@ rule multiBamSummary2:
     benchmark:
         repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 10
+        binsize = BINSIZE * 5000
     threads: Nthreads
     conda: "v4.env.yaml"
     shell:
@@ -236,7 +236,7 @@ rule multiBamSummary1:
     benchmark:
         repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BINSIZE}.txt", Ntimes)
     params:
-        binsize = BINSIZE * 10
+        binsize = BINSIZE * 5000
     threads: Nthreads
     conda: "v3.env.yaml"
     shell:

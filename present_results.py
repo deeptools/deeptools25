@@ -7,7 +7,7 @@ import platform
 import sys
 
 def read_benchmark(file_path):
-    command = file_path.split('/')[1].split('_')[0]
+    command = file_path.split('/')[1].split('_')[0][:-1]  # this could've been a RegEx :/
     times = []
     memory = []
     cpu_usage = []

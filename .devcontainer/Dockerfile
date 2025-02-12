@@ -18,4 +18,6 @@ RUN /opt/conda/bin/conda create -n snkmk -c conda-forge -c bioconda \
 ARG USERNAME
 RUN useradd -m -s /bin/bash ${USERNAME} \
     && chown -R ${USERNAME}:${USERNAME} /opt/conda/pkgs
+RUN mkdir -p /usr/local/cargo \
+    && chown -R ${USERNAME}:${USERNAME} /usr/local/cargo
 USER ${USERNAME}

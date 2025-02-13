@@ -4,14 +4,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import platform
+import re
 import sys
 
 def read_benchmark(file_path):
-    # E.g. file_path = 'logs/bamCompare1_homo_bs100.txt' :
-    # cmd = bamCompare1 // command = bamCompare // backend = 1
-    cmd = file_path.split('/')[1].split('_')[0]
-    command = cmd[:-1]
-    backend = cmd[-1:]
+    print(f"Reading {file_path}")
+
+    match = re.search(r'/(\w+?)(\d+)_(?:.*?)(?:_(\w+))?\.txt', file_path)
+    command = match.group(1)    # gets 'bamCompare' or 'bamCoverage'
+    backend = match.group(2)    # gets '1'
+    protocol = match.group(3)   # gets 'chip' or None
+
     times = []
     memory = []
     cpu_usage = []
@@ -42,7 +45,11 @@ def read_benchmark(file_path):
     if platform.system() == "Darwin":
         Ntimes = len(memory)
         assert sum(memory) == 0, "Memory values are not all zeroes"
-        log_files = glob.glob(f"logs/{command}{backend}_[0-9]*.txt")
+        if command == 'bamCoverage':
+            assert protocol is not None, "We couldn't retrieve protocol from {file_path}"
+            log_files = glob.glob(f"logs/{command}{backend}_{protocol}_[0-9]*.txt")
+        else:
+            log_files = glob.glob(f"logs/{command}{backend}_[0-9]*.txt")
         memory = parse_memory_from_logs(log_files)
         assert len(memory) == Ntimes, "Expected {} memory values but got {}, {}".format(Ntimes, len(memory), memory)
 
@@ -52,7 +59,11 @@ def read_benchmark(file_path):
         'cpu_time': cpu_time, 'max_uss': max_uss, 'max_pss': max_pss
     }
 
-    pd.DataFrame(results).to_csv(f"output/{command}{backend}.csv", index=False)
+    # Save results to a CSV file
+    if protocol:
+        pd.DataFrame(results).to_csv(f"output/{command}{backend}_{protocol}.csv", index=False)
+    else:
+        pd.DataFrame(results).to_csv(f"output/{command}{backend}.csv", index=False)
     
     return results
 

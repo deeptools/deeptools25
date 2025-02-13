@@ -59,27 +59,29 @@ def parse_memory_from_logs(log_files):
                     break  # Go to next log file
     return memory_values
 
-def create_benchmark_df(file_paths_python, file_paths_rust):
-    dfs = []
-    for cmd in ['bamCoverage', 'bamCompare', 'computeMatrix', 'multiBamSummary']:
-        data_py = read_benchmark(file_paths_python[cmd])
-        df_py = pd.DataFrame({
-            'Cmd': cmd,
-            'Backend': 'Python',
-            'Trial': range(1, len(data_py['times']) + 1),
-            'Time': data_py['times'],
-            'Memory': data_py['memory']
-        })
-        data_rust = read_benchmark(file_paths_rust[cmd])
-        df_rust = pd.DataFrame({
-            'Cmd': cmd,
-            'Backend': 'Rust',
-            'Trial': range(1, len(data_rust['times']) + 1),
-            'Time': data_rust['times'],
-            'Memory': data_rust['memory']
-        })
-        dfs.extend([df_py, df_rust])
-    return pd.concat(dfs, ignore_index=True)
+# def create_benchmark_df(file_paths_python, file_paths_rust):
+#     dfs = []
+#     these_rules = file_paths_python.keys()
+#     assert these_rules == file_paths_rust.keys(), "Rules in Python and Rust must match"
+#     for cmd in these_rules:
+#         data_py = read_benchmark(file_paths_python[cmd])
+#         df_py = pd.DataFrame({
+#             'Cmd': cmd,
+#             'Backend': 'Python',
+#             'Trial': range(1, len(data_py['times']) + 1),
+#             'Time': data_py['times'],
+#             'Memory': data_py['memory']
+#         })
+#         data_rust = read_benchmark(file_paths_rust[cmd])
+#         df_rust = pd.DataFrame({
+#             'Cmd': cmd,
+#             'Backend': 'Rust',
+#             'Trial': range(1, len(data_rust['times']) + 1),
+#             'Time': data_rust['times'],
+#             'Memory': data_rust['memory']
+#         })
+#         dfs.extend([df_py, df_rust])
+#     return pd.concat(dfs, ignore_index=True)
 
 def make_boxplot(data1, data2, title, ylabel):
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -123,6 +125,21 @@ def make_protocol_boxplots(data1_files, data2_files, title, ylabel, metric='time
 
 if __name__ == '__main__':
     output_template = sys.argv[1]
+
+    # TODO: add other commands to dictionaries here.
+    # Or better, drop this and save CSV from calls to read_benchmark...
+    # right before its return, we have a dict. that could be converted to DF ;)
+    #
+    # file_paths_python = {
+    #     'bamCompare': sys.argv[2],  # logs/bamCompare1_homo_bs100.txt
+    # }
+    # file_paths_rust = {
+    #     'bamCompare': sys.argv[3],  # logs/bamCompare2_homo_bs100.txt  
+    # }
+
+    # results_df = create_benchmark_df(file_paths_python, file_paths_rust)
+    # results_df.to_csv(output_template.replace('.png', '.csv'), index=False)
+
     if ',' in sys.argv[2]:
         time_fig = make_protocol_boxplots(sys.argv[2], sys.argv[3], 'Execution Time Comparison', 'Time (s)', metric='times')
         time_fig.savefig(output_template.replace('.png', '_time.png'))
@@ -137,16 +154,3 @@ if __name__ == '__main__':
         
         mem_fig = make_boxplot(data1['memory'], data2['memory'], 'Memory Usage Comparison', 'Memory (MB)')
         mem_fig.savefig(output_template.replace('.png', '_mem.png'))
-    
-    # dfs = []
-    # for cmd_pair in zip(['bamCoverage', 'bamCompare', 'computeMatrix', 'multiBamSummary'], 
-    #                     sys.argv[2].split(','), 
-    #                     sys.argv[3].split(',')):
-    #     cmd, py_file, rust_file = cmd_pair
-    #     dfs.append(create_benchmark_df(py_file, cmd, 'Python', 1))
-    #     dfs.append(create_benchmark_df(py_file, cmd, 'Python', 2))
-    #     dfs.append(create_benchmark_df(rust_file, cmd, 'Rust', 1))
-    #     dfs.append(create_benchmark_df(rust_file, cmd, 'Rust', 2))
-
-    # final_df = pd.concat(dfs, ignore_index=True)
-    # final_df.to_csv('benchmark_results.csv', index=False)

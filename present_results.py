@@ -46,11 +46,15 @@ def read_benchmark(file_path):
         memory = parse_memory_from_logs(log_files)
         assert len(memory) == Ntimes, "Expected {} memory values but got {}, {}".format(Ntimes, len(memory), memory)
 
-    return {
+    results = {
         'times': times, 'memory': memory, 'cpu_usage': cpu_usage,
         'io_in': io_in, 'io_out': io_out, 'mean_load': mean_load,
         'cpu_time': cpu_time, 'max_uss': max_uss, 'max_pss': max_pss
     }
+
+    pd.DataFrame(results).to_csv(f"output/{command}{backend}.csv", index=False)
+    
+    return results
 
 def parse_memory_from_logs(log_files):
     memory_values = []
@@ -62,30 +66,6 @@ def parse_memory_from_logs(log_files):
                     memory_values.append(memory_value)
                     break  # Go to next log file
     return memory_values
-
-# def create_benchmark_df(file_paths_python, file_paths_rust):
-#     dfs = []
-#     these_rules = file_paths_python.keys()
-#     assert these_rules == file_paths_rust.keys(), "Rules in Python and Rust must match"
-#     for cmd in these_rules:
-#         data_py = read_benchmark(file_paths_python[cmd])
-#         df_py = pd.DataFrame({
-#             'Cmd': cmd,
-#             'Backend': 'Python',
-#             'Trial': range(1, len(data_py['times']) + 1),
-#             'Time': data_py['times'],
-#             'Memory': data_py['memory']
-#         })
-#         data_rust = read_benchmark(file_paths_rust[cmd])
-#         df_rust = pd.DataFrame({
-#             'Cmd': cmd,
-#             'Backend': 'Rust',
-#             'Trial': range(1, len(data_rust['times']) + 1),
-#             'Time': data_rust['times'],
-#             'Memory': data_rust['memory']
-#         })
-#         dfs.extend([df_py, df_rust])
-#     return pd.concat(dfs, ignore_index=True)
 
 def make_boxplot(data1, data2, title, ylabel):
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -129,20 +109,6 @@ def make_protocol_boxplots(data1_files, data2_files, title, ylabel, metric='time
 
 if __name__ == '__main__':
     output_template = sys.argv[1]
-
-    # TODO: add other commands to dictionaries here.
-    # Or better, drop this and save CSV from calls to read_benchmark...
-    # right before its return, we have a dict. that could be converted to DF ;)
-    #
-    # file_paths_python = {
-    #     'bamCompare': sys.argv[2],  # logs/bamCompare1_homo_bs100.txt
-    # }
-    # file_paths_rust = {
-    #     'bamCompare': sys.argv[3],  # logs/bamCompare2_homo_bs100.txt  
-    # }
-
-    # results_df = create_benchmark_df(file_paths_python, file_paths_rust)
-    # results_df.to_csv(output_template.replace('.png', '.csv'), index=False)
 
     if ',' in sys.argv[2]:
         time_fig = make_protocol_boxplots(sys.argv[2], sys.argv[3], 'Execution Time Comparison', 'Time (s)', metric='times')

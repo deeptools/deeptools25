@@ -9,21 +9,13 @@ import sys
 
 def read_benchmark(file_path):
     print(f"Reading {file_path}")
+    match = re.search(r'/(\w+?)(\d+)_(?:.*?)(?:_bs(\d+))?(?:_(\w+))?\.txt', file_path)
+    command = match.group(1)    # 'bamCompare' or 'bamCoverage'
+    backend = match.group(2)    # '1'
+    binsize = match.group(3)    # '100'
+    protocol = match.group(4)   # 'chip' or None
 
-    match = re.search(r'/(\w+?)(\d+)_(?:.*?)(?:_(\w+))?\.txt', file_path)
-    command = match.group(1)    # gets 'bamCompare' or 'bamCoverage'
-    backend = match.group(2)    # gets '1'
-    protocol = match.group(3)   # gets 'chip' or None
-
-    times = []
-    memory = []
-    cpu_usage = []
-    io_in = []
-    io_out = []
-    mean_load = []
-    cpu_time = []
-    max_uss = []
-    max_pss = []
+    times, memory, cpu_usage, io_in, io_out, mean_load, cpu_time, max_uss, max_pss = ([] for _ in range(9))
     
     with open(file_path, 'r') as file:
         header = next(file)
@@ -61,9 +53,9 @@ def read_benchmark(file_path):
 
     # Save results to a CSV file
     if protocol:
-        pd.DataFrame(results).to_csv(f"output/{command}{backend}_{protocol}.csv", index=False)
+        pd.DataFrame(results).to_csv(f"output/{command}{backend}_{binsize}_{protocol}.csv", index=False)
     else:
-        pd.DataFrame(results).to_csv(f"output/{command}{backend}.csv", index=False)
+        pd.DataFrame(results).to_csv(f"output/{command}{backend}_{binsize}.csv", index=False)
     
     return results
 

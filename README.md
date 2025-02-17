@@ -9,7 +9,7 @@
 #### Download data
 
 1. **Download the data from [here](https://zenodo.org/record/14760356)** (`10.5281/zenodo.14760356`), put these BAM files under `zenodo/` directory.
-1. **Get GTF files from Ensembl for human and/ or wheat**. Put these under `regions/` directory. If you are not inclined into benchmarking on full transcriptome, downsample those files like this: `grep 'transcript_id' homo.v91.full.gtf | shuf | head -n 1000 | bedtools sort -i - > homo.v91.sample.gtf`
+1. **Get GTF files from Ensembl for human and/ or wheat**. Put these under `regions/` directory. If you are not inclined into benchmarking on full transcriptome, downsample those files like this: `grep 'transcript_id' homo.v91.full.gtf | shuf | head -n 25000 | bedtools sort -i - > homo.v91.sample25k.gtf`
 
 This is how it should look like:
 

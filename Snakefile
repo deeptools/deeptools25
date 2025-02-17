@@ -1,14 +1,14 @@
 # Adjust these if you want
 ORGANISM = "homo"
 FULL_GTF = False
-BINSIZE = 10
+BINSIZE = 100
 
 # Actual bin size will be the result of multiplication by these
 BinFactors = {
-    "bamCoverage": 50,
-    "bamCompare": 100,
-    "computeMatrix": 100,
-    "multiBamSummary": 500,
+    "bamCoverage": 10,
+    "bamCompare": 10,
+    "computeMatrix": 10,
+    "multiBamSummary": 5000,
 }
 
 Ntimes = 2
@@ -28,7 +28,7 @@ else:
 if FULL_GTF:
     GTF = { "homo": "regions/homo.v91.full.gtf", "triticum": "regions/triticum.v60.full.gtf" }
 else:
-    GTF = { "homo": "regions/homo.v91.sample.gtf", "triticum": "regions/triticum.v60.sample.gtf" }
+    GTF = { "homo": "regions/homo.v91.sample25k.gtf", "triticum": "regions/triticum.v60.sample25k.gtf" }
 
 PROTOCOLS = ["chip", "rna", "wgs"]
 FILES = {
@@ -161,7 +161,9 @@ rule computeMatrix2:
     shell:
         """
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} computeMatrix reference-point -S {input.bw2} -R {input.bed} -o {output.npz} \
+        {timeCmd} computeMatrix reference-point \
+            -S {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} \
+            -R {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                 >logs/computeMatrix2_${{curr_iter}}.txt 2>&1
         curr_iter=$((curr_iter + 1))
@@ -186,7 +188,9 @@ rule computeMatrix1:
     shell:
         """
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} computeMatrix reference-point -S {input.bw1} -R {input.bed} -o {output.npz} \
+        {timeCmd} computeMatrix reference-point \
+            -S {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} \
+            -R {input.bed} -o {output.npz} \
             -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                 >logs/computeMatrix1_${{curr_iter}}.txt 2>&1
         curr_iter=$((curr_iter + 1))

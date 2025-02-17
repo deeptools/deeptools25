@@ -25,6 +25,9 @@ elif system == "Darwin":
 else:
     raise ValueError(f"Unsupported platform: {system}")
 
+# For human we have a more intensive multiBamSummary comparison
+humanBigwigs = "bigwigs/human_chip_SRR28592124.bw bigwigs/human_chip_SRR28592125.bw bigwigs/human_chip_SRR28592131.bw bigwigs/human_chip_SRR28592132.bw bigwigs/human_rna_SRR28012902.bw bigwigs/human_rna_SRR28012903.bw bigwigs/human_rna_SRR28012904.bw bigwigs/human_rna_SRR28012905.bw bigwigs/human_wgs_SRR15494527.bw"
+
 if FULL_GTF:
     GTF = { "homo": "regions/homo.v91.full.gtf", "triticum": "regions/triticum.v60.full.gtf" }
 else:
@@ -213,9 +216,15 @@ rule multiBamSummary2:
     shell:
         """
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} multiBamSummary bins -b {input.bam} -o {output.npz} --outRawCounts {output.outraw} \
-            -bs {params.binsize} -p {threads} \
-                >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
+        if [ "{ORGANISM}" = "homo" ]; then
+            {timeCmd} multiBamSummary bins -b {input.bam} {humanBigwigs} -o {output.npz} --outRawCounts {output.outraw} \
+                -bs {params.binsize} -p {threads} \
+                    >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
+        else
+            {timeCmd} multiBamSummary bins -b {input.bam} -o {output.npz} --outRawCounts {output.outraw} \
+                -bs {params.binsize} -p {threads} \
+                    >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
+        fi
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -236,9 +245,15 @@ rule multiBamSummary1:
     shell:
         """
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} multiBamSummary bins -b {input.bam} -o {output.npz} --outRawCounts {output.outraw} \
-            -bs {params.binsize} -p {threads} \
-                >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
+        if [ "{ORGANISM}" = "homo" ]; then
+            {timeCmd} multiBamSummary bins -b {input.bam} {humanBigwigs} -o {output.npz} --outRawCounts {output.outraw} \
+                -bs {params.binsize} -p {threads} \
+                    >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
+        else
+            {timeCmd} multiBamSummary bins -b {input.bam} -o {output.npz} --outRawCounts {output.outraw} \
+                -bs {params.binsize} -p {threads} \
+                    >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
+        fi
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """

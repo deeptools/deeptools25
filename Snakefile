@@ -8,11 +8,11 @@ BinFactors = {
     "bamCoverage": 10,
     "bamCompare": 10,
     "computeMatrix": 10,
-    "multiBamSummary": 5000,
+    "multiBamSummary": 50,
 }
 
 Ntimes = 2
-Nthreads = 16
+Nthreads = 6
 
 
 # Do not edit any further

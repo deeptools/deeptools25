@@ -25,8 +25,9 @@ elif system == "Darwin":
 else:
     raise ValueError(f"Unsupported platform: {system}")
 
-# For human we have a more intensive multiBamSummary comparison
-humanBigwigs = "bigwigs/human_chip_SRR28592124.bw bigwigs/human_chip_SRR28592125.bw bigwigs/human_chip_SRR28592131.bw bigwigs/human_chip_SRR28592132.bw bigwigs/human_rna_SRR28012902.bw bigwigs/human_rna_SRR28012903.bw bigwigs/human_rna_SRR28012904.bw bigwigs/human_rna_SRR28012905.bw bigwigs/human_wgs_SRR15494527.bw"
+# For human we have a more intensive computeMatrix comparison
+# For Triticum, we'll simply repeat the same BW a couple of times. For multiBamSummary (both sp.) we'll do something similar (repeat same input file 10-7 times.)
+humanBigwigs = "zenodo/bigwigs/human_chip_SRR28592124.bw zenodo/bigwigs/human_chip_SRR28592125.bw zenodo/bigwigs/human_chip_SRR28592131.bw zenodo/bigwigs/human_chip_SRR28592132.bw zenodo/bigwigs/human_rna_SRR28012902.bw zenodo/bigwigs/human_rna_SRR28012903.bw zenodo/bigwigs/human_rna_SRR28012904.bw zenodo/bigwigs/human_rna_SRR28012905.bw zenodo/bigwigs/human_wgs_SRR15494527.bw"
 
 if FULL_GTF:
     GTF = { "homo": "regions/homo.v91.full.gtf", "triticum": "regions/triticum.v60.full.gtf" }
@@ -164,11 +165,17 @@ rule computeMatrix2:
     shell:
         """
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} computeMatrix reference-point \
-            -S {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} \
-            -R {input.bed} -o {output.npz} \
-            -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                >logs/computeMatrix2_${{curr_iter}}.txt 2>&1
+        if [ "{ORGANISM}" = "homo" ]; then
+          {timeCmd} computeMatrix reference-point \
+              -S {input.bw2} {humanBigwigs} \
+              -R {input.bed} -o {output.npz} -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
+                  >logs/computeMatrix2_${{curr_iter}}.txt 2>&1
+        else
+          {timeCmd} computeMatrix reference-point \
+              -S {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} \
+              -R {input.bed} -o {output.npz} -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
+                  >logs/computeMatrix2_${{curr_iter}}.txt 2>&1
+        fi
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -191,11 +198,17 @@ rule computeMatrix1:
     shell:
         """
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} computeMatrix reference-point \
-            -S {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} \
-            -R {input.bed} -o {output.npz} \
-            -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                >logs/computeMatrix1_${{curr_iter}}.txt 2>&1
+        if [ "{ORGANISM}" = "homo" ]; then
+          {timeCmd} computeMatrix reference-point \
+              -S {input.bw1} {humanBigwigs} \
+              -R {input.bed} -o {output.npz} -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
+                  >logs/computeMatrix1_${{curr_iter}}.txt 2>&1
+        else
+          {timeCmd} computeMatrix reference-point \
+              -S {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} \
+              -R {input.bed} -o {output.npz} -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
+                  >logs/computeMatrix1_${{curr_iter}}.txt 2>&1
+        fi
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -217,12 +230,12 @@ rule multiBamSummary2:
         """
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         if [ "{ORGANISM}" = "homo" ]; then
-            {timeCmd} multiBamSummary bins -b {input.bam} {humanBigwigs} -o {output.npz} --outRawCounts {output.outraw} \
-                -bs {params.binsize} -p {threads} \
+            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
+                -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
         else
-            {timeCmd} multiBamSummary bins -b {input.bam} -o {output.npz} --outRawCounts {output.outraw} \
-                -bs {params.binsize} -p {threads} \
+            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
+                -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
         fi
         curr_iter=$((curr_iter + 1))
@@ -246,12 +259,12 @@ rule multiBamSummary1:
         """
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         if [ "{ORGANISM}" = "homo" ]; then
-            {timeCmd} multiBamSummary bins -b {input.bam} {humanBigwigs} -o {output.npz} --outRawCounts {output.outraw} \
-                -bs {params.binsize} -p {threads} \
+            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
+                -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
         else
-            {timeCmd} multiBamSummary bins -b {input.bam} -o {output.npz} --outRawCounts {output.outraw} \
-                -bs {params.binsize} -p {threads} \
+            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
+                -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
         fi
         curr_iter=$((curr_iter + 1))

@@ -230,11 +230,11 @@ rule multiBamSummary2:
         """
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         if [ "{ORGANISM}" = "homo" ]; then
-            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
+            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
                 -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
         else
-            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
+            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} \
                 -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
         fi
@@ -259,11 +259,11 @@ rule multiBamSummary1:
         """
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         if [ "{ORGANISM}" = "homo" ]; then
-            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
+            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
                 -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
         else
-            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
+            {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} \
                 -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
         fi

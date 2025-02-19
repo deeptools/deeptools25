@@ -17,10 +17,20 @@ This is how it should look like:
 .
 ├── regions
 │   ├── homo.v91.full.gtf
-│   ├── homo.v91.sample.gtf
+│   ├── homo.v91.sample25k.gtf
 │   ├── triticum.v60.full.gtf
-│   └── triticum.v60.sample.gtf
+│   └── triticum.v60.sample25k.gtf
 └── zenodo
+    ├── bigwigs
+    │   ├── human_chip_SRR28592124.bw
+    │   ├── human_chip_SRR28592125.bw
+    │   ├── human_chip_SRR28592131.bw
+    │   ├── human_chip_SRR28592132.bw
+    │   ├── human_rna_SRR28012902.bw
+    │   ├── human_rna_SRR28012903.bw
+    │   ├── human_rna_SRR28012904.bw
+    │   ├── human_rna_SRR28012905.bw
+    │   └── human_wgs_SRR15494527.bw
     ├── human_chip_SRR28592124.bam
     ├── human_chip_SRR28592124.bam.bai
     ├── human_rna_SRR28012902.bam

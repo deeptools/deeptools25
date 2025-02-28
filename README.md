@@ -1,7 +1,7 @@
 ### Dependencies
 
 1. Install `rustc` >= 1.73
-1. Install `Clang`, `matplotlib` and `Snakemake`. For example: `conda create -n snkmk clang-19 matplotlib snakemake bedtools ucsc-bigwiginfo`
+1. Install `matplotlib`, `Snakemake` and other optional dependencies you may need or want. For example: `conda create -n snkmk matplotlib snakemake clang-19 snakemake-executor-plugin-slurm bedtools ucsc-bigwiginfo`
 
 > [!NOTE]
 > Alternatively, you can use any modern IDE with [Devcontainers](https://code.visualstudio.com/docs/devcontainers/containers) support.

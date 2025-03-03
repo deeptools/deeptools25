@@ -10,7 +10,7 @@ BinSizes = {
 }
 
 Ntimes = 3
-Nthreads = 10
+Nthreads = 64
 
 
 # Do not edit any further

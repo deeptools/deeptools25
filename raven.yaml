@@ -6,8 +6,8 @@ jobs: 3
 keep-going: True
 rerun-incomplete: True
 printshellcmds: True
-# shadow-prefix: /ptmp/asalatino/snkmk-shadow
-# local-storage-prefix: /ptmp/asalatino/
+shadow-prefix: /ptmp/asalatino/bench-shadow
+local-storage-prefix: /ptmp/asalatino/bench-local
 max-jobs-per-second: 1
 max-status-checks-per-second: 5
 executor: slurm

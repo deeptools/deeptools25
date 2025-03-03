@@ -1,0 +1,36 @@
+restart-times: 5
+local-cores: 1
+latency-wait: 90
+use-conda: True
+jobs: 3
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+# shadow-prefix: /ptmp/asalatino/snkmk-shadow
+# local-storage-prefix: /ptmp/asalatino/
+max-jobs-per-second: 1
+max-status-checks-per-second: 5
+executor: slurm
+default-resources:
+  runtime: 1h
+set-resources:
+  bamCoverage1:
+    runtime: 3h
+    mem: 15GB * attempt
+  bamCoverage2:
+    mem: 30GB * attempt
+  bamCompare1:
+    runtime: 3h
+    mem: 15GB * attempt
+  bamCompare2:
+    mem: 15GB * attempt
+  computeMatrix1:
+    runtime: 3h
+    mem: 15GB * attempt
+  computeMatrix2:
+    mem: 20GB * attempt
+  multiBamSummary1:
+    runtime: 3h
+    mem: 15GB * attempt
+  multiBamSummary2:
+    mem: 64GB * attempt

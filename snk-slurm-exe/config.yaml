@@ -11,26 +11,28 @@ max-status-checks-per-second: 5
 executor: slurm
 default-resources:
   slurm_partition: general
-  runtime: 1h
-  cpus: 64
+  runtime: 30
+  cpus: 32
 set-resources:
   bamCoverage1:
-    runtime: 2h
-    mem: 15GB * attempt
+    runtime: 1h
+    mem: 5GB * attempt
   bamCoverage2:
-    mem: 30GB * attempt
+    mem: 10GB * attempt
   bamCompare1:
-    runtime: 2h
-    mem: 15GB * attempt
+    runtime: 1h
+    mem: 10GB * attempt
   bamCompare2:
-    mem: 15GB * attempt
+    mem: 10GB * attempt
   computeMatrix1:
     runtime: 2h
-    mem: 15GB * attempt
+    mem: 10GB * attempt
   computeMatrix2:
-    mem: 20GB * attempt
-  multiBamSummary1:
     runtime: 2h
     mem: 15GB * attempt
+  multiBamSummary1:
+    runtime: 2h
+    mem: 10GB * attempt
   multiBamSummary2:
-    mem: 64GB * attempt
+    runtime: 2h
+    mem: 20GB * attempt

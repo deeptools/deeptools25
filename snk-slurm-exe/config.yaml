@@ -2,19 +2,14 @@ restart-times: 5
 local-cores: 1
 latency-wait: 90
 use-conda: True
-#forcerun: True
-#benchmark-extended: True
 jobs: 6
 keep-going: True
 rerun-incomplete: True
 printshellcmds: True
-shadow-prefix: /ptmp/asalatino/bench-shadow
-local-storage-prefix: /ptmp/asalatino/bench-local
 max-jobs-per-second: 1
 max-status-checks-per-second: 5
 executor: slurm
 default-resources:
-  #slurm_account: mie_cpu
   slurm_partition: general
   runtime: 1h
   cpus: 64

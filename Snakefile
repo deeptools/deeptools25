@@ -60,20 +60,27 @@ rule bamCoverage2:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/bamCoverage2_{protocol}.bg",
+        bed = directory("output/bamCoverage2_{protocol}"),
         iter_file = "output/benchmark_iteration_bamCoverage2_{protocol}.txt"
     benchmark:
-        repeat(f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes["bamCoverage"]}_{{protocol}}.txt", Ntimes)
+        repeat(f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes['bamCoverage']}_{{protocol}}.txt", Ntimes)
     params:
         binsize = BinSizes["bamCoverage"]
     threads: Nthreads
     conda: "v4.env.yaml"
     shell:
         """
+        mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph \
+        out_file="{output.bed}/iter_${{curr_iter}}.bg"
+        
+        {timeCmd} bamCoverage -b {input.bam} -o $out_file -of bedgraph \
             -bs {params.binsize} -p {threads} \
                 >logs/bamCoverage2_{wildcards.protocol}_${{curr_iter}}.txt 2>&1
+                
+        # Create a symlink for downstream rules
+        ln -sf "$out_file" output/bamCoverage2_{wildcards.protocol}_latest.bg
+        
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -82,20 +89,27 @@ rule bamCoverage1:
     input:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
-        bed = "output/bamCoverage1_{protocol}.bg",
+        bed = directory("output/bamCoverage1_{protocol}"),
         iter_file = "output/benchmark_iteration_bamCoverage1_{protocol}.txt"
     benchmark:
-        repeat(f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes["bamCoverage"]}_{{protocol}}.txt", Ntimes)
+        repeat(f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes['bamCoverage']}_{{protocol}}.txt", Ntimes)
     params:
         binsize = BinSizes["bamCoverage"]
     threads: Nthreads
     conda: "v3.env.yaml"
     shell:
         """
+        mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
-        {timeCmd} bamCoverage -b {input.bam} -o {output.bed} -of bedgraph \
+        out_file="{output.bed}/iter_${{curr_iter}}.bg"
+        
+        {timeCmd} bamCoverage -b {input.bam} -o $out_file -of bedgraph \
             -bs {params.binsize} -p {threads} \
                 >logs/bamCoverage1_{wildcards.protocol}_${{curr_iter}}.txt 2>&1
+                
+        # Create a symlink for downstream rules
+        ln -sf "$out_file" output/bamCoverage1_{wildcards.protocol}_latest.bg
+        
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -105,20 +119,27 @@ rule bamCompare2:
         bam1 = lambda wildcards: FILES[ORGANISM + "_chip"],
         bam2 = lambda wildcards: FILES[ORGANISM + "_wgs"]
     output:
-        bw = "output/bamCompare2.bw",
+        bw = directory("output/bamCompare2"),
         iter_file = "output/benchmark_iteration_bamCompare2.txt"
     benchmark:
-        repeat(f"logs/bamCompare2_{ORGANISM}_bs{BinSizes["bamCompare"]}.txt", Ntimes)
+        repeat(f"logs/bamCompare2_{ORGANISM}_bs{BinSizes['bamCompare']}.txt", Ntimes)
     params:
         binsize = BinSizes["bamCompare"]
     threads: Nthreads
     conda: "v4.env.yaml"
     shell:
         """
+        mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        out_file="{output.bw}/iter_${{curr_iter}}.bw"
+        
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
-            -o {output.bw} -bs {params.binsize} -p {threads} \
+            -o $out_file -bs {params.binsize} -p {threads} \
                 >logs/bamCompare2_${{curr_iter}}.txt 2>&1
+                
+        # Create a symlink for downstream rules
+        ln -sf "$out_file" output/bamCompare2_latest.bw
+        
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -128,33 +149,40 @@ rule bamCompare1:
         bam1 = lambda wildcards: FILES[ORGANISM + "_chip"],
         bam2 = lambda wildcards: FILES[ORGANISM + "_wgs"]
     output:
-        bw = "output/bamCompare1.bw",
+        bw = directory("output/bamCompare1"),
         iter_file = "output/benchmark_iteration_bamCompare1.txt"
     benchmark:
-        repeat(f"logs/bamCompare1_{ORGANISM}_bs{BinSizes["bamCompare"]}.txt", Ntimes)
+        repeat(f"logs/bamCompare1_{ORGANISM}_bs{BinSizes['bamCompare']}.txt", Ntimes)
     params:
         binsize = BinSizes["bamCompare"]
     threads: Nthreads
     conda: "v3.env.yaml"
     shell:
         """
+        mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        out_file="{output.bw}/iter_${{curr_iter}}.bw"
+        
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
-            -o {output.bw} -bs {params.binsize} -p {threads} \
+            -o $out_file -bs {params.binsize} -p {threads} \
                 >logs/bamCompare1_${{curr_iter}}.txt 2>&1
+                
+        # Create a symlink for downstream rules
+        ln -sf "$out_file" output/bamCompare1_latest.bw
+        
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
 
 rule computeMatrix2:
     input:
-        bw2 = "output/bamCompare2.bw",
+        bw2 = "output/bamCompare2_latest.bw",  # Using symlink from bamCompare2
         gtf = GTF
     output:
-        npz = "output/computeMatrix2.npz",
+        npz = directory("output/computeMatrix2"),
         iter_file = "output/benchmark_iteration_computeMatrix2.txt"
     benchmark:
-        repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BinSizes["computeMatrix"]}.txt", Ntimes)
+        repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BinSizes['computeMatrix']}.txt", Ntimes)
     params:
         binsize = BinSizes["computeMatrix"],
         upstream = 2 * BinSizes["computeMatrix"],
@@ -163,31 +191,38 @@ rule computeMatrix2:
     conda: "v4.env.yaml"
     shell:
         """
+        mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        out_file="{output.npz}/iter_${{curr_iter}}.npz"
+        
         if [ "{ORGANISM}" = "homo" ]; then
           {timeCmd} computeMatrix reference-point \
               -S {input.bw2} {humanBigwigs} \
-              -R {input.gtf} -o {output.npz} -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
+              -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   >logs/computeMatrix2_${{curr_iter}}.txt 2>&1
         else
           {timeCmd} computeMatrix reference-point \
               -S {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} \
-              -R {input.gtf} -o {output.npz} -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
+              -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   >logs/computeMatrix2_${{curr_iter}}.txt 2>&1
         fi
+        
+        # Create a symlink for downstream rules
+        ln -sf "$out_file" output/computeMatrix2_latest.npz
+        
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
 
 rule computeMatrix1:
     input:
-        bw1 = "output/bamCompare1.bw",
+        bw1 = "output/bamCompare1_latest.bw",  # Using symlink from bamCompare1
         gtf = GTF
     output:
-        npz = "output/computeMatrix1.npz",
+        npz = directory("output/computeMatrix1"),
         iter_file = "output/benchmark_iteration_computeMatrix1.txt"
     benchmark:
-        repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BinSizes["computeMatrix"]}.txt", Ntimes)
+        repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BinSizes['computeMatrix']}.txt", Ntimes)
     params:
         binsize = BinSizes["computeMatrix"],
         upstream = 2 * BinSizes["computeMatrix"],
@@ -196,18 +231,25 @@ rule computeMatrix1:
     conda: "v3.env.yaml"
     shell:
         """
+        mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        out_file="{output.npz}/iter_${{curr_iter}}.npz"
+        
         if [ "{ORGANISM}" = "homo" ]; then
           {timeCmd} computeMatrix reference-point \
               -S {input.bw1} {humanBigwigs} \
-              -R {input.gtf} -o {output.npz} -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
+              -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   >logs/computeMatrix1_${{curr_iter}}.txt 2>&1
         else
           {timeCmd} computeMatrix reference-point \
               -S {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} \
-              -R {input.gtf} -o {output.npz} -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
+              -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   >logs/computeMatrix1_${{curr_iter}}.txt 2>&1
         fi
+        
+        # Create a symlink for downstream rules
+        ln -sf "$out_file" output/computeMatrix1_latest.npz
+        
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -216,27 +258,35 @@ rule multiBamSummary2:
     input:
         bam = FILES[ORGANISM + "_" + "wgs"]
     output:
-        npz = "output/multiBamSummary2.npz",
-        outraw = "output/multiBamSummary2.outraw.tab",
+        npz = directory("output/multiBamSummary2"),
         iter_file = "output/benchmark_iteration_multiBamSummary2.txt"
     benchmark:
-        repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BinSizes["multiBamSummary"]}.txt", Ntimes)
+        repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt", Ntimes)
     params:
         binsize = BinSizes["multiBamSummary"]
     threads: Nthreads
     conda: "v4.env.yaml"
     shell:
         """
+        mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        out_npz="{output.npz}/iter_${{curr_iter}}.npz"
+        out_raw="{output.npz}/iter_${{curr_iter}}.outraw.tab"
+        
         if [ "{ORGANISM}" = "homo" ]; then
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
-                -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
+                -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
         else
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} \
-                -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
+                -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
         fi
+        
+        # Create symlinks for downstream rules
+        ln -sf "$out_npz" output/multiBamSummary2_latest.npz
+        ln -sf "$out_raw" output/multiBamSummary2_latest.outraw.tab
+        
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -245,55 +295,62 @@ rule multiBamSummary1:
     input:
         bam = FILES[ORGANISM + "_" + "wgs"]
     output:
-        npz = "output/multiBamSummary1.npz",
-        outraw = "output/multiBamSummary1.outraw.tab",
+        npz = directory("output/multiBamSummary1"),
         iter_file = "output/benchmark_iteration_multiBamSummary1.txt"
     benchmark:
-        repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BinSizes["multiBamSummary"]}.txt", Ntimes)
+        repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt", Ntimes)
     params:
         binsize = BinSizes["multiBamSummary"]
     threads: Nthreads
     conda: "v3.env.yaml"
     shell:
         """
+        mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        out_npz="{output.npz}/iter_${{curr_iter}}.npz"
+        out_raw="{output.npz}/iter_${{curr_iter}}.outraw.tab"
+        
         if [ "{ORGANISM}" = "homo" ]; then
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
-                -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
+                -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
         else
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} \
-                -o {output.npz} --outRawCounts {output.outraw} -bs {params.binsize} -p {threads} \
+                -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
                     >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
         fi
+        
+        # Create symlinks for downstream rules
+        ln -sf "$out_npz" output/multiBamSummary1_latest.npz
+        ln -sf "$out_raw" output/multiBamSummary1_latest.outraw.tab
+        
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
 
-
 rule process_results:
     input:
-        bamCoverage1_chip = f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes["bamCoverage"]}_chip.txt",
-        bamCoverage2_chip = f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes["bamCoverage"]}_chip.txt",
-        bamCoverage1_rna = f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes["bamCoverage"]}_rna.txt",
-        bamCoverage2_rna = f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes["bamCoverage"]}_rna.txt",
-        bamCoverage1_wgs = f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes["bamCoverage"]}_wgs.txt",
-        bamCoverage2_wgs = f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes["bamCoverage"]}_wgs.txt",
-        bamCompare1 = f"logs/bamCompare1_{ORGANISM}_bs{BinSizes["bamCompare"]}.txt",
-        bamCompare2 = f"logs/bamCompare2_{ORGANISM}_bs{BinSizes["bamCompare"]}.txt",
-        computeMatrix1 = f"logs/computeMatrix1_{ORGANISM}_bs{BinSizes["computeMatrix"]}.txt",
-        computeMatrix2 = f"logs/computeMatrix2_{ORGANISM}_bs{BinSizes["computeMatrix"]}.txt",
-        multiBamSummary1 = f"logs/multiBamSummary1_{ORGANISM}_bs{BinSizes["multiBamSummary"]}.txt",
-        multiBamSummary2 = f"logs/multiBamSummary2_{ORGANISM}_bs{BinSizes["multiBamSummary"]}.txt"
+        bamCoverage1_chip = f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes['bamCoverage']}_chip.txt",
+        bamCoverage2_chip = f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes['bamCoverage']}_chip.txt",
+        bamCoverage1_rna = f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes['bamCoverage']}_rna.txt",
+        bamCoverage2_rna = f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes['bamCoverage']}_rna.txt",
+        bamCoverage1_wgs = f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes['bamCoverage']}_wgs.txt",
+        bamCoverage2_wgs = f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes['bamCoverage']}_wgs.txt",
+        bamCompare1 = f"logs/bamCompare1_{ORGANISM}_bs{BinSizes['bamCompare']}.txt",
+        bamCompare2 = f"logs/bamCompare2_{ORGANISM}_bs{BinSizes['bamCompare']}.txt",
+        computeMatrix1 = f"logs/computeMatrix1_{ORGANISM}_bs{BinSizes['computeMatrix']}.txt",
+        computeMatrix2 = f"logs/computeMatrix2_{ORGANISM}_bs{BinSizes['computeMatrix']}.txt",
+        multiBamSummary1 = f"logs/multiBamSummary1_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt",
+        multiBamSummary2 = f"logs/multiBamSummary2_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt"
     output:
-        bamCoverage_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes["bamCoverage"]}_time.png",
-        bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes["bamCoverage"]}_mem.png",
-        bamCompare_time_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes["bamCompare"]}_time.png",
-        bamCompare_mem_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes["bamCompare"]}_mem.png",
-        computeMatrix_time_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes["computeMatrix"]}_time.png",
-        computeMatrix_mem_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes["computeMatrix"]}_mem.png",
-        multiBamSummary_time_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes["multiBamSummary"]}_time.png",
-        multiBamSummary_mem_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes["multiBamSummary"]}_mem.png"
+        bamCoverage_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}_time.png",
+        bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}_mem.png",
+        bamCompare_time_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes['bamCompare']}_time.png",
+        bamCompare_mem_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes['bamCompare']}_mem.png",
+        computeMatrix_time_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes['computeMatrix']}_time.png",
+        computeMatrix_mem_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes['computeMatrix']}_mem.png",
+        multiBamSummary_time_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}_time.png",
+        multiBamSummary_mem_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}_mem.png"
     shell:
         """
         python3 present_results.py output/bamCoverage_{ORGANISM}_bs{BinSizes["bamCoverage"]}.png \

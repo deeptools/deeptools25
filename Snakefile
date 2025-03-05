@@ -79,7 +79,7 @@ rule bamCoverage2:
                 >logs/bamCoverage2_{wildcards.protocol}_${{curr_iter}}.txt 2>&1
                 
         # Create a symlink for downstream rules
-        ln -sf "$out_file" output/bamCoverage2_{wildcards.protocol}_latest.bg
+        ln -sf "$(realpath $out_file)" output/bamCoverage2_{wildcards.protocol}_latest.bg
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
@@ -108,7 +108,7 @@ rule bamCoverage1:
                 >logs/bamCoverage1_{wildcards.protocol}_${{curr_iter}}.txt 2>&1
                 
         # Create a symlink for downstream rules
-        ln -sf "$out_file" output/bamCoverage1_{wildcards.protocol}_latest.bg
+        ln -sf "$(realpath $out_file)" output/bamCoverage1_{wildcards.protocol}_latest.bg
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
@@ -138,7 +138,7 @@ rule bamCompare2:
                 >logs/bamCompare2_${{curr_iter}}.txt 2>&1
                 
         # Create a symlink for downstream rules
-        ln -sf "$out_file" output/bamCompare2_latest.bw
+        ln -sf "$(realpath $out_file)" output/bamCompare2_latest.bw
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
@@ -168,7 +168,7 @@ rule bamCompare1:
                 >logs/bamCompare1_${{curr_iter}}.txt 2>&1
                 
         # Create a symlink for downstream rules
-        ln -sf "$out_file" output/bamCompare1_latest.bw
+        ln -sf "$(realpath $out_file)" output/bamCompare1_latest.bw
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
@@ -208,7 +208,7 @@ rule computeMatrix2:
         fi
         
         # Create a symlink for downstream rules
-        ln -sf "$out_file" output/computeMatrix2_latest.npz
+        ln -sf "$(realpath $out_file)" output/computeMatrix2_latest.npz
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
@@ -248,7 +248,7 @@ rule computeMatrix1:
         fi
         
         # Create a symlink for downstream rules
-        ln -sf "$out_file" output/computeMatrix1_latest.npz
+        ln -sf "$(realpath $out_file)" output/computeMatrix1_latest.npz
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}

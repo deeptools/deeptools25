@@ -1,18 +1,18 @@
-restart-times: 5
+restart-times: 3
 local-cores: 1
 latency-wait: 90
 use-conda: True
-jobs: 6
 keep-going: True
 rerun-incomplete: True
 printshellcmds: True
+jobs: 10
 max-jobs-per-second: 1
-max-status-checks-per-second: 5
+max-status-checks-per-second: 2
 executor: slurm
 default-resources:
   slurm_partition: general
   runtime: 30
-  cpus: 32
+  cpus: 64
 set-resources:
   bamCoverage1:
     runtime: 1h
@@ -21,18 +21,18 @@ set-resources:
     mem: 10GB * attempt
   bamCompare1:
     runtime: 1h
-    mem: 10GB * attempt
+    mem: 8GB * attempt
   bamCompare2:
-    mem: 10GB * attempt
+    mem: 16GB * attempt
   computeMatrix1:
     runtime: 2h
     mem: 10GB * attempt
   computeMatrix2:
     runtime: 2h
-    mem: 15GB * attempt
+    mem: 20GB * attempt
   multiBamSummary1:
     runtime: 2h
-    mem: 10GB * attempt
+    mem: 12GB * attempt
   multiBamSummary2:
     runtime: 2h
-    mem: 20GB * attempt
+    mem: 24GB * attempt

@@ -61,7 +61,8 @@ rule bamCoverage2:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
         bed = directory("output/bamCoverage2_{protocol}"),
-        iter_file = "output/benchmark_iteration_bamCoverage2_{protocol}.txt"
+        iter_file = "output/benchmark_iteration_bamCoverage2_{protocol}.txt",
+        done = expand("output/bamCoverage2_{{protocol}}_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
         repeat(f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes['bamCoverage']}_{{protocol}}.txt", Ntimes)
     params:
@@ -78,9 +79,9 @@ rule bamCoverage2:
             -bs {params.binsize} -p {threads} \
                 >logs/bamCoverage2_{wildcards.protocol}_${{curr_iter}}.txt 2>&1
                 
-        # Create a symlink for downstream rules
-        ln -sf "$(realpath $out_file)" output/bamCoverage2_{wildcards.protocol}_latest.bg
-        
+        # Create done marker file
+        touch output/bamCoverage2_{wildcards.protocol}_done_${{curr_iter}}.txt
+                
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -90,7 +91,8 @@ rule bamCoverage1:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
         bed = directory("output/bamCoverage1_{protocol}"),
-        iter_file = "output/benchmark_iteration_bamCoverage1_{protocol}.txt"
+        iter_file = "output/benchmark_iteration_bamCoverage1_{protocol}.txt",
+        done = expand("output/bamCoverage1_{{protocol}}_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
         repeat(f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes['bamCoverage']}_{{protocol}}.txt", Ntimes)
     params:
@@ -107,9 +109,9 @@ rule bamCoverage1:
             -bs {params.binsize} -p {threads} \
                 >logs/bamCoverage1_{wildcards.protocol}_${{curr_iter}}.txt 2>&1
                 
-        # Create a symlink for downstream rules
-        ln -sf "$(realpath $out_file)" output/bamCoverage1_{wildcards.protocol}_latest.bg
-        
+        # Create done marker file
+        touch output/bamCoverage1_{wildcards.protocol}_done_${{curr_iter}}.txt
+                
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -120,7 +122,8 @@ rule bamCompare2:
         bam2 = lambda wildcards: FILES[ORGANISM + "_wgs"]
     output:
         bw = directory("output/bamCompare2"),
-        iter_file = "output/benchmark_iteration_bamCompare2.txt"
+        iter_file = "output/benchmark_iteration_bamCompare2.txt",
+        done = expand("output/bamCompare2_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
         repeat(f"logs/bamCompare2_{ORGANISM}_bs{BinSizes['bamCompare']}.txt", Ntimes)
     params:
@@ -137,9 +140,9 @@ rule bamCompare2:
             -o $out_file -bs {params.binsize} -p {threads} \
                 >logs/bamCompare2_${{curr_iter}}.txt 2>&1
                 
-        # Create a symlink for downstream rules
-        ln -sf "$(realpath $out_file)" output/bamCompare2_latest.bw
-        
+        # Create done marker file
+        touch output/bamCompare2_done_${{curr_iter}}.txt
+                
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
@@ -150,7 +153,8 @@ rule bamCompare1:
         bam2 = lambda wildcards: FILES[ORGANISM + "_wgs"]
     output:
         bw = directory("output/bamCompare1"),
-        iter_file = "output/benchmark_iteration_bamCompare1.txt"
+        iter_file = "output/benchmark_iteration_bamCompare1.txt",
+        done = expand("output/bamCompare1_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
         repeat(f"logs/bamCompare1_{ORGANISM}_bs{BinSizes['bamCompare']}.txt", Ntimes)
     params:
@@ -167,20 +171,22 @@ rule bamCompare1:
             -o $out_file -bs {params.binsize} -p {threads} \
                 >logs/bamCompare1_${{curr_iter}}.txt 2>&1
                 
-        # Create a symlink for downstream rules
-        ln -sf "$(realpath $out_file)" output/bamCompare1_latest.bw
-        
+        # Create done marker file
+        touch output/bamCompare1_done_${{curr_iter}}.txt
+                
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
         """
 
 rule computeMatrix2:
     input:
-        bw2 = "output/bamCompare2_latest.bw",  # Using symlink from bamCompare2
+        bw_dir = "output/bamCompare2",
+        bw_done = expand("output/bamCompare2_done_{iter}.txt", iter=range(1, Ntimes+1)),
         gtf = GTF
     output:
         npz = directory("output/computeMatrix2"),
-        iter_file = "output/benchmark_iteration_computeMatrix2.txt"
+        iter_file = "output/benchmark_iteration_computeMatrix2.txt",
+        done = expand("output/computeMatrix2_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
         repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BinSizes['computeMatrix']}.txt", Ntimes)
     params:
@@ -195,20 +201,27 @@ rule computeMatrix2:
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.npz}/iter_${{curr_iter}}.npz"
         
+        # Try to match iterations, otherwise use first file
+        if [ -f "{input.bw_dir}/iter_${{curr_iter}}.bw" ]; then
+            input_bw="{input.bw_dir}/iter_${{curr_iter}}.bw"
+        else
+            input_bw=$(ls {input.bw_dir}/iter_*.bw | head -n 1)
+        fi
+        
         if [ "{ORGANISM}" = "homo" ]; then
           {timeCmd} computeMatrix reference-point \
-              -S {input.bw2} {humanBigwigs} \
+              -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   >logs/computeMatrix2_${{curr_iter}}.txt 2>&1
         else
           {timeCmd} computeMatrix reference-point \
-              -S {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} {input.bw2} \
+              -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   >logs/computeMatrix2_${{curr_iter}}.txt 2>&1
         fi
         
-        # Create a symlink for downstream rules
-        ln -sf "$(realpath $out_file)" output/computeMatrix2_latest.npz
+        # Create done marker file
+        touch output/computeMatrix2_done_${{curr_iter}}.txt
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
@@ -216,11 +229,13 @@ rule computeMatrix2:
 
 rule computeMatrix1:
     input:
-        bw1 = "output/bamCompare1_latest.bw",  # Using symlink from bamCompare1
+        bw_dir = "output/bamCompare1",
+        bw_done = expand("output/bamCompare1_done_{iter}.txt", iter=range(1, Ntimes+1)),
         gtf = GTF
     output:
         npz = directory("output/computeMatrix1"),
-        iter_file = "output/benchmark_iteration_computeMatrix1.txt"
+        iter_file = "output/benchmark_iteration_computeMatrix1.txt",
+        done = expand("output/computeMatrix1_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
         repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BinSizes['computeMatrix']}.txt", Ntimes)
     params:
@@ -235,20 +250,27 @@ rule computeMatrix1:
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.npz}/iter_${{curr_iter}}.npz"
         
+        # Try to match iterations, otherwise use first file
+        if [ -f "{input.bw_dir}/iter_${{curr_iter}}.bw" ]; then
+            input_bw="{input.bw_dir}/iter_${{curr_iter}}.bw"
+        else
+            input_bw=$(ls {input.bw_dir}/iter_*.bw | head -n 1)
+        fi
+        
         if [ "{ORGANISM}" = "homo" ]; then
           {timeCmd} computeMatrix reference-point \
-              -S {input.bw1} {humanBigwigs} \
+              -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   >logs/computeMatrix1_${{curr_iter}}.txt 2>&1
         else
           {timeCmd} computeMatrix reference-point \
-              -S {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} {input.bw1} \
+              -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   >logs/computeMatrix1_${{curr_iter}}.txt 2>&1
         fi
         
-        # Create a symlink for downstream rules
-        ln -sf "$(realpath $out_file)" output/computeMatrix1_latest.npz
+        # Create done marker file
+        touch output/computeMatrix1_done_${{curr_iter}}.txt
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
@@ -259,7 +281,8 @@ rule multiBamSummary2:
         bam = FILES[ORGANISM + "_" + "wgs"]
     output:
         npz = directory("output/multiBamSummary2"),
-        iter_file = "output/benchmark_iteration_multiBamSummary2.txt"
+        iter_file = "output/benchmark_iteration_multiBamSummary2.txt",
+        done = expand("output/multiBamSummary2_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
         repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt", Ntimes)
     params:
@@ -283,9 +306,8 @@ rule multiBamSummary2:
                     >logs/multiBamSummary2_${{curr_iter}}.txt 2>&1
         fi
         
-        # Create symlinks for downstream rules
-        ln -sf "$out_npz" output/multiBamSummary2_latest.npz
-        ln -sf "$out_raw" output/multiBamSummary2_latest.outraw.tab
+        # Create done marker file
+        touch output/multiBamSummary2_done_${{curr_iter}}.txt
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
@@ -296,7 +318,8 @@ rule multiBamSummary1:
         bam = FILES[ORGANISM + "_" + "wgs"]
     output:
         npz = directory("output/multiBamSummary1"),
-        iter_file = "output/benchmark_iteration_multiBamSummary1.txt"
+        iter_file = "output/benchmark_iteration_multiBamSummary1.txt",
+        done = expand("output/multiBamSummary1_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
         repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt", Ntimes)
     params:
@@ -320,9 +343,8 @@ rule multiBamSummary1:
                     >logs/multiBamSummary1_${{curr_iter}}.txt 2>&1
         fi
         
-        # Create symlinks for downstream rules
-        ln -sf "$out_npz" output/multiBamSummary1_latest.npz
-        ln -sf "$out_raw" output/multiBamSummary1_latest.outraw.tab
+        # Create done marker file
+        touch output/multiBamSummary1_done_${{curr_iter}}.txt
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
@@ -330,6 +352,18 @@ rule multiBamSummary1:
 
 rule process_results:
     input:
+        # Make sure to wait for all the done markers
+        bamCoverage1_done = expand("output/bamCoverage1_{protocol}_done_{iter}.txt", 
+                                  protocol=PROTOCOLS, iter=range(1, Ntimes+1)),
+        bamCoverage2_done = expand("output/bamCoverage2_{protocol}_done_{iter}.txt", 
+                                  protocol=PROTOCOLS, iter=range(1, Ntimes+1)),
+        bamCompare1_done = expand("output/bamCompare1_done_{iter}.txt", iter=range(1, Ntimes+1)),
+        bamCompare2_done = expand("output/bamCompare2_done_{iter}.txt", iter=range(1, Ntimes+1)),
+        computeMatrix1_done = expand("output/computeMatrix1_done_{iter}.txt", iter=range(1, Ntimes+1)),
+        computeMatrix2_done = expand("output/computeMatrix2_done_{iter}.txt", iter=range(1, Ntimes+1)),
+        multiBamSummary1_done = expand("output/multiBamSummary1_done_{iter}.txt", iter=range(1, Ntimes+1)),
+        multiBamSummary2_done = expand("output/multiBamSummary2_done_{iter}.txt", iter=range(1, Ntimes+1)),
+        # Original input files
         bamCoverage1_chip = f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes['bamCoverage']}_chip.txt",
         bamCoverage2_chip = f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes['bamCoverage']}_chip.txt",
         bamCoverage1_rna = f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes['bamCoverage']}_rna.txt",

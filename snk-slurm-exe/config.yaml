@@ -1,6 +1,5 @@
 restart-times: 3
 local-cores: 1
-latency-wait: 90
 use-conda: True
 keep-going: True
 rerun-incomplete: True
@@ -8,23 +7,52 @@ printshellcmds: True
 jobs: 10
 max-jobs-per-second: 1
 max-status-checks-per-second: 2
+max-inventory-time: 300
+latency-wait: 120
 executor: slurm
+wait-for-files:
+  - zenodo/triticum_chip_SRR1686799.bam
+  - zenodo/bigwigs/human_chip_SRR28592125.bw
+  - zenodo/bigwigs/human_rna_SRR28012905.bw
+  - zenodo/bigwigs/human_rna_SRR28012904.bw
+  - zenodo/bigwigs/human_chip_SRR28592124.bw
+  - zenodo/bigwigs/human_rna_SRR28012902.bw
+  - zenodo/bigwigs/human_chip_SRR28592132.bw
+  - zenodo/bigwigs/human_wgs_SRR15494527.bw
+  - zenodo/bigwigs/human_chip_SRR28592131.bw
+  - zenodo/bigwigs/human_rna_SRR28012903.bw
+  - zenodo/triticum_chip_SRR1686799.bam.csi
+  - zenodo/triticum_chip_SRR1686799_reverse.bw
+  - zenodo/triticum_chip_SRR1686799_markdup.bw
+  - zenodo/triticum_chip_SRR1686799_nodup.bw
+  - zenodo/human_rna_SRR28012902.bam.bai
+  - zenodo/human_rna_SRR28012902.bam
+  - zenodo/triticum_rna_SRR27822150.bam
+  - zenodo/triticum_rna_SRR27822150.bam.csi
+  - zenodo/triticum_chip_SRR1686799_mapq10.bw
+  - zenodo/human_chip_SRR28592124.bam
+  - zenodo/triticum_wgs_SRR27887047.bam.csi
+  - zenodo/human_wgs_SRR15494527.bam
+  - zenodo/human_chip_SRR28592124.bam.bai
+  - zenodo/triticum_chip_SRR1686799_fw.bw
+  - zenodo/human_wgs_SRR15494527.bam.bai
+  - zenodo/triticum_wgs_SRR27887047.bam
 default-resources:
   slurm_partition: general
   cpus: 64
 set-resources:
   bamCoverage1:
-    runtime: 1h
-    mem: 5GB * attempt
+    runtime: 3h
+    mem: 10GB * attempt
   bamCoverage2:
     runtime: 1h
-    mem: 10GB * attempt
+    mem: 15GB * attempt
   bamCompare1:
-    runtime: 1h
-    mem: 8GB * attempt
+    runtime: 3h
+    mem: 10GB * attempt
   bamCompare2:
     runtime: 1h
-    mem: 16GB * attempt
+    mem: 15GB * attempt
   computeMatrix1:
     runtime: 5h
     mem: 32GB * attempt

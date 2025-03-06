@@ -23,6 +23,9 @@ elif system == "Darwin":
 else:
     raise ValueError(f"Unsupported platform: {system}")
 
+# Helper fn. to keep logs of failed jobs (e.g. FileNotFound zenodo/*.bam)
+shell.prefix("function on_error() {{ cp $1 $1.failed.$(date +%Y%m%d_%H%M%S); return 1; }}; ")
+
 PROTOCOLS = ["chip", "rna", "wgs"]
 FILES = {
     "homo_chip": "zenodo/human_chip_SRR28592124.bam",
@@ -71,10 +74,6 @@ rule bamCoverage2:
     conda: "v4.env.yaml"
     shell:
         """
-        function on_error() {
-            cp "$1" "$1.failed.$(date +%Y%m%d_%H%M%S)"
-            return 1
-        }
         mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
@@ -106,10 +105,6 @@ rule bamCoverage1:
     conda: "v3.env.yaml"
     shell:
         """
-        function on_error() {
-            cp "$1" "$1.failed.$(date +%Y%m%d_%H%M%S)"
-            return 1
-        }
         mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
@@ -142,10 +137,6 @@ rule bamCompare2:
     conda: "v4.env.yaml"
     shell:
         """
-        function on_error() {
-            cp "$1" "$1.failed.$(date +%Y%m%d_%H%M%S)"
-            return 1
-        }
         mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bw}/iter_${{curr_iter}}.bw"
@@ -178,10 +169,6 @@ rule bamCompare1:
     conda: "v3.env.yaml"
     shell:
         """
-        function on_error() {
-            cp "$1" "$1.failed.$(date +%Y%m%d_%H%M%S)"
-            return 1
-        }
         mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bw}/iter_${{curr_iter}}.bw"
@@ -217,10 +204,6 @@ rule computeMatrix2:
     conda: "v4.env.yaml"
     shell:
         """
-        function on_error() {
-            cp "$1" "$1.failed.$(date +%Y%m%d_%H%M%S)"
-            return 1
-        }
         mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.npz}/iter_${{curr_iter}}.npz"
@@ -271,10 +254,6 @@ rule computeMatrix1:
     conda: "v3.env.yaml"
     shell:
         """
-        function on_error() {
-            cp "$1" "$1.failed.$(date +%Y%m%d_%H%M%S)"
-            return 1
-        }
         mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.npz}/iter_${{curr_iter}}.npz"
@@ -321,10 +300,6 @@ rule multiBamSummary2:
     conda: "v4.env.yaml"
     shell:
         """
-        function on_error() {
-            cp "$1" "$1.failed.$(date +%Y%m%d_%H%M%S)"
-            return 1
-        }
         mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_npz="{output.npz}/iter_${{curr_iter}}.npz"

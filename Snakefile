@@ -24,7 +24,13 @@ else:
     raise ValueError(f"Unsupported platform: {system}")
 
 # Helper fn. to keep logs of failed jobs (e.g. FileNotFound zenodo/*.bam)
-shell.prefix("set -o pipefail; function on_error() { cp \"$1\" \"$1.failed.$(date +%Y%m%d_%H%M%S)\"; return 1; }; ")
+shell.prefix("""
+set -o pipefail
+function on_error() {
+    cp "$1" "$1.failed.$(date +%Y%m%d_%H%M%S)"
+    return 1
+}
+""")
 
 PROTOCOLS = ["chip", "rna", "wgs"]
 FILES = {
@@ -77,10 +83,11 @@ rule bamCoverage2:
         mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
+        log_file="logs/bamCoverage2_{wildcards.protocol}_${{curr_iter}}.txt"
         
         {timeCmd} bamCoverage -b {input.bam} -o $out_file -of bedgraph \
             -bs {params.binsize} -p {threads} \
-                $log_file 2>&1 || on_error $log_file
+                > $log_file 2>&1 || on_error $log_file
                 
         # Create done marker file
         touch output/bamCoverage2_{wildcards.protocol}_done_${{curr_iter}}.txt
@@ -107,10 +114,11 @@ rule bamCoverage1:
         mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
+        log_file="logs/bamCoverage1_{wildcards.protocol}_${{curr_iter}}.txt"
         
         {timeCmd} bamCoverage -b {input.bam} -o $out_file -of bedgraph \
             -bs {params.binsize} -p {threads} \
-                $log_file 2>&1 || on_error $log_file
+                > $log_file 2>&1 || on_error $log_file
                 
         # Create done marker file
         touch output/bamCoverage1_{wildcards.protocol}_done_${{curr_iter}}.txt
@@ -138,10 +146,11 @@ rule bamCompare2:
         mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bw}/iter_${{curr_iter}}.bw"
+        log_file="logs/bamCompare2_${{curr_iter}}.txt"
         
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o $out_file -bs {params.binsize} -p {threads} \
-                $log_file 2>&1 || on_error $log_file
+                > $log_file 2>&1 || on_error $log_file
                 
         # Create done marker file
         touch output/bamCompare2_done_${{curr_iter}}.txt
@@ -169,10 +178,11 @@ rule bamCompare1:
         mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bw}/iter_${{curr_iter}}.bw"
+        log_file="logs/bamCompare1_${{curr_iter}}.txt"
         
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o $out_file -bs {params.binsize} -p {threads} \
-                $log_file 2>&1 || on_error $log_file
+                > $log_file 2>&1 || on_error $log_file
                 
         # Create done marker file
         touch output/bamCompare1_done_${{curr_iter}}.txt
@@ -203,6 +213,7 @@ rule computeMatrix2:
         mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.npz}/iter_${{curr_iter}}.npz"
+        log_file="logs/computeMatrix2_${{curr_iter}}.txt"
         
         # Try to match iterations, otherwise use first file
         if [ -f "{input.bw_dir}/iter_${{curr_iter}}.bw" ]; then
@@ -215,12 +226,12 @@ rule computeMatrix2:
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  $log_file 2>&1 || on_error $log_file
+                  > $log_file 2>&1 || on_error $log_file
         else
           {timeCmd} computeMatrix reference-point \
               -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  $log_file 2>&1 || on_error $log_file
+                  > $log_file 2>&1 || on_error $log_file
         fi
         
         # Create done marker file
@@ -252,6 +263,7 @@ rule computeMatrix1:
         mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.npz}/iter_${{curr_iter}}.npz"
+        log_file="logs/computeMatrix1_${{curr_iter}}.txt"
         
         # Try to match iterations, otherwise use first file
         if [ -f "{input.bw_dir}/iter_${{curr_iter}}.bw" ]; then
@@ -264,12 +276,12 @@ rule computeMatrix1:
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  $log_file 2>&1 || on_error $log_file
+                  > $log_file 2>&1 || on_error $log_file
         else
           {timeCmd} computeMatrix reference-point \
               -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  $log_file 2>&1 || on_error $log_file
+                  > $log_file 2>&1 || on_error $log_file
         fi
         
         # Create done marker file
@@ -298,15 +310,16 @@ rule multiBamSummary2:
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_npz="{output.npz}/iter_${{curr_iter}}.npz"
         out_raw="{output.npz}/iter_${{curr_iter}}.outraw.tab"
+        log_file="logs/multiBamSummary2_${{curr_iter}}.txt"
         
         if [ "{ORGANISM}" = "homo" ]; then
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    $log_file 2>&1 || on_error $log_file
+                    > $log_file 2>&1 || on_error $log_file
         else
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    $log_file 2>&1 || on_error $log_file
+                    > $log_file 2>&1 || on_error $log_file
         fi
         
         # Create done marker file
@@ -335,15 +348,16 @@ rule multiBamSummary1:
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_npz="{output.npz}/iter_${{curr_iter}}.npz"
         out_raw="{output.npz}/iter_${{curr_iter}}.outraw.tab"
+        log_file="logs/multiBamSummary1_${{curr_iter}}.txt"
         
         if [ "{ORGANISM}" = "homo" ]; then
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    $log_file 2>&1 || on_error $log_file
+                    > $log_file 2>&1 || on_error $log_file
         else
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    $log_file 2>&1 || on_error $log_file
+                    > $log_file 2>&1 || on_error $log_file
         fi
         
         # Create done marker file

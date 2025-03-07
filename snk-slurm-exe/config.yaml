@@ -43,10 +43,10 @@ default-resources:
   cpus: 64
 set-resources:
   bamCoverage1:
-    runtime: 2h  # it has 3 protocols
+    runtime: 2h * attempt  # it has 3 protocols
     mem: 12GB * attempt
   bamCoverage2:
-    runtime: 2h  # it has 3 protocols
+    runtime: 2h * attempt  # it has 3 protocols
     mem: 12GB * attempt
   bamCompare1:
     mem: 12GB * attempt
@@ -57,9 +57,10 @@ set-resources:
   computeMatrix2:
     mem: 2GB * attempt
   multiBamSummary1:
-    runtime: 1h
+    runtime: 1h * attempt
     mem: 8GB * attempt
   multiBamSummary2:
+    runtime: 1h * attempt
     mem: 4GB * attempt
   process_results:
     cpus: 1

@@ -5,8 +5,8 @@ keep-going: True
 rerun-incomplete: True
 printshellcmds: True
 jobs: 10
-max-jobs-per-second: 0.25
-job-submission-delay: 5
+max-jobs-per-second: 1
+job-submission-delay: 30
 max-status-checks-per-second: 2
 max-inventory-time: 300
 latency-wait: 180

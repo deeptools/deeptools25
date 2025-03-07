@@ -57,6 +57,7 @@ set-resources:
   computeMatrix2:
     mem: 2GB * attempt
   multiBamSummary1:
+    runtime: 1h
     mem: 8GB * attempt
   multiBamSummary2:
     mem: 4GB * attempt

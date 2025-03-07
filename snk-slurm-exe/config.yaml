@@ -65,3 +65,7 @@ set-resources:
   multiBamSummary2:
     runtime: 2h
     mem: 48GB * attempt
+  process_results:
+    runtime: 30
+    cpus: 1
+    mem: 2GB

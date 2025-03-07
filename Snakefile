@@ -434,6 +434,7 @@ rule process_results:
         computeMatrix2_done = expand("output/computeMatrix2_done_{iter}.txt", iter=range(1, Ntimes+1)),
         multiBamSummary1_done = expand("output/multiBamSummary1_done_{iter}.txt", iter=range(1, Ntimes+1)),
         multiBamSummary2_done = expand("output/multiBamSummary2_done_{iter}.txt", iter=range(1, Ntimes+1)),
+        
         # Original input files
         bamCoverage1_chip = f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes['bamCoverage']}_chip.txt",
         bamCoverage2_chip = f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes['bamCoverage']}_chip.txt",
@@ -448,14 +449,23 @@ rule process_results:
         multiBamSummary1 = f"logs/multiBamSummary1_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt",
         multiBamSummary2 = f"logs/multiBamSummary2_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt"
     output:
-        bamCoverage_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}_time.png",
-        bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}_mem.png",
-        bamCompare_time_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes['bamCompare']}_time.png",
-        bamCompare_mem_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes['bamCompare']}_mem.png",
-        computeMatrix_time_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes['computeMatrix']}_time.png",
-        computeMatrix_mem_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes['computeMatrix']}_mem.png",
-        multiBamSummary_time_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}_time.png",
-        multiBamSummary_mem_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}_mem.png"
+        # CPU Time plots
+        bamCoverage_cpu_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}_cputime.png",
+        bamCompare_cpu_time_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes['bamCompare']}_cputime.png",
+        computeMatrix_cpu_time_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes['computeMatrix']}_cputime.png",
+        multiBamSummary_cpu_time_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}_cputime.png",
+        
+        # Wall Time plots
+        bamCoverage_wall_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}_walltime.png",
+        bamCompare_wall_time_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes['bamCompare']}_walltime.png",
+        computeMatrix_wall_time_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes['computeMatrix']}_walltime.png",
+        multiBamSummary_wall_time_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}_walltime.png",
+        
+        # Memory plots
+        bamCoverage_mem_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}_memory.png",
+        bamCompare_mem_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes['bamCompare']}_memory.png",
+        computeMatrix_mem_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes['computeMatrix']}_memory.png",
+        multiBamSummary_mem_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}_memory.png"
     params:
         # Pre-compute these paths to avoid string formatting issues in the shell command
         bamCoverage_output = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}",
@@ -464,10 +474,10 @@ rule process_results:
         multiBamSummary_output = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}"
     shell:
         """
-        python3 present_results.py {params.bamCoverage_output}.png \
+        python3 present_results.py --ntimes {Ntimes} {params.bamCoverage_output}.png \
             {input.bamCoverage1_chip},{input.bamCoverage1_rna},{input.bamCoverage1_wgs} \
             {input.bamCoverage2_chip},{input.bamCoverage2_rna},{input.bamCoverage2_wgs}
-        python3 present_results.py {params.bamCompare_output}.png {input.bamCompare1} {input.bamCompare2}
-        python3 present_results.py {params.computeMatrix_output}.png {input.computeMatrix1} {input.computeMatrix2}
-        python3 present_results.py {params.multiBamSummary_output}.png {input.multiBamSummary1} {input.multiBamSummary2}
+        python3 present_results.py --ntimes {Ntimes} {params.bamCompare_output}.png {input.bamCompare1} {input.bamCompare2}
+        python3 present_results.py --ntimes {Ntimes} {params.computeMatrix_output}.png {input.computeMatrix1} {input.computeMatrix2}
+        python3 present_results.py --ntimes {Ntimes} {params.multiBamSummary_output}.png {input.multiBamSummary1} {input.multiBamSummary2}
         """

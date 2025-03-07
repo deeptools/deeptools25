@@ -23,8 +23,64 @@ elif system == "Darwin":
 else:
     raise ValueError(f"Unsupported platform: {system}")
 
-# Helper fn. to keep logs of failed jobs (e.g. FileNotFound zenodo/*.bam)
-shell.prefix("function on_error() {{ cp $1 $1.failed.$(date +%Y%m%d_%H%M%S); return 1; }}; ")
+# Helper fn. to keep logs of failed jobs and verify file existence
+shell.prefix("""
+function on_error() { 
+    cp $1 $1.failed.$(date +%Y%m%d_%H%M%S)
+    echo "ERROR: Command failed, log saved as $1.failed.$(date +%Y%m%d_%H%M%S)" >&2
+    return 1  # This will propagate the error
+}; 
+
+function verify_file() {
+    local timeout=300  # Default timeout 5 minutes
+    
+    # Check if first arg is a number (timeout)
+    if [[ $1 =~ ^[0-9]+$ ]]; then
+        timeout=$1
+        shift  # Remove first argument
+    fi
+    
+    # Check if there are no files to check
+    if [ $# -eq 0 ]; then
+        echo "ERROR: No files specified for verification" >&2
+        return 1
+    fi
+    
+    local start_time=$(date +%s)
+    local end_time=$((start_time + timeout))
+    
+    # Loop until timeout
+    while [ $(date +%s) -lt $end_time ]; do
+        local all_exist=true
+        
+        # Check each file
+        for file in "$@"; do
+            if [ ! -f "$file" ]; then
+                all_exist=false
+                break
+            fi
+        done
+        
+        # If all files exist, we're good
+        if $all_exist; then
+            return 0
+        fi
+        
+        # Wait before checking again
+        sleep 10
+    done
+    
+    # Timeout occurred - report missing files
+    echo "ERROR: Not all input files found after $timeout seconds:" >&2
+    for file in "$@"; do
+        if [ ! -f "$file" ]; then
+            echo "  - Missing: $file" >&2
+        fi
+    done
+    return 1
+};
+"""
+)
 
 PROTOCOLS = ["chip", "rna", "wgs"]
 FILES = {
@@ -74,6 +130,7 @@ rule bamCoverage2:
     conda: "v4.env.yaml"
     shell:
         """
+        verify_file {input.bam} 600 || exit 1
         mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
@@ -81,7 +138,7 @@ rule bamCoverage2:
         
         {timeCmd} bamCoverage -b {input.bam} -o $out_file -of bedgraph \
             -bs {params.binsize} -p {threads} \
-                > $log_file 2>&1 || on_error $log_file
+                > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
                 
         # Create done marker file
         touch output/bamCoverage2_{wildcards.protocol}_done_${{curr_iter}}.txt
@@ -105,6 +162,7 @@ rule bamCoverage1:
     conda: "v3.env.yaml"
     shell:
         """
+        verify_file {input.bam} 600 || exit 1
         mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
@@ -112,7 +170,7 @@ rule bamCoverage1:
         
         {timeCmd} bamCoverage -b {input.bam} -o $out_file -of bedgraph \
             -bs {params.binsize} -p {threads} \
-                > $log_file 2>&1 || on_error $log_file
+                > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
                 
         # Create done marker file
         touch output/bamCoverage1_{wildcards.protocol}_done_${{curr_iter}}.txt
@@ -137,6 +195,7 @@ rule bamCompare2:
     conda: "v4.env.yaml"
     shell:
         """
+        verify_file 600 {input.bam1} {input.bam2} || exit 1
         mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bw}/iter_${{curr_iter}}.bw"
@@ -144,7 +203,7 @@ rule bamCompare2:
         
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o $out_file -bs {params.binsize} -p {threads} \
-                > $log_file 2>&1 || on_error $log_file
+                > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
                 
         # Create done marker file
         touch output/bamCompare2_done_${{curr_iter}}.txt
@@ -169,6 +228,7 @@ rule bamCompare1:
     conda: "v3.env.yaml"
     shell:
         """
+        verify_file 600 {input.bam1} {input.bam2} || exit 1
         mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bw}/iter_${{curr_iter}}.bw"
@@ -176,7 +236,7 @@ rule bamCompare1:
         
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o $out_file -bs {params.binsize} -p {threads} \
-                > $log_file 2>&1 || on_error $log_file
+                > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
                 
         # Create done marker file
         touch output/bamCompare1_done_${{curr_iter}}.txt
@@ -220,12 +280,12 @@ rule computeMatrix2:
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  > $log_file 2>&1 || on_error $log_file
+                  > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
         else
           {timeCmd} computeMatrix reference-point \
               -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  > $log_file 2>&1 || on_error $log_file
+                  > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
         fi
         
         # Create done marker file
@@ -270,12 +330,12 @@ rule computeMatrix1:
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  > $log_file 2>&1 || on_error $log_file
+                  > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
         else
           {timeCmd} computeMatrix reference-point \
               -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  > $log_file 2>&1 || on_error $log_file
+                  > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
         fi
         
         # Create done marker file
@@ -309,11 +369,11 @@ rule multiBamSummary2:
         if [ "{ORGANISM}" = "homo" ]; then
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    > $log_file 2>&1 || on_error $log_file
+                    > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
         else
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    > $log_file 2>&1 || on_error $log_file
+                    > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
         fi
         
         # Create done marker file
@@ -347,11 +407,11 @@ rule multiBamSummary1:
         if [ "{ORGANISM}" = "homo" ]; then
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    > $log_file 2>&1 || on_error $log_file
+                    > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
         else
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    > $log_file 2>&1 || on_error $log_file
+                    > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
         fi
         
         # Create done marker file

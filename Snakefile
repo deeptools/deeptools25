@@ -25,13 +25,13 @@ else:
 
 # Helper fn. to keep logs of failed jobs and verify file existence
 shell.prefix("""
-function on_error() { 
+function on_error() {{ 
     cp $1 $1.failed.$(date +%Y%m%d_%H%M%S)
     echo "ERROR: Command failed, log saved as $1.failed.$(date +%Y%m%d_%H%M%S)" >&2
     return 1  # This will propagate the error
-}; 
+}}; 
 
-function verify_file() {
+function verify_file() {{
     local timeout=300  # Default timeout 5 minutes
     
     # Check if first arg is a number (timeout)
@@ -78,7 +78,7 @@ function verify_file() {
         fi
     done
     return 1
-};
+}};
 """
 )
 

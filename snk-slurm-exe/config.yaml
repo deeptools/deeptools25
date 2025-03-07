@@ -40,33 +40,27 @@ wait-for-files:
   - zenodo/triticum_wgs_SRR27887047.bam
 default-resources:
   slurm_partition: general
+  runtime: 30
   cpus: 64
 set-resources:
   bamCoverage1:
-    runtime: 3h
-    mem: 10GB * attempt
+    runtime: 2h  # it has 3 protocols
+    mem: 12GB * attempt
   bamCoverage2:
-    runtime: 1h
-    mem: 15GB * attempt
+    runtime: 2h  # it has 3 protocols
+    mem: 12GB * attempt
   bamCompare1:
-    runtime: 3h
-    mem: 10GB * attempt
+    mem: 12GB * attempt
   bamCompare2:
-    runtime: 1h
-    mem: 15GB * attempt
+    mem: 12GB * attempt
   computeMatrix1:
-    runtime: 5h
-    mem: 32GB * attempt
+    mem: 4GB * attempt
   computeMatrix2:
-    runtime: 2h
-    mem: 48GB * attempt
+    mem: 2GB * attempt
   multiBamSummary1:
-    runtime: 5h
-    mem: 32GB * attempt
+    mem: 8GB * attempt
   multiBamSummary2:
-    runtime: 2h
-    mem: 48GB * attempt
+    mem: 4GB * attempt
   process_results:
-    runtime: 30
     cpus: 1
     mem: 2GB

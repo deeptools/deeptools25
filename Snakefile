@@ -275,8 +275,10 @@ rule computeMatrix2:
         else
             input_bw=$(ls {input.bw_dir}/iter_*.bw | head -n 1)
         fi
+        verify_file $input_bw 600 || exit 1
         
         if [ "{ORGANISM}" = "homo" ]; then
+          verify_file {humanBigwigs} 600 || exit 1
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
@@ -325,8 +327,10 @@ rule computeMatrix1:
         else
             input_bw=$(ls {input.bw_dir}/iter_*.bw | head -n 1)
         fi
+        verify_file $input_bw 600 || exit 1
         
         if [ "{ORGANISM}" = "homo" ]; then
+          verify_file {humanBigwigs} 600 || exit 1
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
@@ -360,6 +364,7 @@ rule multiBamSummary2:
     conda: "v4.env.yaml"
     shell:
         """
+        verify_file 600 {input.bam} || exit 1
         mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_npz="{output.npz}/iter_${{curr_iter}}.npz"
@@ -398,6 +403,7 @@ rule multiBamSummary1:
     conda: "v3.env.yaml"
     shell:
         """
+        verify_file 600 {input.bam} || exit 1
         mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_npz="{output.npz}/iter_${{curr_iter}}.npz"

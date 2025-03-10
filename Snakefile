@@ -9,7 +9,7 @@ BinSizes = {
     "multiBamSummary": 5000,
 }
 
-Ntimes = 3
+Ntimes = 10
 Nthreads = 16
 
 
@@ -106,13 +106,13 @@ humanBigwigs = "zenodo/bigwigs/human_chip_SRR28592124.bw zenodo/bigwigs/human_ch
 rule all:
     input:
         expand("output/bamCoverage_{organism}_bs{binsize}_{type}.png", 
-               organism=ORGANISM, binsize=BinSizes["bamCoverage"], type=["time", "mem"]),
+               organism=ORGANISM, binsize=BinSizes["bamCoverage"], type=["walltime", "cputime", "memory"]),
         expand("output/bamCompare_{organism}_bs{binsize}_{type}.png", 
-               organism=ORGANISM, binsize=BinSizes["bamCompare"], type=["time", "mem"]),
+               organism=ORGANISM, binsize=BinSizes["bamCompare"], type=["walltime", "cputime", "memory"]),
         expand("output/computeMatrix_{organism}_bs{binsize}_{type}.png", 
-               organism=ORGANISM, binsize=BinSizes["computeMatrix"], type=["time", "mem"]),
+               organism=ORGANISM, binsize=BinSizes["computeMatrix"], type=["walltime", "cputime", "memory"]),
         expand("output/multiBamSummary_{organism}_bs{binsize}_{type}.png",
-               organism=ORGANISM, binsize=BinSizes["multiBamSummary"], type=["time", "mem"])
+               organism=ORGANISM, binsize=BinSizes["multiBamSummary"], type=["walltime", "cputime", "memory"])
 
 
 rule bamCoverage2:
@@ -228,7 +228,7 @@ rule bamCompare1:
     conda: "v3.env.yaml"
     shell:
         """
-        verify_file 600 {input.bam1} {input.bam2} || exit 1
+        verify_file 1200 {input.bam1} {input.bam2} || exit 1
         mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bw}/iter_${{curr_iter}}.bw"

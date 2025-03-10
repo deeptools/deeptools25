@@ -1,5 +1,4 @@
-restart-times: 3
-local-cores: 1
+restart-times: 2
 use-conda: True
 keep-going: True
 rerun-incomplete: True
@@ -7,8 +6,8 @@ printshellcmds: True
 jobs: 10
 max-jobs-per-second: 1
 max-status-checks-per-second: 2
-max-inventory-time: 300
-latency-wait: 600
+max-inventory-time: 600
+latency-wait: 1200
 executor: slurm
 wait-for-files:
   - zenodo/triticum_chip_SRR1686799.bam
@@ -39,14 +38,13 @@ wait-for-files:
   - zenodo/triticum_wgs_SRR27887047.bam
 default-resources:
   slurm_partition: general
-  runtime: 30
+  runtime: 2h
   cpus: 64
 set-resources:
+  # bamCoverage{1,2} have 3 protocols, hence it has more of resources than 'expected'
   bamCoverage1:
-    runtime: 2h * attempt  # it has 3 protocols
     mem: 12GB * attempt
   bamCoverage2:
-    runtime: 2h * attempt  # it has 3 protocols
     mem: 12GB * attempt
   bamCompare1:
     mem: 12GB * attempt
@@ -57,11 +55,10 @@ set-resources:
   computeMatrix2:
     mem: 2GB * attempt
   multiBamSummary1:
-    runtime: 1h * attempt
     mem: 8GB * attempt
   multiBamSummary2:
-    runtime: 1h * attempt
     mem: 4GB * attempt
   process_results:
+    runtime: 20
     cpus: 1
-    mem: 2GB
+    mem: 3GB

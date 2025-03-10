@@ -1,7 +1,7 @@
 ### Dependencies
 
 1. Install `rustc` >= 1.73
-1. Install `matplotlib`, `Snakemake` and other optional dependencies you may need or want. For example: `conda create -n snkmk matplotlib snakemake snakemake-executor-plugin-slurm bedtools ucsc-bigwiginfo`
+1. Install `matplotlib`, `Snakemake` and other optional dependencies you may need or want. For example: `conda create -n snkmk matplotlib snakemake snakemake-executor-plugin-slurm samtools bedtools ucsc-bigwiginfo`
 
 #### Download data
 

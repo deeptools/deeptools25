@@ -514,6 +514,7 @@ rule process_results:
         bamCompare_mem_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes['bamCompare']}_memory.png",
         computeMatrix_mem_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes['computeMatrix']}_memory.png",
         multiBamSummary_mem_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}_memory.png"
+    threads: 1
     params:
         # Pre-compute these paths to avoid string formatting issues in the shell command
         bamCoverage_output = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}",

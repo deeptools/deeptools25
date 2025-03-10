@@ -39,7 +39,6 @@ wait-for-files:
 default-resources:
   slurm_partition: general
   runtime: 2h
-  cpus: 64
 set-resources:
   # bamCoverage{1,2} have 3 protocols, hence it has more of resources than 'expected'
   bamCoverage1:
@@ -60,5 +59,4 @@ set-resources:
     mem: 4GB * attempt
   process_results:
     runtime: 20
-    cpus: 1
     mem: 3GB

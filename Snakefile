@@ -33,12 +33,25 @@ function on_error() {{
 
 function verify_file() {{
     local timeout=300  # Default timeout 5 minutes
+    local verbose=false
     
-    # Check if first arg is a number (timeout)
-    if [[ $1 =~ ^[0-9]+$ ]]; then
-        timeout=$1
-        shift  # Remove first argument
-    fi
+    # Process options
+    while [[ "$1" == "-"* ]]; do
+        case "$1" in
+            -t|--timeout)
+                timeout=$2
+                shift 2
+                ;;
+            -v|--verbose)
+                verbose=true
+                shift
+                ;;
+            *)
+                echo "Unknown option: $1" >&2
+                return 1
+                ;;
+        esac
+    done
     
     # Check if there are no files to check
     if [ $# -eq 0 ]; then
@@ -46,36 +59,64 @@ function verify_file() {{
         return 1
     fi
     
+    $verbose && echo "Verifying $(($#)) files with timeout of $timeout seconds..."
+    
     local start_time=$(date +%s)
     local end_time=$((start_time + timeout))
+    local check_count=0
+    
+    # First quick check - if all files exist right away, return immediately
+    local missing=0
+    for file in "$@"; do
+        if [ ! -f "$file" ] || [ ! -r "$file" ]; then
+            missing=$((missing + 1))
+            $verbose && echo "Initially missing: $file"
+        fi
+    done
+    
+    if [ $missing -eq 0 ]; then
+        $verbose && echo "All files present immediately."
+        return 0
+    fi
     
     # Loop until timeout
     while [ $(date +%s) -lt $end_time ]; do
-        local all_exist=true
+        check_count=$((check_count + 1))
+        missing=0
         
         # Check each file
         for file in "$@"; do
-            if [ ! -f "$file" ]; then
-                all_exist=false
-                echo "Waiting for file: $file" >&2
-                break
+            if [ ! -f "$file" ] || [ ! -r "$file" ]; then
+                missing=$((missing + 1))
+                if $verbose && [ $((check_count % 6)) -eq 0 ]; then
+                    # Only print every ~60 seconds if verbose
+                    echo "Still waiting for: $file"
+                fi
             fi
         done
         
-        # If all files exist, we're good
-        if $all_exist; then
+        # If all files exist and are readable, we're good
+        if [ $missing -eq 0 ]; then
+            elapsed=$(($(date +%s) - start_time))
+            echo "All files present after $elapsed seconds."
             return 0
         fi
         
-        # Wait before checking again
+        # Wait before checking again (but only print status occasionally)
+        if $verbose && [ $((check_count % 6)) -eq 0 ]; then
+            elapsed=$(($(date +%s) - start_time))
+            remaining=$((timeout - elapsed))
+            echo "Still missing $missing files after $elapsed seconds. Will wait $remaining more seconds."
+        fi
+        
         sleep 10
     done
     
     # Timeout occurred - report missing files
     echo "ERROR: Not all input files found after $timeout seconds:" >&2
     for file in "$@"; do
-        if [ ! -f "$file" ]; then
-            echo "  - Missing: $file" >&2
+        if [ ! -f "$file" ] || [ ! -r "$file" ]; then
+            echo "  - Missing or unreadable: $file" >&2
         fi
     done
     return 1
@@ -131,7 +172,7 @@ rule bamCoverage2:
     conda: "v4.env.yaml"
     shell:
         """
-        verify_file {input.bam} 600 || {{ echo "Timeout! Not all input files were found." && exit 1; }}
+        verify_file -t 600 {input.bam} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
         mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
@@ -163,7 +204,7 @@ rule bamCoverage1:
     conda: "v3.env.yaml"
     shell:
         """
-        verify_file {input.bam} 600 || {{ echo "Timeout! Not all input files were found." && exit 1; }}
+        verify_file -t 600 {input.bam} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
         mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
@@ -196,7 +237,7 @@ rule bamCompare2:
     conda: "v4.env.yaml"
     shell:
         """
-        verify_file 600 {input.bam1} {input.bam2} || exit 1
+        verify_file -t 600 {input.bam1} {input.bam2} || exit 1
         mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bw}/iter_${{curr_iter}}.bw"
@@ -229,7 +270,7 @@ rule bamCompare1:
     conda: "v3.env.yaml"
     shell:
         """
-        verify_file 1200 {input.bam1} {input.bam2} || exit 1
+        verify_file -t 1200 {input.bam1} {input.bam2} || exit 1
         mkdir -p {output.bw}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bw}/iter_${{curr_iter}}.bw"
@@ -276,15 +317,15 @@ rule computeMatrix2:
         else
             input_bw=$(ls {input.bw_dir}/iter_*.bw | head -n 1)
         fi
-        verify_file $input_bw 600 || {{ echo "Timeout! Not all input files were found." && exit 1; }}
         
         if [ "{ORGANISM}" = "homo" ]; then
-          verify_file {humanBigwigs} 600 || {{ echo "Timeout! Not all input files were found." && exit 1; }}
+          verify_file -t 600 $input_bw {humanBigwigs} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
         else
+          verify_file -t 600 $input_bw || {{ echo "Timeout! Not all input files were found." && exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
@@ -328,15 +369,15 @@ rule computeMatrix1:
         else
             input_bw=$(ls {input.bw_dir}/iter_*.bw | head -n 1)
         fi
-        verify_file $input_bw 600 || {{ echo "Timeout! Not all input files were found." && exit 1; }}
         
         if [ "{ORGANISM}" = "homo" ]; then
-          verify_file {humanBigwigs} 600 || {{ echo "Timeout! Not all input files were found." && exit 1; }}
+          verify_file -t 600 $input_bw {humanBigwigs} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
         else
+          verify_file -t 600 $input_bw || {{ echo "Timeout! Not all input files were found." && exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
@@ -365,7 +406,7 @@ rule multiBamSummary2:
     conda: "v4.env.yaml"
     shell:
         """
-        verify_file 600 {input.bam} || exit 1
+        verify_file -t 600 {input.bam} || exit 1
         mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_npz="{output.npz}/iter_${{curr_iter}}.npz"
@@ -404,7 +445,7 @@ rule multiBamSummary1:
     conda: "v3.env.yaml"
     shell:
         """
-        verify_file 600 {input.bam} || exit 1
+        verify_file -t 600 {input.bam} || exit 1
         mkdir -p {output.npz}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_npz="{output.npz}/iter_${{curr_iter}}.npz"
@@ -481,7 +522,7 @@ rule process_results:
         multiBamSummary_output = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}"
     shell:
         """
-        verify_file {input} 600 || {{ echo "Timeout! Not all input files were found." && exit 1; }}
+        verify_file -t 600 {input} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
         python3 present_results.py --ntimes {Ntimes} {params.bamCoverage_output}.png \
             {input.bamCoverage1_chip},{input.bamCoverage1_rna},{input.bamCoverage1_wgs} \
             {input.bamCoverage2_chip},{input.bamCoverage2_rna},{input.bamCoverage2_wgs}

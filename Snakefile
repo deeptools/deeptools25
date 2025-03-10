@@ -63,6 +63,7 @@ function verify_file() {{
         
         # If all files exist, we're good
         if $all_exist; then
+            echo "Files were found, verification passed."
             return 0
         fi
         

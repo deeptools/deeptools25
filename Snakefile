@@ -57,13 +57,13 @@ function verify_file() {{
         for file in "$@"; do
             if [ ! -f "$file" ]; then
                 all_exist=false
+                echo "Waiting for file: $file" >&2
                 break
             fi
         done
         
         # If all files exist, we're good
         if $all_exist; then
-            echo "Files were found, verification passed."
             return 0
         fi
         
@@ -131,7 +131,7 @@ rule bamCoverage2:
     conda: "v4.env.yaml"
     shell:
         """
-        verify_file {input.bam} 600 || exit 1
+        verify_file {input.bam} 600 || {{ echo "Timeout! Not all input files were found." 0 || exit 10 || exit 1 exit 1; }}
         mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
@@ -163,7 +163,7 @@ rule bamCoverage1:
     conda: "v3.env.yaml"
     shell:
         """
-        verify_file {input.bam} 600 || exit 1
+        verify_file {input.bam} 600 || {{ echo "Timeout! Not all input files were found." 0 || exit 10 || exit 1 exit 1; }}
         mkdir -p {output.bed}
         curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
@@ -276,10 +276,10 @@ rule computeMatrix2:
         else
             input_bw=$(ls {input.bw_dir}/iter_*.bw | head -n 1)
         fi
-        verify_file $input_bw 600 || exit 1
+        verify_file $input_bw 600 || {{ echo "Timeout! Not all input files were found." 0 || exit 10 || exit 1 exit 1; }}
         
         if [ "{ORGANISM}" = "homo" ]; then
-          verify_file {humanBigwigs} 600 || exit 1
+          verify_file {humanBigwigs} 600 || {{ echo "Timeout! Not all input files were found." 0 || exit 10 || exit 1 exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
@@ -328,10 +328,10 @@ rule computeMatrix1:
         else
             input_bw=$(ls {input.bw_dir}/iter_*.bw | head -n 1)
         fi
-        verify_file $input_bw 600 || exit 1
+        verify_file $input_bw 600 || {{ echo "Timeout! Not all input files were found." 0 || exit 10 || exit 1 exit 1; }}
         
         if [ "{ORGANISM}" = "homo" ]; then
-          verify_file {humanBigwigs} 600 || exit 1
+          verify_file {humanBigwigs} 600 || {{ echo "Timeout! Not all input files were found." 0 || exit 10 || exit 1 exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
@@ -481,7 +481,7 @@ rule process_results:
         multiBamSummary_output = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}"
     shell:
         """
-        verify_file {input} 600 || exit 1
+        verify_file {input} 600 || {{ echo "Timeout! Not all input files were found." 0 || exit 10 || exit 1 exit 1; }}
         python3 present_results.py --ntimes {Ntimes} {params.bamCoverage_output}.png \
             {input.bamCoverage1_chip},{input.bamCoverage1_rna},{input.bamCoverage1_wgs} \
             {input.bamCoverage2_chip},{input.bamCoverage2_rna},{input.bamCoverage2_wgs}

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+import datetime
 import glob
 import warnings
 import matplotlib.pyplot as plt
@@ -129,8 +130,20 @@ class BenchmarkResult:
 
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+log_file = f"benchmark_{timestamp}.log"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s: %(message)s",
+    handlers=[
+        logging.FileHandler(log_file),
+        logging.StreamHandler(),  # Console output
+    ],
+)
+
 logger = logging.getLogger("benchmark")
+logger.info(f"Logging to file: {log_file}")
 
 
 def validate_measurements(results, expected_count):

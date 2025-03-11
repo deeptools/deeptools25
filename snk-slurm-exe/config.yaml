@@ -42,9 +42,10 @@ default-resources:
 set-resources:
   # bamCoverage{1,2} have 3 protocols, hence it has more of resources than 'expected'
   bamCoverage1:
+    runtime: 4h
     mem: 12GB * attempt
   bamCoverage2:
-    mem: 12GB * attempt
+    mem: 24GB * attempt
   bamCompare1:
     mem: 12GB * attempt
   bamCompare2:
@@ -54,9 +55,11 @@ set-resources:
   computeMatrix2:
     mem: 2GB * attempt
   multiBamSummary1:
-    mem: 8GB * attempt
+    runtime: 6h
+    mem: 16GB * attempt
   multiBamSummary2:
-    mem: 4GB * attempt
+    runtime: 6h
+    mem: 12GB * attempt
   process_results:
     runtime: 20
     mem: 3GB

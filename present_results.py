@@ -911,7 +911,7 @@ def make_boxplot(
     title,
     ylabel,
     metric="times",
-    labels=["Legacy", "Maturin"],
+    labels=["Previous version", "4.0"],
     use_cpu_time=True,
 ):
     """
@@ -951,7 +951,7 @@ def create_boxplot(
     title=None,
     ylabel=None,
     is_first=True,
-    labels=["Legacy", "Maturin"],
+    labels=["Previous version", "4.0"],
     use_cpu_time=True,
 ):
     """Helper function to create a boxplot on a given axis."""

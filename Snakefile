@@ -532,10 +532,25 @@ rule process_results:
     shell:
         """
         verify_file -t 600 {input} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
+        
         python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.bamCoverage_output}.png \
             {input.bamCoverage1_chip},{input.bamCoverage1_rna},{input.bamCoverage1_wgs} \
             {input.bamCoverage2_chip},{input.bamCoverage2_rna},{input.bamCoverage2_wgs}
-        python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.bamCompare_output}.png {input.bamCompare1} {input.bamCompare2}
-        python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.computeMatrix_output}.png {input.computeMatrix1} {input.computeMatrix2}
-        python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.multiBamSummary_output}.png {input.multiBamSummary1} {input.multiBamSummary2}
+            
+        python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.bamCompare_output}.png \
+            {input.bamCompare1} {input.bamCompare2}
+            
+        python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.computeMatrix_output}.png \
+            {input.computeMatrix1} {input.computeMatrix2}
+            
+        python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.multiBamSummary_output}.png \
+            {input.multiBamSummary1} {input.multiBamSummary2}
+        
+        # Verify all output files were created
+        verify_file -t 300 \
+            {output.bamCoverage_cpu_time_plot} {output.bamCoverage_wall_time_plot} {output.bamCoverage_mem_plot} \
+            {output.bamCompare_cpu_time_plot} {output.bamCompare_wall_time_plot} {output.bamCompare_mem_plot} \
+            {output.computeMatrix_cpu_time_plot} {output.computeMatrix_wall_time_plot} {output.computeMatrix_mem_plot} \
+            {output.multiBamSummary_cpu_time_plot} {output.multiBamSummary_wall_time_plot} {output.multiBamSummary_mem_plot} \
+            || {{ echo "Output plot verification failed!" && exit 1; }}
         """

@@ -187,6 +187,7 @@ rule bamCoverage2:
                 
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
+        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule bamCoverage1:
@@ -219,6 +220,7 @@ rule bamCoverage1:
                 
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
+        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule bamCompare2:
@@ -252,6 +254,7 @@ rule bamCompare2:
                 
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
+        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule bamCompare1:
@@ -285,6 +288,7 @@ rule bamCompare1:
                 
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
+        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule computeMatrix2:
@@ -337,6 +341,7 @@ rule computeMatrix2:
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
+        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule computeMatrix1:
@@ -389,6 +394,7 @@ rule computeMatrix1:
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
+        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule multiBamSummary2:
@@ -428,6 +434,7 @@ rule multiBamSummary2:
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
+        verify_file -t 300 {output.iter_file} $out_raw $out_npz $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule multiBamSummary1:
@@ -467,6 +474,7 @@ rule multiBamSummary1:
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
+        verify_file -t 300 {output.iter_file} $out_raw $out_npz $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule process_results:

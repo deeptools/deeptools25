@@ -524,10 +524,10 @@ rule process_results:
     shell:
         """
         verify_file -t 600 {input} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
-        python3 present_results.py --ntimes {Ntimes} {params.bamCoverage_output}.png \
+        python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.bamCoverage_output}.png \
             {input.bamCoverage1_chip},{input.bamCoverage1_rna},{input.bamCoverage1_wgs} \
             {input.bamCoverage2_chip},{input.bamCoverage2_rna},{input.bamCoverage2_wgs}
-        python3 present_results.py --ntimes {Ntimes} {params.bamCompare_output}.png {input.bamCompare1} {input.bamCompare2}
-        python3 present_results.py --ntimes {Ntimes} {params.computeMatrix_output}.png {input.computeMatrix1} {input.computeMatrix2}
-        python3 present_results.py --ntimes {Ntimes} {params.multiBamSummary_output}.png {input.multiBamSummary1} {input.multiBamSummary2}
+        python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.bamCompare_output}.png {input.bamCompare1} {input.bamCompare2}
+        python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.computeMatrix_output}.png {input.computeMatrix1} {input.computeMatrix2}
+        python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.multiBamSummary_output}.png {input.multiBamSummary1} {input.multiBamSummary2}
         """

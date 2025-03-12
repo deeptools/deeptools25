@@ -2,17 +2,17 @@
 import argparse
 import datetime
 import glob
-import warnings
-import matplotlib.pyplot as plt
-import pandas as pd
+import logging
+import os
 import platform
 import re
-import os
-import logging
+import warnings
 from pathlib import Path
 
-# Set non-interactive backend to avoid Wayland messages
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 mpl.use("Agg")  # Use non-interactive backend
 
@@ -230,7 +230,7 @@ def extract_metadata_from_path(file_path):
         raise ValueError(f"Could not parse filename pattern from {file_path}: {e}")
 
 
-def parse_benchmark_file(file_path):
+def parse_benchmark_file(file_path, n_threads):
     """
     Parse benchmark files, separating wall time and CPU time data.
 
@@ -394,15 +394,27 @@ def parse_benchmark_file(file_path):
         "memory_mb": max_rss,  # Rename for clarity
     }
 
+    # Calculate parallelization efficiency
+    parallelization_efficiency = calculate_parallelization_efficiency(
+        wall_times, cpu_times, n_threads
+    )
+    memory_metrics = calculate_memory_metrics(max_rss, max_uss, n_threads)
+
+    # Add to your kernel_data dictionary
     kernel_data = {
-        "cpu_time": cpu_times,  # CPU time in seconds
-        "cpu_usage_pct": cpu_usage,  # Raw CPU usage percentage
-        "memory_mb": max_rss,  # Memory in MB
-        "max_uss_mb": max_uss,  # USS memory in MB
-        "max_pss_mb": max_pss,  # PSS memory in MB
+        "wall_time": wall_times,
+        "cpu_time": cpu_times,
+        "max_rss": max_rss,
+        "max_uss": max_uss,
+        "max_pss": max_pss,
         "io_in": io_in,
         "io_out": io_out,
         "mean_load": mean_load,
+        "cpu_usage_pct": cpu_usage,
+        "parallelization_efficiency": parallelization_efficiency,
+        "memory_per_thread": memory_metrics["memory_per_thread"],
+        "uss_rss_ratio": memory_metrics["uss_rss_ratio"],
+        "memory_efficiency": memory_metrics["memory_efficiency"],
     }
 
     # If we detected errors and got no data, add placeholder values
@@ -422,7 +434,7 @@ def handle_macos_memory(command, backend, protocol, memory):
     if not platform.system() == "Darwin":
         return memory
 
-    Ntimes = len(memory)
+    n_times = len(memory)
 
     try:
         if sum(x or 0 for x in memory) != 0:  # Allow for None values
@@ -450,14 +462,14 @@ def handle_macos_memory(command, backend, protocol, memory):
 
         memory = parse_memory_from_logs(log_files)
 
-        if len(memory) != Ntimes:
-            logger.warning(f"Expected {Ntimes} memory values but got {len(memory)}")
+        if len(memory) != n_times:
+            logger.warning(f"Expected {n_times} memory values but got {len(memory)}")
             # Pad with None if needed
-            if len(memory) < Ntimes:
-                memory.extend([None] * (Ntimes - len(memory)))
+            if len(memory) < n_times:
+                memory.extend([None] * (n_times - len(memory)))
             # Truncate if too many
-            elif len(memory) > Ntimes:
-                memory = memory[:Ntimes]
+            elif len(memory) > n_times:
+                memory = memory[:n_times]
 
         return memory
     except Exception as e:
@@ -603,13 +615,14 @@ def save_results_to_csv(results, command, backend, binsize, protocol):
     return output_file
 
 
-def read_benchmark(file_path, expected_count=None):
+def read_benchmark(file_path, expected_count=None, n_threads=None):
     """
     Read and parse a benchmark file with validation against expected measurement count.
 
     Args:
         file_path: Path to the benchmark file
         expected_count: Expected number of measurements
+        n_threads: Number of threads used in benchmark
 
     Returns:
         BenchmarkResult object
@@ -622,7 +635,7 @@ def read_benchmark(file_path, expected_count=None):
         logger.error(f"{e}")
         return BenchmarkResult(error=str(e))
 
-    result = parse_benchmark_file(file_path)
+    result = parse_benchmark_file(file_path, n_threads)
 
     # Handle macOS memory
     try:
@@ -721,6 +734,70 @@ def validate_data_consistency(result):
     return inconsistencies
 
 
+def calculate_parallelization_efficiency(wall_times, cpu_times, n_threads):
+    """
+    Calculate parallelization efficiency as (CPU time / Wall time) / n_threads
+
+    Args:
+        wall_times: List of wall times
+        cpu_times: List of CPU times
+        n_threads: Number of threads used
+
+    Returns:
+        List of parallelization efficiency values
+    """
+    efficiencies = []
+    for wall, cpu in zip(wall_times, cpu_times):
+        if wall is not None and cpu is not None and wall > 0 and n_threads > 0:
+            efficiency = (cpu / wall) / n_threads
+            efficiencies.append(efficiency)
+        else:
+            efficiencies.append(None)
+    return efficiencies
+
+
+def calculate_memory_metrics(max_rss, max_uss, n_threads):
+    """
+    Calculate advanced memory metrics
+
+    Args:
+        max_rss: List of maximum RSS values
+        max_uss: List of maximum USS values
+        n_threads: Number of threads used
+
+    Returns:
+        Dictionary containing memory efficiency metrics
+    """
+    results = {
+        "memory_per_thread": [],  # Memory used per thread
+        "uss_rss_ratio": [],  # How efficiently memory is shared
+        "memory_efficiency": [],  # Approximation of memory scaling efficiency
+    }
+
+    for rss, uss in zip(max_rss, max_uss):
+        if rss is not None and uss is not None and rss > 0:
+            # Memory used per thread (RSS)
+            mem_per_thread = rss / n_threads
+            results["memory_per_thread"].append(mem_per_thread)
+
+            # USS/RSS ratio (closer to 1 means less memory sharing)
+            uss_rss = uss / rss
+            results["uss_rss_ratio"].append(uss_rss)
+
+            # Memory efficiency approximation
+            # Higher values may indicate better memory usage patterns
+            # This is a heuristic - memory scaling is complex
+            uss_per_thread = uss / n_threads
+            mem_efficiency = 1.0 - (uss_per_thread / rss)
+            results["memory_efficiency"].append(mem_efficiency)
+        else:
+            results["memory_per_thread"].append(None)
+            results["uss_rss_ratio"].append(None)
+            results["memory_efficiency"].append(None)
+
+    return results
+
+
 def apply_boxplot_style(bp, colors=["lightblue", "lightgreen"]):
     for patch, color in zip(bp["boxes"], colors):
         patch.set_facecolor(color)
@@ -731,10 +808,12 @@ def apply_boxplot_style(bp, colors=["lightblue", "lightgreen"]):
     plt.setp(bp["fliers"], marker="o", markerfacecolor="red", alpha=0.5)
 
 
-def process_single_files(data1_file, data2_file, base_path, ntimes, extension=".png"):
+def process_single_files(
+    data1_file, data2_file, base_path, n_times, n_threads, extension=".png"
+):
     """Process single files and generate comparison plots with both CPU and wall time."""
-    result1 = read_benchmark(data1_file, ntimes)
-    result2 = read_benchmark(data2_file, ntimes)
+    result1 = read_benchmark(data1_file, n_times, n_threads)
+    result2 = read_benchmark(data2_file, n_times, n_threads)
 
     # Handle different scenarios based on available data
     if result1 is None and result2 is None:
@@ -775,9 +854,36 @@ def process_single_files(data1_file, data2_file, base_path, ntimes, extension=".
     mem_fig.savefig(f"{base_path}_memory{extension}")
     logger.info(f"Saved memory plot to {base_path}_memory{extension}")
 
+    # Generate efficiency metrics plots
+    if result1 and result1.is_valid and result2 and result2.is_valid:
+        # Extract efficiency metrics
+        efficiency_metrics1 = {
+            "parallelization_efficiency": result1.get_metric(
+                "parallelization_efficiency", "kernel"
+            ),
+            "memory_efficiency": result1.get_metric("memory_efficiency", "kernel"),
+            "uss_rss_ratio": result1.get_metric("uss_rss_ratio", "kernel"),
+        }
+
+        efficiency_metrics2 = {
+            "parallelization_efficiency": result2.get_metric(
+                "parallelization_efficiency", "kernel"
+            ),
+            "memory_efficiency": result2.get_metric("memory_efficiency", "kernel"),
+            "uss_rss_ratio": result2.get_metric("uss_rss_ratio", "kernel"),
+        }
+
+        plot_efficiency_metrics(
+            efficiency_metrics1,
+            efficiency_metrics2,
+            ["Previous version", "4.0"],
+            f"Efficiency Metrics{error_suffix}",
+            f"{base_path}_efficiency",
+        )
+
 
 def process_multiprotocol(
-    data1_files, data2_files, base_path, protocols, ntimes, extension=".png"
+    data1_files, data2_files, base_path, protocols, n_times, n_threads, extension=".png"
 ):
     """Process multiple protocol files and generate comparison plots with both CPU and wall time."""
     data1_file_list = data1_files.split(",")
@@ -785,11 +891,11 @@ def process_multiprotocol(
 
     # Read all benchmark files with expected count
     result1_list = [
-        read_benchmark(file, ntimes) if idx < len(data1_file_list) else None
+        read_benchmark(file, n_times, n_threads) if idx < len(data1_file_list) else None
         for idx, file in enumerate(data1_file_list)
     ]
     result2_list = [
-        read_benchmark(file, ntimes) if idx < len(data2_file_list) else None
+        read_benchmark(file, n_times, n_threads) if idx < len(data2_file_list) else None
         for idx, file in enumerate(data2_file_list)
     ]
 
@@ -835,6 +941,45 @@ def process_multiprotocol(
     )
     mem_fig.savefig(f"{base_path}_memory{extension}")
     logger.info(f"Saved memory plot to {base_path}_memory{extension}")
+
+    # Generate efficiency metrics plots - for each protocol separately
+    for idx, protocol in enumerate(protocols):
+        if idx < len(result1_list) and idx < len(result2_list):
+            result1 = result1_list[idx]
+            result2 = result2_list[idx]
+
+            if result1 and result1.is_valid and result2 and result2.is_valid:
+                # Extract efficiency metrics
+                efficiency_metrics1 = {
+                    "parallelization_efficiency": result1.get_metric(
+                        "parallelization_efficiency", "kernel"
+                    ),
+                    "memory_efficiency": result1.get_metric(
+                        "memory_efficiency", "kernel"
+                    ),
+                    "uss_rss_ratio": result1.get_metric("uss_rss_ratio", "kernel"),
+                }
+
+                efficiency_metrics2 = {
+                    "parallelization_efficiency": result2.get_metric(
+                        "parallelization_efficiency", "kernel"
+                    ),
+                    "memory_efficiency": result2.get_metric(
+                        "memory_efficiency", "kernel"
+                    ),
+                    "uss_rss_ratio": result2.get_metric("uss_rss_ratio", "kernel"),
+                }
+
+                # Create a protocol-specific output prefix
+                protocol_base_path = f"{base_path}_{protocol}"
+
+                plot_efficiency_metrics(
+                    efficiency_metrics1,
+                    efficiency_metrics2,
+                    ["Previous version", "4.0"],
+                    f"{protocol.upper()} Efficiency Metrics",
+                    f"{protocol_base_path}_efficiency",
+                )
 
 
 def make_protocol_boxplots(
@@ -1083,8 +1228,94 @@ def create_boxplot(
     return bp
 
 
+# Add new plotting function for efficiency metrics
+
+
+def plot_efficiency_metrics(metrics1, metrics2, labels, title, output_prefix):
+    """
+    Create comparative plots for efficiency metrics
+
+    Args:
+        metrics1: Dictionary with efficiency metrics for tool 1
+        metrics2: Dictionary with efficiency metrics for tool 2
+        labels: Labels for the plot
+        title: Title for the plot
+        output_prefix: Prefix for output file
+    """
+    metrics = [
+        (
+            "parallelization_efficiency",
+            "Parallelization Efficiency (CPU time / Wall time / Threads)",
+        ),
+        ("memory_efficiency", "Memory Usage Efficiency"),
+        ("uss_rss_ratio", "USS/RSS Ratio (Lower means better memory sharing)"),
+    ]
+
+    for metric_name, metric_title in metrics:
+        plt.figure(figsize=(10, 6))
+
+        # Create boxplots
+        data = [
+            [v for v in metrics1[metric_name] if v is not None],
+            [v for v in metrics2[metric_name] if v is not None],
+        ]
+
+        if not any(data) or all(len(d) == 0 for d in data):
+            plt.text(
+                0.5,
+                0.5,
+                "No data available for this metric",
+                ha="center",
+                va="center",
+                fontsize=14,
+                color="red",
+            )
+            plt.title(f"{title} - {metric_title} (No Data)")
+        else:
+            bp = plt.boxplot(data, labels=labels, patch_artist=True)
+
+        # Set colors
+        for patch, color in zip(bp["boxes"], ["lightblue", "lightgreen"]):
+            patch.set_facecolor(color)
+
+        # Add individual points for transparency
+        for i, d in enumerate(data):
+            x = [i + 1] * len(d)
+            plt.scatter(x, d, alpha=0.5, color="darkblue")
+
+        # Add mean values as text
+        for i, d in enumerate(data):
+            if d:
+                mean_val = np.mean(d)
+                plt.text(
+                    i + 1,
+                    np.min(d) * 0.95,
+                    f"Mean: {mean_val:.3f}",
+                    ha="center",
+                    va="top",
+                    fontweight="bold",
+                )
+
+        plt.title(f"{title} - {metric_title}")
+        plt.grid(True, linestyle="--", alpha=0.7)
+
+        # Save plot
+        output_file = f"{output_prefix}_{metric_name}.png"
+        plt.tight_layout()
+        plt.savefig(output_file, dpi=300)
+        plt.close()
+        logger.info(f"Saved {output_file}")
+
+
 def parse_command_line_args():
     parser = argparse.ArgumentParser(description="Generate benchmark comparison plots")
+
+    parser.add_argument(
+        "--threads",
+        type=int,
+        required=True,
+        help="Number of threads used in benchmarks",
+    )
 
     parser.add_argument(
         "--ntimes",
@@ -1121,7 +1352,8 @@ if __name__ == "__main__":
 
     # Get values from args
     output_template = args.output_template
-    ntimes = args.ntimes
+    n_times = args.ntimes
+    n_threads = args.threads
 
     # Parse the output path
     output_path = Path(output_template)
@@ -1133,8 +1365,10 @@ if __name__ == "__main__":
         # For bamCoverage, we know the protocols are chip,rna,wgs in that order
         protocols = ["chip", "rna", "wgs"]
         process_multiprotocol(
-            args.data1_files, args.data2_files, base_path, protocols, ntimes
+            args.data1_files, args.data2_files, base_path, protocols, n_times, n_threads
         )
     else:
         # For single file comparisons (bamCompare, computeMatrix, multiBamSummary)
-        process_single_files(args.data1_files, args.data2_files, base_path, ntimes)
+        process_single_files(
+            args.data1_files, args.data2_files, base_path, n_times, n_threads
+        )

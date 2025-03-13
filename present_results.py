@@ -653,11 +653,19 @@ def read_benchmark(file_path, expected_count=None, n_threads=None):
         result = validate_measurements(result, expected_count)
 
     # Check consistency between Python and kernel data on Linux
-    inconsistencies = validate_data_consistency(result)
+    inconsistencies = validate_data_consistency(result, n_threads)
     if inconsistencies:
-        logger.warning(f"Data inconsistencies detected in {file_path}:")
-        for key, issue in inconsistencies.items():
-            logger.warning(f"  - {key}: {issue}")
+        # Only log a summary instead of each individual measurement
+        inconsistent_measurements = len(inconsistencies)
+        total_measurements = len(result.get_metric("wall_time"))
+        logger.warning(
+            f"CPU/Wall time inconsistencies in {inconsistent_measurements}/{total_measurements} "
+            f"measurements in {file_path}"
+        )
+        # Log just the first example as a sample
+        first_key = next(iter(inconsistencies))
+        logger.warning(f"Example: {first_key}: {inconsistencies[first_key]}")
+
         # Add to result data but don't treat as errors
         result.data["data_inconsistencies"] = inconsistencies
 
@@ -682,12 +690,13 @@ def parse_memory_from_logs(log_files):
     return memory_values
 
 
-def validate_data_consistency(result):
+def validate_data_consistency(result, n_threads=None):
     """
     Validate consistency between wall time and CPU time measurements.
 
     Args:
         result: BenchmarkResult object
+        n_threads: Number of threads used (if known)
 
     Returns:
         Dictionary of inconsistencies found
@@ -701,35 +710,24 @@ def validate_data_consistency(result):
     wall_times = result.get_metric("wall_time", "python")
     cpu_times = result.get_metric("cpu_time", "kernel")
 
-    # Get CPU usage percentage (we now know this is reported in total %)
-    cpu_usage_pcts = result.get_metric("cpu_usage_pct", "kernel")
-
-    # Calculate expected thread count for each measurement
-    for i, (wall, cpu, usage_pct) in enumerate(
-        zip(wall_times, cpu_times, cpu_usage_pcts)
-    ):
-        if wall is None or cpu is None or usage_pct is None or wall == 0:
+    # Simple sanity check - does CPU time make sense relative to wall time?
+    for i, (wall, cpu) in enumerate(zip(wall_times, cpu_times)):
+        if wall is None or cpu is None or wall == 0:
             continue
 
-        # Calculate the thread count from the CPU usage percentage
-        # CPU usage % is actually CPU time / wall time * 100
-        expected_threads = usage_pct / 100
+        # For CPU-bound tasks, we expect CPU time ≈ wall time * n_threads
+        # Allow for some overhead and variation
+        if n_threads and n_threads > 1:
+            # CPU time should be roughly proportional to thread count
+            ratio = cpu / wall
+            expected_ratio = n_threads
 
-        # Calculate a sanity check: does CPU time ≈ wall time * threads?
-        expected_cpu_time = wall * expected_threads / 100
-
-        # Calculate relative difference between actual and expected CPU time
-        if expected_cpu_time > 0:
-            rel_diff = abs(cpu - expected_cpu_time) / expected_cpu_time
-
-            # Log only if difference is substantial
-            if rel_diff > 0.05:  # More than 5% difference
-                inconsistencies[f"cpu_model_{i}"] = (
-                    f"Wall: {wall:.2f}s × Threads({expected_threads / 100:.1f}) should ≈ {expected_cpu_time:.2f}s, "
-                    f"but actual CPU time: {cpu:.2f}s, Diff: {rel_diff:.1%}"
+            # Allow for variation - flag only if significantly off (> 30% difference)
+            if abs(ratio - expected_ratio) / expected_ratio > 0.3:
+                inconsistencies[f"cpu_time_{i}"] = (
+                    f"CPU/Wall ratio: {ratio:.1f} differs from expected ratio of {expected_ratio} "
+                    f"(CPU: {cpu:.2f}s, Wall: {wall:.2f}s)"
                 )
-
-    # No need to validate memory - both values come from the same source
 
     return inconsistencies
 

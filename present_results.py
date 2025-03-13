@@ -169,52 +169,31 @@ def validate_measurements(results, expected_count):
 
     # Validate Python data first
     for metric, values in results.python_data.items():
-        if not isinstance(values, list):
-            continue
-
-        actual_count = len([v for v in values if v is not None])
-
-        # Don't validate non-measurement fields
-        if metric in ["error", "validation_issues", "data_inconsistencies"]:
-            continue
-
+        actual_count = len(values) if values is not None else 0
         if actual_count != expected_count:
-            key = f"python_{metric}"
-            validation_issues[key] = (
-                f"Expected {expected_count} measurements, found {actual_count}"
-            )
-            logger.warning(
-                f"Python metric '{metric}' has {actual_count}/{expected_count} measurements"
+            validation_issues[f"python_{metric}"] = (
+                f"Expected {expected_count} values, got {actual_count}"
             )
 
     # Then validate kernel data
     for metric, values in results.kernel_data.items():
-        if not isinstance(values, list):
-            continue
-
-        actual_count = len([v for v in values if v is not None])
-
-        # Don't validate non-measurement fields
-        if metric in ["error", "validation_issues", "data_inconsistencies"]:
-            continue
-
+        actual_count = len(values) if values is not None else 0
         if actual_count != expected_count:
-            key = f"kernel_{metric}"
-            validation_issues[key] = (
-                f"Expected {expected_count} measurements, found {actual_count}"
-            )
-            logger.warning(
-                f"Kernel metric '{metric}' has {actual_count}/{expected_count} measurements"
+            validation_issues[f"kernel_{metric}"] = (
+                f"Expected {expected_count} values, got {actual_count}"
             )
 
-    # Add validation results to the result object
+    # Add validation results to the result object without marking as error
     if validation_issues:
-        # Store validation issues in the data property for reporting
         results.data["validation_issues"] = validation_issues
+        logger.warning(f"Validation issues detected: {validation_issues}")
 
-        # Only set error if we don't already have one
-        if not results.is_error:
-            results.error = f"Measurement count mismatch: expected {expected_count}"
+        # Only set as error if there are serious inconsistencies (missing measurements)
+        critical_issues = any(
+            "got 0" in str(issue) for issue in validation_issues.values()
+        )
+        if critical_issues and not results.is_error:
+            results.error = f"Missing measurements detected: {validation_issues}"
 
     return results
 

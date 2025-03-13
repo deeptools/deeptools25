@@ -773,7 +773,7 @@ def validate_data_consistency(result, n_threads=None):
         else "Super-linear"
     )
 
-    # Add workload analysis as INFO rather than WARNING
+    # Always log workload analysis as INFO
     logger.info(
         f"Workload analysis: Task appears to be {workload_type} - "
         f"median CPU/Wall ratio ({median_ratio:.1f}) is {abs(ratio_of_expected - 1.0) * 100:.0f}% "
@@ -788,7 +788,7 @@ def validate_data_consistency(result, n_threads=None):
         "ratio_of_expected": ratio_of_expected,
     }
 
-    # For CPU-bound tasks, flag individual outliers
+    # For CPU-bound tasks, flag individual outliers as INFO level observations
     if cpu_bound:
         for i, (wall, cpu) in enumerate(zip(wall_times, cpu_times)):
             if wall is None or cpu is None or wall == 0:
@@ -800,20 +800,41 @@ def validate_data_consistency(result, n_threads=None):
             threshold = 0.5 if wall < 10 else 0.4 if wall < 60 else 0.3
 
             if abs(ratio - median_ratio) / median_ratio > threshold:
-                inconsistencies[f"cpu_time_{i}"] = (
-                    f"Outlier ratio: {ratio:.1f} significantly differs from median ratio {median_ratio:.1f} "
-                    f"(CPU: {cpu:.2f}s, Wall: {wall:.2f}s)"
+                message = (
+                    f"Measurement {i + 1}: CPU/Wall ratio ({ratio:.1f}) differs from median "
+                    f"({median_ratio:.1f}) by {abs(ratio - median_ratio) / median_ratio * 100:.0f}%"
                 )
-    # For non-CPU-bound tasks, only report serious inconsistencies
-    elif abs(ratio_of_expected - 1.0) > 1.0:  # Only warn if more than 100% off expected
+                # Store in results but don't warn - just info
+                inconsistencies[f"cpu_time_{i}"] = message
+
+                # Log as INFO instead of WARNING
+                logger.info(f"Outlier detected: {message}")
+
+    # For non-CPU-bound tasks, use WARNING only for serious inconsistencies
+    elif abs(ratio_of_expected - 1.0) > 1.5:  # Increased threshold to 150% for warnings
         description = "higher" if ratio_of_expected > 1 else "lower"
 
-        # Create a single summary instead of per-measurement warnings
-        inconsistencies["summary"] = (
-            f"Task appears to be {workload_type} - "
+        # Create a single summary as a warning for severe anomalies
+        warning_msg = (
+            f"SIGNIFICANT ANOMALY: Task appears to be {workload_type} - "
             f"median CPU/Wall ratio ({median_ratio:.1f}) is {abs(ratio_of_expected - 1.0) * 100:.0f}% {description} "
             f"than expected for {n_threads} threads"
         )
+        inconsistencies["summary"] = warning_msg
+        logger.warning(warning_msg)
+
+    # For moderate inconsistencies, use INFO level (100-150% different from expected)
+    elif abs(ratio_of_expected - 1.0) > 1.0:
+        description = "higher" if ratio_of_expected > 1 else "lower"
+
+        # Create a single summary as an info message
+        info_msg = (
+            f"MODERATE ANOMALY: Task appears to be {workload_type} - "
+            f"median CPU/Wall ratio ({median_ratio:.1f}) is {abs(ratio_of_expected - 1.0) * 100:.0f}% {description} "
+            f"than expected for {n_threads} threads"
+        )
+        inconsistencies["summary"] = info_msg
+        logger.info(info_msg)
 
     return inconsistencies
 

@@ -17,10 +17,9 @@ rm -rf trash
 samtools quickcheck zenodo/*.bam && sleep 3s
 snakemake --profile snk-slurm-exe --benchmark-extended
 
-# Save everything except for data output files
+# Save everything except for data output files and flags
 find output -mindepth 1 -maxdepth 1 -type d | xargs rm -rf
-find output -maxdepth 1 -type f \( -name "*_done_*.txt" -o -name "bechmark_iteration_*.txt" \) -delete
-mv benchmark_*.log logs/
+find output -type f \( -name "*_done_*.txt" -o -name "bechmark_iteration_*.txt" \) -delete
 mv .snakemake/log/*.snakemake.log logs/
 mv .snakemake/slurm_logs logs/
 mv logs output/

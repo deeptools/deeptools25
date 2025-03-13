@@ -131,7 +131,7 @@ class BenchmarkResult:
 
 # Set up logging
 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-log_file = f"benchmark_{timestamp}.log"
+log_file = f"logs/present_results_{timestamp}.log"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -855,7 +855,7 @@ def process_single_files(
     logger.info(f"Saved memory plot to {base_path}_memory{extension}")
 
     ## Generate efficiency metrics plots
-    #if result1 and result1.is_valid and result2 and result2.is_valid:
+    # if result1 and result1.is_valid and result2 and result2.is_valid:
     #    # Extract efficiency metrics
     #    efficiency_metrics1 = {
     #        "parallelization_efficiency": result1.get_metric(
@@ -943,7 +943,7 @@ def process_multiprotocol(
     logger.info(f"Saved memory plot to {base_path}_memory{extension}")
 
     ## Generate efficiency metrics plots - for each protocol separately
-    #for idx, protocol in enumerate(protocols):
+    # for idx, protocol in enumerate(protocols):
     #    if idx < len(result1_list) and idx < len(result2_list):
     #        result1 = result1_list[idx]
     #        result2 = result2_list[idx]

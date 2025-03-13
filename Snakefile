@@ -28,6 +28,17 @@ shell.prefix("""
 function on_error() {{ 
     cp $1 $1.failed.$(date +%Y%m%d_%H%M%S)
     echo "ERROR: Command failed, log saved as $1.failed.$(date +%Y%m%d_%H%M%S)" >&2
+    
+    # If we have an iteration file, decrement it so the job will be retried
+    if [ -n "$2" ] && [ -f "$2" ]; then
+        curr_iter=$(cat $2)
+        if [ $curr_iter -gt 1 ]; then
+            new_iter=$((curr_iter - 1))
+            echo $new_iter > $2
+            echo "Decremented iteration counter in $2 from $curr_iter to $new_iter" >&2
+        fi
+    fi
+    
     return 1  # This will propagate the error
 }}; 
 
@@ -180,14 +191,16 @@ rule bamCoverage2:
         
         {timeCmd} bamCoverage -b {input.bam} -o $out_file -of bedgraph \
             -bs {params.binsize} -p {threads} \
-                > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
                 
+        # Verify output files were created properly
+        verify_file -t 300 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
+        
         # Create done marker file
         touch output/bamCoverage2_{wildcards.protocol}_done_${{curr_iter}}.txt
                 
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
-        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule bamCoverage1:
@@ -213,14 +226,16 @@ rule bamCoverage1:
         
         {timeCmd} bamCoverage -b {input.bam} -o $out_file -of bedgraph \
             -bs {params.binsize} -p {threads} \
-                > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
                 
+        # Verify output files were created properly
+        verify_file -t 300 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
+        
         # Create done marker file
         touch output/bamCoverage1_{wildcards.protocol}_done_${{curr_iter}}.txt
                 
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
-        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule bamCompare2:
@@ -247,14 +262,16 @@ rule bamCompare2:
         
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o $out_file -bs {params.binsize} -p {threads} \
-                > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
+                
+        # Verify output files were created properly
+        verify_file -t 300 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
                 
         # Create done marker file
         touch output/bamCompare2_done_${{curr_iter}}.txt
                 
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
-        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule bamCompare1:
@@ -281,14 +298,16 @@ rule bamCompare1:
         
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o $out_file -bs {params.binsize} -p {threads} \
-                > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
+                
+        # Verify output files were created properly
+        verify_file -t 300 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
                 
         # Create done marker file
         touch output/bamCompare1_done_${{curr_iter}}.txt
                 
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
-        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule computeMatrix2:
@@ -327,21 +346,23 @@ rule computeMatrix2:
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                  > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
         else
           verify_file -t 600 $input_bw || {{ echo "Timeout! Not all input files were found." && exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                  > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
         fi
+        
+        # Verify output files were created properly
+        verify_file -t 300 {output.iter_file} $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/computeMatrix2_done_${{curr_iter}}.txt
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
-        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule computeMatrix1:
@@ -380,21 +401,23 @@ rule computeMatrix1:
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                  > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
         else
           verify_file -t 600 $input_bw || {{ echo "Timeout! Not all input files were found." && exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
-                  > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                  > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
         fi
+        
+        # Verify output files were created properly
+        verify_file -t 300 {output.iter_file} $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/computeMatrix1_done_${{curr_iter}}.txt
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
-        verify_file -t 300 {output.iter_file} $out_file $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule multiBamSummary2:
@@ -422,19 +445,21 @@ rule multiBamSummary2:
         if [ "{ORGANISM}" = "homo" ]; then
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                    > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
         else
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                    > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
         fi
+        
+        # Verify output files were created properly
+        verify_file -t 300 {output.iter_file} $out_raw $out_npz || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/multiBamSummary2_done_${{curr_iter}}.txt
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
-        verify_file -t 300 {output.iter_file} $out_raw $out_npz $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule multiBamSummary1:
@@ -462,19 +487,21 @@ rule multiBamSummary1:
         if [ "{ORGANISM}" = "homo" ]; then
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                    > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
         else
             {timeCmd} multiBamSummary bins -b {input.bam} {input.bam} {input.bam} \
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
-                    > $log_file 2>&1 || {{ on_error $log_file && exit 1; }}
+                    > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
         fi
+        
+        # Verify output files were created properly
+        verify_file -t 300 {output.iter_file} $out_raw $out_npz || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/multiBamSummary1_done_${{curr_iter}}.txt
         
         curr_iter=$((curr_iter + 1))
         echo $curr_iter > {output.iter_file}
-        verify_file -t 300 {output.iter_file} $out_raw $out_npz $log_file || {{ echo "Output file verification failed!" && exit 1; }}
         """
 
 rule process_results:

@@ -14,20 +14,40 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-mpl.use("Agg")  # Use non-interactive backend
+# Global constants for plot labels
+PREV_VERSION_LABEL = "Previous version"
+CURRENT_VERSION_LABEL = "4.0"
 
-# Suppress matplotlib deprecation warnings - safer way without requiring specific class names
+
+# Matplotlib settings for our use-case(s)
+mpl.use("Agg")
+
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-# Try to import the specific warning class first
 try:
     from matplotlib.cbook import MatplotlibDeprecationWarning
 
     warnings.filterwarnings("ignore", category=MatplotlibDeprecationWarning)
 except ImportError:
-    # If the import fails, use a more general approach
     warnings.filterwarnings("ignore", message=".*deprecated.*", category=Warning)
+
+
+# Set up logging
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+log_file = f"logs/present_results_{timestamp}.log"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s: %(message)s",
+    handlers=[
+        logging.FileHandler(log_file),
+        logging.StreamHandler(),  # Console output
+    ],
+)
+
+logger = logging.getLogger("benchmark")
+logger.info(f"Logging to file: {log_file}")
 
 
 class BenchmarkResult:
@@ -127,23 +147,6 @@ class BenchmarkResult:
         for metric, values in self.kernel_data.items():
             if isinstance(values, list) and 0 <= index < len(values):
                 values[index] = None
-
-
-# Set up logging
-timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-log_file = f"logs/present_results_{timestamp}.log"
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(levelname)s: %(message)s",
-    handlers=[
-        logging.FileHandler(log_file),
-        logging.StreamHandler(),  # Console output
-    ],
-)
-
-logger = logging.getLogger("benchmark")
-logger.info(f"Logging to file: {log_file}")
 
 
 def validate_measurements(results, expected_count):
@@ -602,10 +605,35 @@ def save_results_to_csv(results, command, backend, binsize, protocol):
             df["python_wall_time"].notnull() & df["kernel_cpu_time"].notnull()
         )
         if non_null_mask.any():
+            # CPU/Wall ratio
             df.loc[non_null_mask, "cpu_vs_wall_ratio"] = (
                 df.loc[non_null_mask, "kernel_cpu_time"]
                 / df.loc[non_null_mask, "python_wall_time"]
             )
+
+            # Add workload classification if we know thread count
+            n_threads = results.data.get("n_threads")
+            if n_threads:
+                df.loc[non_null_mask, "expected_ratio"] = n_threads
+                df.loc[non_null_mask, "ratio_to_expected"] = (
+                    df.loc[non_null_mask, "cpu_vs_wall_ratio"] / n_threads
+                )
+
+                # Add workload classification
+                def classify_workload(ratio):
+                    if ratio < 0.5:
+                        return "I/O-bound"
+                    elif 0.7 <= ratio <= 1.3:
+                        return "CPU-bound"
+                    elif ratio > 1.3:
+                        return "Super-linear"
+                    else:
+                        return "Mixed"
+
+                if "ratio_to_expected" in df.columns:
+                    df.loc[non_null_mask, "workload_type"] = df.loc[
+                        non_null_mask, "ratio_to_expected"
+                    ].apply(classify_workload)
 
     # Save with NA representation for None values
     df.to_csv(output_file, index=False, na_rep="NA")
@@ -655,16 +683,23 @@ def read_benchmark(file_path, expected_count=None, n_threads=None):
     # Check consistency between Python and kernel data on Linux
     inconsistencies = validate_data_consistency(result, n_threads)
     if inconsistencies:
-        # Only log a summary instead of each individual measurement
-        inconsistent_measurements = len(inconsistencies)
-        total_measurements = len(result.get_metric("wall_time"))
-        logger.warning(
-            f"CPU/Wall time inconsistencies in {inconsistent_measurements}/{total_measurements} "
-            f"measurements in {file_path}"
-        )
-        # Log just the first example as a sample
-        first_key = next(iter(inconsistencies))
-        logger.warning(f"Example: {first_key}: {inconsistencies[first_key]}")
+        # Only log a warning if we have actual inconsistencies (outliers in CPU-bound tasks)
+        if any(key.startswith("cpu_time_") for key in inconsistencies):
+            # Only log a summary instead of each individual measurement
+            inconsistent_measurements = len(
+                [k for k in inconsistencies if k.startswith("cpu_time_")]
+            )
+            total_measurements = len(result.get_metric("wall_time"))
+            logger.warning(
+                f"CPU/Wall time inconsistencies in {inconsistent_measurements}/{total_measurements} "
+                f"measurements in {file_path}"
+            )
+            # Log just the first example as a sample
+            first_key = next(k for k in inconsistencies if k.startswith("cpu_time_"))
+            logger.warning(f"Example: {first_key}: {inconsistencies[first_key]}")
+        elif "summary" in inconsistencies:
+            # For non-CPU-bound tasks with significant deviation, log as warning
+            logger.warning(f"Workload anomaly detected: {inconsistencies['summary']}")
 
         # Add to result data but don't treat as errors
         result.data["data_inconsistencies"] = inconsistencies
@@ -701,7 +736,7 @@ def validate_data_consistency(result, n_threads=None):
     Returns:
         Dictionary of inconsistencies found
     """
-    if platform.system() != "Linux":
+    if platform.system() != "Linux" or not n_threads or n_threads <= 1:
         return {}
 
     inconsistencies = {}
@@ -710,24 +745,75 @@ def validate_data_consistency(result, n_threads=None):
     wall_times = result.get_metric("wall_time", "python")
     cpu_times = result.get_metric("cpu_time", "kernel")
 
-    # Simple sanity check - does CPU time make sense relative to wall time?
-    for i, (wall, cpu) in enumerate(zip(wall_times, cpu_times)):
-        if wall is None or cpu is None or wall == 0:
-            continue
+    # Calculate average ratio to detect patterns
+    valid_ratios = []
+    for wall, cpu in zip(wall_times, cpu_times):
+        if wall is not None and cpu is not None and wall > 0:
+            valid_ratios.append(cpu / wall)
 
-        # For CPU-bound tasks, we expect CPU time ≈ wall time * n_threads
-        # Allow for some overhead and variation
-        if n_threads and n_threads > 1:
-            # CPU time should be roughly proportional to thread count
+    if not valid_ratios:
+        return {}
+
+    # Calculate median ratio and variance
+    median_ratio = np.median(valid_ratios)
+
+    # Store thread count in the result data for CSV output
+    result.data["n_threads"] = n_threads
+
+    # Determine if workload is CPU-bound (ratio close to thread count)
+    ratio_of_expected = median_ratio / n_threads
+    cpu_bound = 0.7 <= ratio_of_expected <= 1.3
+
+    # Store workload analysis in result data
+    workload_type = (
+        "CPU-bound"
+        if cpu_bound
+        else "I/O-bound"
+        if ratio_of_expected < 0.7
+        else "Super-linear"
+    )
+
+    # Add workload analysis as INFO rather than WARNING
+    logger.info(
+        f"Workload analysis: Task appears to be {workload_type} - "
+        f"median CPU/Wall ratio ({median_ratio:.1f}) is {abs(ratio_of_expected - 1.0) * 100:.0f}% "
+        f"{'higher' if ratio_of_expected > 1 else 'lower'} than expected for {n_threads} threads"
+    )
+
+    # Store workload analysis in result
+    result.data["workload_analysis"] = {
+        "type": workload_type,
+        "median_ratio": median_ratio,
+        "expected_ratio": n_threads,
+        "ratio_of_expected": ratio_of_expected,
+    }
+
+    # For CPU-bound tasks, flag individual outliers
+    if cpu_bound:
+        for i, (wall, cpu) in enumerate(zip(wall_times, cpu_times)):
+            if wall is None or cpu is None or wall == 0:
+                continue
+
             ratio = cpu / wall
-            expected_ratio = n_threads
 
-            # Allow for variation - flag only if significantly off (> 30% difference)
-            if abs(ratio - expected_ratio) / expected_ratio > 0.3:
+            # Only flag significant outliers - be more lenient for longer-running tasks
+            threshold = 0.5 if wall < 10 else 0.4 if wall < 60 else 0.3
+
+            if abs(ratio - median_ratio) / median_ratio > threshold:
                 inconsistencies[f"cpu_time_{i}"] = (
-                    f"CPU/Wall ratio: {ratio:.1f} differs from expected ratio of {expected_ratio} "
+                    f"Outlier ratio: {ratio:.1f} significantly differs from median ratio {median_ratio:.1f} "
                     f"(CPU: {cpu:.2f}s, Wall: {wall:.2f}s)"
                 )
+    # For non-CPU-bound tasks, only report serious inconsistencies
+    elif abs(ratio_of_expected - 1.0) > 1.0:  # Only warn if more than 100% off expected
+        description = "higher" if ratio_of_expected > 1 else "lower"
+
+        # Create a single summary instead of per-measurement warnings
+        inconsistencies["summary"] = (
+            f"Task appears to be {workload_type} - "
+            f"median CPU/Wall ratio ({median_ratio:.1f}) is {abs(ratio_of_expected - 1.0) * 100:.0f}% {description} "
+            f"than expected for {n_threads} threads"
+        )
 
     return inconsistencies
 
@@ -813,6 +899,16 @@ def process_single_files(
     result1 = read_benchmark(data1_file, n_times, n_threads)
     result2 = read_benchmark(data2_file, n_times, n_threads)
 
+    # Set up titles with error indicators if needed
+    error_suffix = (
+        " (Errors)"
+        if (result1 and result1.is_error) or (result2 and result2.is_error)
+        else ""
+    )
+
+    # Generate CPU time plot
+    cpu_title = f"CPU Time Comparison{error_suffix}"
+
     # Handle different scenarios based on available data
     if result1 is None and result2 is None:
         logger.error("Both input files contain errors, cannot generate plots")
@@ -852,32 +948,41 @@ def process_single_files(
     mem_fig.savefig(f"{base_path}_memory{extension}")
     logger.info(f"Saved memory plot to {base_path}_memory{extension}")
 
-    ## Generate efficiency metrics plots
-    # if result1 and result1.is_valid and result2 and result2.is_valid:
-    #    # Extract efficiency metrics
-    #    efficiency_metrics1 = {
-    #        "parallelization_efficiency": result1.get_metric(
-    #            "parallelization_efficiency", "kernel"
-    #        ),
-    #        "memory_efficiency": result1.get_metric("memory_efficiency", "kernel"),
-    #        "uss_rss_ratio": result1.get_metric("uss_rss_ratio", "kernel"),
-    #    }
+    # Generate efficiency metrics plots
+    if result1 and result1.is_valid and result2 and result2.is_valid:
+        # Extract efficiency metrics
+        efficiency_metrics1 = {
+            "parallelization_efficiency": result1.get_metric(
+                "parallelization_efficiency", "kernel"
+            ),
+            "memory_efficiency": result1.get_metric("memory_efficiency", "kernel"),
+            "uss_rss_ratio": result1.get_metric("uss_rss_ratio", "kernel"),
+        }
 
-    #    efficiency_metrics2 = {
-    #        "parallelization_efficiency": result2.get_metric(
-    #            "parallelization_efficiency", "kernel"
-    #        ),
-    #        "memory_efficiency": result2.get_metric("memory_efficiency", "kernel"),
-    #        "uss_rss_ratio": result2.get_metric("uss_rss_ratio", "kernel"),
-    #    }
+        efficiency_metrics2 = {
+            "parallelization_efficiency": result2.get_metric(
+                "parallelization_efficiency", "kernel"
+            ),
+            "memory_efficiency": result2.get_metric("memory_efficiency", "kernel"),
+            "uss_rss_ratio": result2.get_metric("uss_rss_ratio", "kernel"),
+        }
 
-    #    plot_efficiency_metrics(
-    #        efficiency_metrics1,
-    #        efficiency_metrics2,
-    #        ["Previous version", "4.0"],
-    #        f"Efficiency Metrics{error_suffix}",
-    #        f"{base_path}_efficiency",
-    #    )
+        # Add efficiency metrics plot
+        plot_efficiency_metrics(
+            efficiency_metrics1,
+            efficiency_metrics2,
+            title=f"Efficiency Metrics{error_suffix}",
+            output_prefix=f"{base_path}_efficiency",
+        )
+
+        # Add workload analysis plot
+        plot_workload_analysis(
+            result1,
+            result2,
+            title=f"Workload Analysis{error_suffix}",
+            output_prefix=base_path,
+            n_threads=n_threads,
+        )
 
 
 def process_multiprotocol(
@@ -940,44 +1045,53 @@ def process_multiprotocol(
     mem_fig.savefig(f"{base_path}_memory{extension}")
     logger.info(f"Saved memory plot to {base_path}_memory{extension}")
 
-    ## Generate efficiency metrics plots - for each protocol separately
-    # for idx, protocol in enumerate(protocols):
-    #    if idx < len(result1_list) and idx < len(result2_list):
-    #        result1 = result1_list[idx]
-    #        result2 = result2_list[idx]
+    # Generate efficiency metrics plots - for each protocol separately
+    for idx, protocol in enumerate(protocols):
+        if idx < len(result1_list) and idx < len(result2_list):
+            result1 = result1_list[idx]
+            result2 = result2_list[idx]
 
-    #        if result1 and result1.is_valid and result2 and result2.is_valid:
-    #            # Extract efficiency metrics
-    #            efficiency_metrics1 = {
-    #                "parallelization_efficiency": result1.get_metric(
-    #                    "parallelization_efficiency", "kernel"
-    #                ),
-    #                "memory_efficiency": result1.get_metric(
-    #                    "memory_efficiency", "kernel"
-    #                ),
-    #                "uss_rss_ratio": result1.get_metric("uss_rss_ratio", "kernel"),
-    #            }
+            if result1 and result1.is_valid and result2 and result2.is_valid:
+                # Extract efficiency metrics
+                efficiency_metrics1 = {
+                    "parallelization_efficiency": result1.get_metric(
+                        "parallelization_efficiency", "kernel"
+                    ),
+                    "memory_efficiency": result1.get_metric(
+                        "memory_efficiency", "kernel"
+                    ),
+                    "uss_rss_ratio": result1.get_metric("uss_rss_ratio", "kernel"),
+                }
 
-    #            efficiency_metrics2 = {
-    #                "parallelization_efficiency": result2.get_metric(
-    #                    "parallelization_efficiency", "kernel"
-    #                ),
-    #                "memory_efficiency": result2.get_metric(
-    #                    "memory_efficiency", "kernel"
-    #                ),
-    #                "uss_rss_ratio": result2.get_metric("uss_rss_ratio", "kernel"),
-    #            }
+                efficiency_metrics2 = {
+                    "parallelization_efficiency": result2.get_metric(
+                        "parallelization_efficiency", "kernel"
+                    ),
+                    "memory_efficiency": result2.get_metric(
+                        "memory_efficiency", "kernel"
+                    ),
+                    "uss_rss_ratio": result2.get_metric("uss_rss_ratio", "kernel"),
+                }
 
-    #            # Create a protocol-specific output prefix
-    #            protocol_base_path = f"{base_path}_{protocol}"
+                # Create a protocol-specific output prefix
+                protocol_base_path = f"{base_path}_{protocol}"
 
-    #            plot_efficiency_metrics(
-    #                efficiency_metrics1,
-    #                efficiency_metrics2,
-    #                ["Previous version", "4.0"],
-    #                f"{protocol.upper()} Efficiency Metrics",
-    #                f"{protocol_base_path}_efficiency",
-    #            )
+                # Add efficiency metrics plot
+                plot_efficiency_metrics(
+                    efficiency_metrics1,
+                    efficiency_metrics2,
+                    title=f"{protocol.upper()} Efficiency Metrics",
+                    output_prefix=f"{protocol_base_path}_efficiency",
+                )
+
+                # Add workload analysis plot
+                plot_workload_analysis(
+                    result1,
+                    result2,
+                    title=f"{protocol.upper()} Workload Analysis",
+                    output_prefix=protocol_base_path,
+                    n_threads=n_threads,
+                )
 
 
 def make_protocol_boxplots(
@@ -1054,7 +1168,7 @@ def make_boxplot(
     title,
     ylabel,
     metric="times",
-    labels=["Previous version", "4.0"],
+    labels=None,
     use_cpu_time=True,
 ):
     """
@@ -1066,9 +1180,12 @@ def make_boxplot(
         title: Plot title
         ylabel: Y-axis label
         metric: Metric to plot ("times" for time or "memory" for memory)
-        labels: Labels for the boxplots
+        labels: Labels for the boxplots (defaults to global version labels)
         use_cpu_time: If True, use CPU time; if False, use wall time
     """
+    if labels is None:
+        labels = [PREV_VERSION_LABEL, CURRENT_VERSION_LABEL]
+
     fig, ax = plt.subplots(figsize=(8, 6))
 
     create_boxplot(
@@ -1094,10 +1211,13 @@ def create_boxplot(
     title=None,
     ylabel=None,
     is_first=True,
-    labels=["Previous version", "4.0"],
+    labels=None,
     use_cpu_time=True,
 ):
     """Helper function to create a boxplot on a given axis."""
+    if labels is None:
+        labels = [PREV_VERSION_LABEL, CURRENT_VERSION_LABEL]
+
     # Choose the appropriate metric based on what we want to show
     if metric == "times":
         if use_cpu_time:
@@ -1226,27 +1346,40 @@ def create_boxplot(
     return bp
 
 
-def plot_efficiency_metrics(metrics1, metrics2, labels, title, output_prefix):
+def plot_efficiency_metrics(
+    metrics1, metrics2, labels=None, title=None, output_prefix=None
+):
     """
     Create comparative plots for efficiency metrics
 
     Args:
         metrics1: Dictionary with efficiency metrics for tool 1
         metrics2: Dictionary with efficiency metrics for tool 2
-        labels: Labels for the plot
+        labels: Labels for the plot (defaults to global version labels)
         title: Title for the plot
         output_prefix: Prefix for output file
     """
+    if labels is None:
+        labels = [PREV_VERSION_LABEL, CURRENT_VERSION_LABEL]
     metrics = [
         (
             "parallelization_efficiency",
-            "Parallelization Efficiency (CPU time / Wall time / Threads)",
+            "Parallelization Efficiency",
+            "Higher values for CPU-bound tasks, lower for I/O-bound",
         ),
-        ("memory_efficiency", "Memory Usage Efficiency"),
-        ("uss_rss_ratio", "USS/RSS Ratio (Lower means better memory sharing)"),
+        (
+            "memory_efficiency",
+            "Memory Usage Efficiency",
+            "Higher means better memory sharing across threads",
+        ),
+        (
+            "uss_rss_ratio",
+            "USS/RSS Ratio",
+            "Lower means better memory sharing (private vs total memory)",
+        ),
     ]
 
-    for metric_name, metric_title in metrics:
+    for metric_name, metric_title, explanation in metrics:
         plt.figure(figsize=(10, 6))
 
         # Create boxplots
@@ -1269,27 +1402,56 @@ def plot_efficiency_metrics(metrics1, metrics2, labels, title, output_prefix):
         else:
             bp = plt.boxplot(data, labels=labels, patch_artist=True)
 
-        # Set colors
-        for patch, color in zip(bp["boxes"], ["lightblue", "lightgreen"]):
-            patch.set_facecolor(color)
+            # Add color coding
+            for patch, color in zip(bp["boxes"], ["lightblue", "lightgreen"]):
+                patch.set_facecolor(color)
 
-        # Add individual points for transparency
-        for i, d in enumerate(data):
-            x = [i + 1] * len(d)
-            plt.scatter(x, d, alpha=0.5, color="darkblue")
+            # Add individual points for transparency
+            for i, d in enumerate(data):
+                if d:
+                    x = i + 1 + np.random.normal(0, 0.04, len(d))  # Add jitter
+                    plt.scatter(x, d, alpha=0.5, color="darkblue")
 
-        # Add mean values as text
-        for i, d in enumerate(data):
-            if d:
-                mean_val = np.mean(d)
-                plt.text(
-                    i + 1,
-                    np.min(d) * 0.95,
-                    f"Mean: {mean_val:.3f}",
-                    ha="center",
-                    va="top",
-                    fontweight="bold",
+            # Add mean values as text
+            for i, d in enumerate(data):
+                if d:
+                    mean_val = np.mean(d)
+                    plt.text(
+                        i + 1,
+                        np.max(d) * 1.05,
+                        f"Mean: {mean_val:.3f}",
+                        ha="center",
+                        va="bottom",
+                        fontweight="bold",
+                    )
+
+            # Add reference lines for parallelization efficiency
+            if metric_name == "parallelization_efficiency":
+                plt.axhline(
+                    y=1.0,
+                    color="green",
+                    linestyle="--",
+                    alpha=0.5,
+                    label="Ideal CPU-bound",
                 )
+                plt.axhline(
+                    y=0.5,
+                    color="orange",
+                    linestyle="--",
+                    alpha=0.5,
+                    label="Potential I/O bottleneck",
+                )
+                plt.legend()
+
+            # Add explanation text
+            plt.figtext(
+                0.5,
+                0.01,
+                explanation,
+                ha="center",
+                fontsize=9,
+                bbox={"facecolor": "lightyellow", "alpha": 0.5, "pad": 5},
+            )
 
         plt.title(f"{title} - {metric_title}")
         plt.grid(True, linestyle="--", alpha=0.7)
@@ -1300,6 +1462,122 @@ def plot_efficiency_metrics(metrics1, metrics2, labels, title, output_prefix):
         plt.savefig(output_file, dpi=300)
         plt.close()
         logger.info(f"Saved {output_file}")
+
+
+def plot_workload_analysis(
+    result1, result2, labels=None, title=None, output_prefix=None, n_threads=None
+):
+    """
+    Create a plot showing workload characteristics
+
+    Args:
+        result1: First BenchmarkResult object
+        result2: Second BenchmarkResult object
+        labels: Labels for the two datasets (defaults to global version labels)
+        title: Title for the plot
+        output_prefix: Prefix for output file
+        n_threads: Number of threads used (if known)
+    """
+    if labels is None:
+        labels = [PREV_VERSION_LABEL, CURRENT_VERSION_LABEL]
+    plt.figure(figsize=(10, 6))
+
+    # Get wall and CPU times
+    wall_times1 = result1.get_metric("wall_time", "python") if result1 else []
+    cpu_times1 = result1.get_metric("cpu_time", "kernel") if result1 else []
+    wall_times2 = result2.get_metric("wall_time", "python") if result2 else []
+    cpu_times2 = result2.get_metric("cpu_time", "kernel") if result2 else []
+
+    # Calculate ratios
+    ratios1 = [
+        cpu / wall
+        for cpu, wall in zip(cpu_times1, wall_times1)
+        if wall is not None and cpu is not None and wall > 0
+    ]
+    ratios2 = [
+        cpu / wall
+        for cpu, wall in zip(cpu_times2, wall_times2)
+        if wall is not None and cpu is not None and wall > 0
+    ]
+
+    if not ratios1 and not ratios2:
+        plt.text(
+            0.5,
+            0.5,
+            "No data available for workload analysis",
+            ha="center",
+            va="center",
+            fontsize=14,
+            color="red",
+        )
+        plt.title(f"{title} - Workload Analysis (No Data)")
+    else:
+        # Plot histograms of CPU/Wall ratios
+        max_ratio = max(max(ratios1, default=0), max(ratios2, default=0))
+        bins = np.linspace(0, max_ratio * 1.1, 30)
+        plt.hist([ratios1, ratios2], bins=bins, alpha=0.7, label=labels)
+
+        # Add reference line for ideal CPU-bound (ratio = n_threads)
+        if n_threads:
+            plt.axvline(
+                x=n_threads,
+                color="green",
+                linestyle="--",
+                label=f"Ideal CPU-bound ({n_threads} threads)",
+            )
+            plt.axvline(
+                x=n_threads * 0.7,
+                color="orange",
+                linestyle="--",
+                label="I/O-bound threshold",
+            )
+            plt.axvline(
+                x=n_threads * 1.3,
+                color="red",
+                linestyle="--",
+                label="Super-linear threshold",
+            )
+
+        plt.xlabel("CPU Time / Wall Time Ratio")
+        plt.ylabel("Frequency")
+        plt.title(f"{title} - Workload Characteristics Analysis")
+        plt.legend()
+        plt.grid(True, linestyle="--", alpha=0.5)
+
+        # Add workload type annotation
+        workload_types = []
+        for i, ratios in enumerate([ratios1, ratios2]):
+            if ratios:
+                median_ratio = np.median(ratios)
+                if n_threads:
+                    ratio_of_expected = median_ratio / n_threads
+                    if ratio_of_expected < 0.7:
+                        wtype = "I/O-bound"
+                    elif ratio_of_expected <= 1.3:
+                        wtype = "CPU-bound"
+                    else:
+                        wtype = "Super-linear"
+
+                    workload_types.append(
+                        f"{labels[i]}: {wtype} (ratio: {median_ratio:.2f})"
+                    )
+
+        if workload_types:
+            plt.figtext(
+                0.5,
+                0.01,
+                " | ".join(workload_types),
+                ha="center",
+                fontsize=10,
+                bbox={"facecolor": "lightyellow", "alpha": 0.5, "pad": 5},
+            )
+
+    # Save plot
+    output_file = f"{output_prefix}_workload_analysis.png"
+    plt.tight_layout()
+    plt.savefig(output_file, dpi=300)
+    plt.close()
+    logger.info(f"Saved {output_file}")
 
 
 def parse_command_line_args():

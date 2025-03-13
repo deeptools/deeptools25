@@ -854,32 +854,32 @@ def process_single_files(
     mem_fig.savefig(f"{base_path}_memory{extension}")
     logger.info(f"Saved memory plot to {base_path}_memory{extension}")
 
-    # Generate efficiency metrics plots
-    if result1 and result1.is_valid and result2 and result2.is_valid:
-        # Extract efficiency metrics
-        efficiency_metrics1 = {
-            "parallelization_efficiency": result1.get_metric(
-                "parallelization_efficiency", "kernel"
-            ),
-            "memory_efficiency": result1.get_metric("memory_efficiency", "kernel"),
-            "uss_rss_ratio": result1.get_metric("uss_rss_ratio", "kernel"),
-        }
+    ## Generate efficiency metrics plots
+    #if result1 and result1.is_valid and result2 and result2.is_valid:
+    #    # Extract efficiency metrics
+    #    efficiency_metrics1 = {
+    #        "parallelization_efficiency": result1.get_metric(
+    #            "parallelization_efficiency", "kernel"
+    #        ),
+    #        "memory_efficiency": result1.get_metric("memory_efficiency", "kernel"),
+    #        "uss_rss_ratio": result1.get_metric("uss_rss_ratio", "kernel"),
+    #    }
 
-        efficiency_metrics2 = {
-            "parallelization_efficiency": result2.get_metric(
-                "parallelization_efficiency", "kernel"
-            ),
-            "memory_efficiency": result2.get_metric("memory_efficiency", "kernel"),
-            "uss_rss_ratio": result2.get_metric("uss_rss_ratio", "kernel"),
-        }
+    #    efficiency_metrics2 = {
+    #        "parallelization_efficiency": result2.get_metric(
+    #            "parallelization_efficiency", "kernel"
+    #        ),
+    #        "memory_efficiency": result2.get_metric("memory_efficiency", "kernel"),
+    #        "uss_rss_ratio": result2.get_metric("uss_rss_ratio", "kernel"),
+    #    }
 
-        plot_efficiency_metrics(
-            efficiency_metrics1,
-            efficiency_metrics2,
-            ["Previous version", "4.0"],
-            f"Efficiency Metrics{error_suffix}",
-            f"{base_path}_efficiency",
-        )
+    #    plot_efficiency_metrics(
+    #        efficiency_metrics1,
+    #        efficiency_metrics2,
+    #        ["Previous version", "4.0"],
+    #        f"Efficiency Metrics{error_suffix}",
+    #        f"{base_path}_efficiency",
+    #    )
 
 
 def process_multiprotocol(
@@ -942,44 +942,44 @@ def process_multiprotocol(
     mem_fig.savefig(f"{base_path}_memory{extension}")
     logger.info(f"Saved memory plot to {base_path}_memory{extension}")
 
-    # Generate efficiency metrics plots - for each protocol separately
-    for idx, protocol in enumerate(protocols):
-        if idx < len(result1_list) and idx < len(result2_list):
-            result1 = result1_list[idx]
-            result2 = result2_list[idx]
+    ## Generate efficiency metrics plots - for each protocol separately
+    #for idx, protocol in enumerate(protocols):
+    #    if idx < len(result1_list) and idx < len(result2_list):
+    #        result1 = result1_list[idx]
+    #        result2 = result2_list[idx]
 
-            if result1 and result1.is_valid and result2 and result2.is_valid:
-                # Extract efficiency metrics
-                efficiency_metrics1 = {
-                    "parallelization_efficiency": result1.get_metric(
-                        "parallelization_efficiency", "kernel"
-                    ),
-                    "memory_efficiency": result1.get_metric(
-                        "memory_efficiency", "kernel"
-                    ),
-                    "uss_rss_ratio": result1.get_metric("uss_rss_ratio", "kernel"),
-                }
+    #        if result1 and result1.is_valid and result2 and result2.is_valid:
+    #            # Extract efficiency metrics
+    #            efficiency_metrics1 = {
+    #                "parallelization_efficiency": result1.get_metric(
+    #                    "parallelization_efficiency", "kernel"
+    #                ),
+    #                "memory_efficiency": result1.get_metric(
+    #                    "memory_efficiency", "kernel"
+    #                ),
+    #                "uss_rss_ratio": result1.get_metric("uss_rss_ratio", "kernel"),
+    #            }
 
-                efficiency_metrics2 = {
-                    "parallelization_efficiency": result2.get_metric(
-                        "parallelization_efficiency", "kernel"
-                    ),
-                    "memory_efficiency": result2.get_metric(
-                        "memory_efficiency", "kernel"
-                    ),
-                    "uss_rss_ratio": result2.get_metric("uss_rss_ratio", "kernel"),
-                }
+    #            efficiency_metrics2 = {
+    #                "parallelization_efficiency": result2.get_metric(
+    #                    "parallelization_efficiency", "kernel"
+    #                ),
+    #                "memory_efficiency": result2.get_metric(
+    #                    "memory_efficiency", "kernel"
+    #                ),
+    #                "uss_rss_ratio": result2.get_metric("uss_rss_ratio", "kernel"),
+    #            }
 
-                # Create a protocol-specific output prefix
-                protocol_base_path = f"{base_path}_{protocol}"
+    #            # Create a protocol-specific output prefix
+    #            protocol_base_path = f"{base_path}_{protocol}"
 
-                plot_efficiency_metrics(
-                    efficiency_metrics1,
-                    efficiency_metrics2,
-                    ["Previous version", "4.0"],
-                    f"{protocol.upper()} Efficiency Metrics",
-                    f"{protocol_base_path}_efficiency",
-                )
+    #            plot_efficiency_metrics(
+    #                efficiency_metrics1,
+    #                efficiency_metrics2,
+    #                ["Previous version", "4.0"],
+    #                f"{protocol.upper()} Efficiency Metrics",
+    #                f"{protocol_base_path}_efficiency",
+    #            )
 
 
 def make_protocol_boxplots(
@@ -1226,9 +1226,6 @@ def create_boxplot(
         ax.set_title(plot_title)
 
     return bp
-
-
-# Add new plotting function for efficiency metrics
 
 
 def plot_efficiency_metrics(metrics1, metrics2, labels, title, output_prefix):

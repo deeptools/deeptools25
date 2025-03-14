@@ -67,12 +67,12 @@ def set_organism_resources():
     
     # If organism-specific resources exist, update rule resources
     if organism_resources:
-        for rule_name, resources in organism_resources.items():
+        for rule_name, rule_resources in organism_resources.items():
             if rule_name in workflow.rules:
-                rule = workflow.rules[rule_name]
-                for resource_name, value in resources.items():
-                    rule.resources[resource_name] = value
-                print(f"Updated resources for {rule_name} with {ORGANISM}-specific settings: {resources}")
+                snakemake_rule = workflow.rules[rule_name]
+                for resource_name, value in rule_resources.items():
+                    snakemake_rule.resources[resource_name] = value
+                print(f"Updated resources for {rule_name} with {ORGANISM}-specific settings: {rule_resources}")
 
 import platform
 system = platform.system()

@@ -1,14 +1,15 @@
-restart-times: 2
 use-conda: True
 keep-going: True
 rerun-incomplete: True
 printshellcmds: True
+
 jobs: 10
 max-jobs-per-second: 1
 max-status-checks-per-second: 2
+restart-times: 2
+
 max-inventory-time: 600
 latency-wait: 1200
-executor: slurm
 wait-for-files:
   - zenodo/triticum_chip_SRR1686799.bam
   - zenodo/bigwigs/human_chip_SRR28592125.bw
@@ -36,30 +37,59 @@ wait-for-files:
   - zenodo/triticum_chip_SRR1686799_fw.bw
   - zenodo/human_wgs_SRR15494527.bam.bai
   - zenodo/triticum_wgs_SRR27887047.bam
+
+executor: slurm
+
 default-resources:
   slurm_partition: general
   runtime: 2h
-set-resources:
-  bamCoverage1:
-    runtime: 10h
-    mem: 18GB * attempt
-  bamCoverage2:
-    runtime: 4h
-    mem: 32GB * attempt
-  bamCompare1:
-    mem: 18GB * attempt
-  bamCompare2:
-    mem: 18GB * attempt
-  computeMatrix1:
-    mem: 12GB * attempt
-  computeMatrix2:
-    mem: 6GB * attempt
-  multiBamSummary1:
-    runtime: 6h
-    mem: 32GB * attempt
-  multiBamSummary2:
-    runtime: 6h
-    mem: 24GB * attempt
-  process_results:
-    runtime: 20
-    mem: 4GB
+
+organism_resources:
+  homo:
+    bamCoverage1:
+      runtime: 4h
+      mem: 18GB * attempt
+    bamCoverage2:
+      mem: 32GB * attempt
+    bamCompare1:
+      mem: 18GB * attempt
+    bamCompare2:
+      mem: 18GB * attempt
+    computeMatrix1:
+      mem: 12GB * attempt
+    computeMatrix2:
+      mem: 6GB * attempt
+    multiBamSummary1:
+      runtime: 6h
+      mem: 32GB * attempt
+    multiBamSummary2:
+      runtime: 6h
+      mem: 24GB * attempt
+    process_results:
+      runtime: 20
+      mem: 4GB
+  triticum:
+    bamCoverage1:
+      runtime: "20h"
+      mem: "32GB * attempt"
+    bamCoverage2:
+      runtime: "8h" 
+      mem: "48GB * attempt"
+    bamCompare1:
+      runtime: "16h"
+      mem: "32GB * attempt"
+    bamCompare2:
+      runtime: "8h"
+      mem: "32GB * attempt"
+    computeMatrix1:
+      runtime: "16h"
+      mem: "24GB * attempt"
+    computeMatrix2:
+      runtime: "8h"
+      mem: "16GB * attempt"
+    multiBamSummary1:
+      runtime: "12h"
+      mem: "48GB * attempt"
+    multiBamSummary2:
+      runtime: "12h"
+      mem: "40GB * attempt"

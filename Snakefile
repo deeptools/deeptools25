@@ -1,6 +1,11 @@
-# Adjust these if you want
-ORGANISM = "triticum"
-GTF = "regions/triticum.v60.sample25k.gtf"
+ORGANISM = config.get("organism", "homo")
+
+if ORGANISM == "homo":
+    GTF = f"regions/{ORGANISM}.v91.sample25k.gtf"
+elif ORGANISM == "triticum":
+    GTF = f"regions/{ORGANISM}.v60.sample25k.gtf"
+else:
+    raise ValueError(f"Unsupported organism: {ORGANISM}")
 
 BinSizes = {
     "bamCoverage": 10,
@@ -12,6 +17,37 @@ BinSizes = {
 Ntimes = 10
 Nthreads = 64
 
+# Apply resource adjustments based on organism
+def set_organism_resources():
+    """Apply organism-specific resource configurations from config.yaml"""
+    import yaml
+    from snakemake.utils import update_dict
+    
+    # First, get the organism-specific resources
+    organism_resources = None
+    try:
+        with open("snk-slurm-exe/config.yaml", "r") as f:
+            config_data = yaml.safe_load(f)
+            if "organism_resources" in config_data and ORGANISM in config_data["organism_resources"]:
+                organism_resources = config_data["organism_resources"][ORGANISM]
+    except Exception as e:
+        print(f"Warning: Could not load organism-specific resources: {e}")
+        return
+    
+    # If organism-specific resources exist, update rule resources
+    if organism_resources:
+        for rule_name, resources in organism_resources.items():
+            if rule_name in workflow.rules:
+                rule = workflow.rules[rule_name]
+                for resource_name, value in resources.items():
+                    rule.resources[resource_name] = value
+                print(f"Updated resources for {rule_name} with {ORGANISM}-specific settings")
+
+# Call this after workflow is parsed but before execution
+workflow.onstart(set_organism_resources)
+
+# Print the selected organism
+print(f"Running benchmark with organism: {ORGANISM}")
 
 # Do not edit any further
 import platform

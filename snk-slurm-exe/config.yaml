@@ -40,11 +40,11 @@ default-resources:
   slurm_partition: general
   runtime: 2h
 set-resources:
-  # bamCoverage{1,2} have 3 protocols, hence it has more of resources than 'expected'
   bamCoverage1:
-    runtime: 4h
+    runtime: 10h
     mem: 18GB * attempt
   bamCoverage2:
+    runtime: 4h
     mem: 32GB * attempt
   bamCompare1:
     mem: 18GB * attempt

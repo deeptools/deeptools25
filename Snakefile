@@ -1,6 +1,6 @@
 # Adjust these if you want
-ORGANISM = "homo"
-GTF = "regions/homo.v91.sample25k.gtf"
+ORGANISM = "triticum"
+GTF = "regions/triticum.v60.sample25k.gtf"
 
 BinSizes = {
     "bamCoverage": 10,
@@ -194,7 +194,7 @@ rule bamCoverage2:
                 > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
                 
         # Verify output files were created properly
-        verify_file -t 300 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
+        verify_file -t 3600 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/bamCoverage2_{wildcards.protocol}_done_${{curr_iter}}.txt
@@ -229,7 +229,7 @@ rule bamCoverage1:
                 > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
                 
         # Verify output files were created properly
-        verify_file -t 300 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
+        verify_file -t 3600 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/bamCoverage1_{wildcards.protocol}_done_${{curr_iter}}.txt
@@ -265,7 +265,7 @@ rule bamCompare2:
                 > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
                 
         # Verify output files were created properly
-        verify_file -t 300 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
+        verify_file -t 3600 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
                 
         # Create done marker file
         touch output/bamCompare2_done_${{curr_iter}}.txt
@@ -301,7 +301,7 @@ rule bamCompare1:
                 > $log_file 2>&1 || {{ on_error $log_file {output.iter_file} && exit 1; }}
                 
         # Verify output files were created properly
-        verify_file -t 300 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
+        verify_file -t 3600 $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
                 
         # Create done marker file
         touch output/bamCompare1_done_${{curr_iter}}.txt
@@ -356,7 +356,7 @@ rule computeMatrix2:
         fi
         
         # Verify output files were created properly
-        verify_file -t 300 {output.iter_file} $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
+        verify_file -t 3600 {output.iter_file} $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/computeMatrix2_done_${{curr_iter}}.txt
@@ -411,7 +411,7 @@ rule computeMatrix1:
         fi
         
         # Verify output files were created properly
-        verify_file -t 300 {output.iter_file} $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
+        verify_file -t 3600 {output.iter_file} $out_file || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/computeMatrix1_done_${{curr_iter}}.txt
@@ -453,7 +453,7 @@ rule multiBamSummary2:
         fi
         
         # Verify output files were created properly
-        verify_file -t 300 {output.iter_file} $out_raw $out_npz || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
+        verify_file -t 3600 {output.iter_file} $out_raw $out_npz || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/multiBamSummary2_done_${{curr_iter}}.txt
@@ -495,7 +495,7 @@ rule multiBamSummary1:
         fi
         
         # Verify output files were created properly
-        verify_file -t 300 {output.iter_file} $out_raw $out_npz || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
+        verify_file -t 3600 {output.iter_file} $out_raw $out_npz || {{ on_error $log_file {output.iter_file} && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/multiBamSummary1_done_${{curr_iter}}.txt

@@ -41,10 +41,12 @@ wait-for-files:
 executor: slurm
 
 default-resources:
+
   slurm_partition: general
   runtime: 2h
 
 organism_resources:
+
   homo:
     bamCoverage1:
       runtime: 4h
@@ -68,28 +70,32 @@ organism_resources:
     process_results:
       runtime: 20
       mem: 4GB
+
   triticum:
     bamCoverage1:
-      runtime: "20h"
-      mem: "32GB * attempt"
+      runtime: 48h
+      mem: 32GB * attempt
     bamCoverage2:
-      runtime: "8h" 
-      mem: "48GB * attempt"
+      runtime: 24h 
+      mem: 48GB * attempt
     bamCompare1:
-      runtime: "16h"
-      mem: "32GB * attempt"
+      runtime: 48h
+      mem: 32GB * attempt
     bamCompare2:
-      runtime: "8h"
-      mem: "32GB * attempt"
+      runtime: 24h
+      mem: 32GB * attempt
     computeMatrix1:
-      runtime: "16h"
-      mem: "24GB * attempt"
+      runtime: 48h
+      mem: 24GB * attempt
     computeMatrix2:
-      runtime: "8h"
-      mem: "16GB * attempt"
+      runtime: 24h
+      mem: 16GB * attempt
     multiBamSummary1:
-      runtime: "12h"
-      mem: "48GB * attempt"
+      runtime: 48h
+      mem: 48GB * attempt
     multiBamSummary2:
-      runtime: "12h"
-      mem: "40GB * attempt"
+      runtime: 48h
+      mem: 40GB * attempt
+    process_results:
+      runtime: 20
+      mem: 4GB

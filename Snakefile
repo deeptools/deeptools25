@@ -245,7 +245,8 @@ rule bamCoverage2:
         """
         verify_file -t 600 {input.bam} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
         mkdir -p {output.bed}
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
+        curr_iter=$(cat {output.iter_file})
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
         log_file="logs/bamCoverage2_{wildcards.protocol}_${{curr_iter}}.txt"
         
@@ -280,7 +281,8 @@ rule bamCoverage1:
         """
         verify_file -t 600 {input.bam} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
         mkdir -p {output.bed}
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
+        curr_iter=$(cat {output.iter_file})
         out_file="{output.bed}/iter_${{curr_iter}}.bg"
         log_file="logs/bamCoverage1_{wildcards.protocol}_${{curr_iter}}.txt"
         
@@ -316,7 +318,8 @@ rule bamCompare2:
         """
         verify_file -t 600 {input.bam1} {input.bam2} || exit 1
         mkdir -p {output.bw}
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
+        curr_iter=$(cat {output.iter_file})
         out_file="{output.bw}/iter_${{curr_iter}}.bw"
         log_file="logs/bamCompare2_${{curr_iter}}.txt"
         
@@ -352,7 +355,8 @@ rule bamCompare1:
         """
         verify_file -t 1200 {input.bam1} {input.bam2} || exit 1
         mkdir -p {output.bw}
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
+        curr_iter=$(cat {output.iter_file})
         out_file="{output.bw}/iter_${{curr_iter}}.bw"
         log_file="logs/bamCompare1_${{curr_iter}}.txt"
         
@@ -390,7 +394,8 @@ rule computeMatrix2:
     shell:
         """
         mkdir -p {output.npz}
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
+        curr_iter=$(cat {output.iter_file})
         out_file="{output.npz}/iter_${{curr_iter}}.npz"
         log_file="logs/computeMatrix2_${{curr_iter}}.txt"
         
@@ -445,7 +450,8 @@ rule computeMatrix1:
     shell:
         """
         mkdir -p {output.npz}
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
+        curr_iter=$(cat {output.iter_file})
         out_file="{output.npz}/iter_${{curr_iter}}.npz"
         log_file="logs/computeMatrix1_${{curr_iter}}.txt"
         
@@ -497,7 +503,8 @@ rule multiBamSummary2:
         """
         verify_file -t 600 {input.bam} || exit 1
         mkdir -p {output.npz}
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
+        curr_iter=$(cat {output.iter_file})
         out_npz="{output.npz}/iter_${{curr_iter}}.npz"
         out_raw="{output.npz}/iter_${{curr_iter}}.outraw.tab"
         log_file="logs/multiBamSummary2_${{curr_iter}}.txt"
@@ -539,7 +546,8 @@ rule multiBamSummary1:
         """
         verify_file -t 600 {input.bam} || exit 1
         mkdir -p {output.npz}
-        curr_iter=$(cat {output.iter_file} 2>/dev/null || echo 1)
+        [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
+        curr_iter=$(cat {output.iter_file})
         out_npz="{output.npz}/iter_${{curr_iter}}.npz"
         out_raw="{output.npz}/iter_${{curr_iter}}.outraw.tab"
         log_file="logs/multiBamSummary1_${{curr_iter}}.txt"

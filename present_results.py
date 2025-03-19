@@ -201,7 +201,7 @@ def validate_measurements(results, expected_count):
 def extract_metadata_from_path(file_path):
     try:
         match = re.search(
-            r"/(\w+?)(\d+)_(?:.*?)(?:_bs(\d+))?(?:_(\w+))?\.txt", file_path
+            r"/metrics_(\w+?)(\d+)_(?:.*?)(?:_bs(\d+))?(?:_(\w+))?\.txt", file_path
         )
         command = match.group(1)  # 'bamCompare' or 'bamCoverage'
         backend = match.group(2)  # '1'
@@ -432,9 +432,11 @@ def handle_macos_memory(command, backend, protocol, memory):
                     f"Couldn't retrieve protocol for {command}{backend}, skipping macOS memory handling"
                 )
                 return memory
-            log_files = glob.glob(f"logs/{command}{backend}_{protocol}_[0-9]*.txt")
+            log_files = glob.glob(
+                f"logs/metrics_{command}{backend}_{protocol}_[0-9]*.txt"
+            )
         else:
-            log_files = glob.glob(f"logs/{command}{backend}_[0-9]*.txt")
+            log_files = glob.glob(f"logs/metrics_{command}{backend}_[0-9]*.txt")
 
         if not log_files:
             logger.warning(

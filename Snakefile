@@ -233,10 +233,10 @@ rule bamCoverage2:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
         bed = directory("output/bamCoverage2_{protocol}"),
-        iter_file = "output/benchmark_iteration_bamCoverage2_{protocol}.txt",
+        iter_file = "output/iter_count_bamCoverage2_{protocol}.txt",
         done = expand("output/bamCoverage2_{{protocol}}_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
-        repeat(f"logs/bamCoverage2_{ORGANISM}_bs{BinSizes['bamCoverage']}_{{protocol}}.txt", Ntimes)
+        repeat(f"logs/metrics_bamCoverage2_{ORGANISM}_bs{BinSizes['bamCoverage']}_{{protocol}}.txt", Ntimes)
     params:
         binsize = BinSizes["bamCoverage"]
     threads: Nthreads
@@ -269,10 +269,10 @@ rule bamCoverage1:
         bam = lambda wildcards: FILES[ORGANISM + "_" + wildcards.protocol]
     output:
         bed = directory("output/bamCoverage1_{protocol}"),
-        iter_file = "output/benchmark_iteration_bamCoverage1_{protocol}.txt",
+        iter_file = "output/iter_count_bamCoverage1_{protocol}.txt",
         done = expand("output/bamCoverage1_{{protocol}}_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
-        repeat(f"logs/bamCoverage1_{ORGANISM}_bs{BinSizes['bamCoverage']}_{{protocol}}.txt", Ntimes)
+        repeat(f"logs/metrics_bamCoverage1_{ORGANISM}_bs{BinSizes['bamCoverage']}_{{protocol}}.txt", Ntimes)
     params:
         binsize = BinSizes["bamCoverage"]
     threads: Nthreads
@@ -306,10 +306,10 @@ rule bamCompare2:
         bam2 = lambda wildcards: FILES[ORGANISM + "_wgs"]
     output:
         bw = directory("output/bamCompare2"),
-        iter_file = "output/benchmark_iteration_bamCompare2.txt",
+        iter_file = "output/iter_count_bamCompare2.txt",
         done = expand("output/bamCompare2_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
-        repeat(f"logs/bamCompare2_{ORGANISM}_bs{BinSizes['bamCompare']}.txt", Ntimes)
+        repeat(f"logs/metrics_bamCompare2_{ORGANISM}_bs{BinSizes['bamCompare']}.txt", Ntimes)
     params:
         binsize = BinSizes["bamCompare"]
     threads: Nthreads
@@ -343,10 +343,10 @@ rule bamCompare1:
         bam2 = lambda wildcards: FILES[ORGANISM + "_wgs"]
     output:
         bw = directory("output/bamCompare1"),
-        iter_file = "output/benchmark_iteration_bamCompare1.txt",
+        iter_file = "output/iter_count_bamCompare1.txt",
         done = expand("output/bamCompare1_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
-        repeat(f"logs/bamCompare1_{ORGANISM}_bs{BinSizes['bamCompare']}.txt", Ntimes)
+        repeat(f"logs/metrics_bamCompare1_{ORGANISM}_bs{BinSizes['bamCompare']}.txt", Ntimes)
     params:
         binsize = BinSizes["bamCompare"]
     threads: Nthreads
@@ -381,10 +381,10 @@ rule computeMatrix2:
         gtf = GTF
     output:
         npz = directory("output/computeMatrix2"),
-        iter_file = "output/benchmark_iteration_computeMatrix2.txt",
+        iter_file = "output/iter_count_computeMatrix2.txt",
         done = expand("output/computeMatrix2_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
-        repeat(f"logs/computeMatrix2_{ORGANISM}_bs{BinSizes['computeMatrix']}.txt", Ntimes)
+        repeat(f"logs/metrics_computeMatrix2_{ORGANISM}_bs{BinSizes['computeMatrix']}.txt", Ntimes)
     params:
         binsize = BinSizes["computeMatrix"],
         upstream = 2 * BinSizes["computeMatrix"],
@@ -437,10 +437,10 @@ rule computeMatrix1:
         gtf = GTF
     output:
         npz = directory("output/computeMatrix1"),
-        iter_file = "output/benchmark_iteration_computeMatrix1.txt",
+        iter_file = "output/iter_count_computeMatrix1.txt",
         done = expand("output/computeMatrix1_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
-        repeat(f"logs/computeMatrix1_{ORGANISM}_bs{BinSizes['computeMatrix']}.txt", Ntimes)
+        repeat(f"logs/metrics_computeMatrix1_{ORGANISM}_bs{BinSizes['computeMatrix']}.txt", Ntimes)
     params:
         binsize = BinSizes["computeMatrix"],
         upstream = 2 * BinSizes["computeMatrix"],
@@ -491,10 +491,10 @@ rule multiBamSummary2:
         bam = FILES[ORGANISM + "_" + "wgs"]
     output:
         npz = directory("output/multiBamSummary2"),
-        iter_file = "output/benchmark_iteration_multiBamSummary2.txt",
+        iter_file = "output/iter_count_multiBamSummary2.txt",
         done = expand("output/multiBamSummary2_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
-        repeat(f"logs/multiBamSummary2_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt", Ntimes)
+        repeat(f"logs/metrics_multiBamSummary2_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt", Ntimes)
     params:
         binsize = BinSizes["multiBamSummary"]
     threads: Nthreads
@@ -534,10 +534,10 @@ rule multiBamSummary1:
         bam = FILES[ORGANISM + "_" + "wgs"]
     output:
         npz = directory("output/multiBamSummary1"),
-        iter_file = "output/benchmark_iteration_multiBamSummary1.txt",
+        iter_file = "output/iter_count_multiBamSummary1.txt",
         done = expand("output/multiBamSummary1_done_{iter}.txt", iter=range(1, Ntimes+1))
     benchmark:
-        repeat(f"logs/multiBamSummary1_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt", Ntimes)
+        repeat(f"logs/metrics_multiBamSummary1_{ORGANISM}_bs{BinSizes['multiBamSummary']}.txt", Ntimes)
     params:
         binsize = BinSizes["multiBamSummary"]
     threads: Nthreads

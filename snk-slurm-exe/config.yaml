@@ -43,13 +43,12 @@ executor: slurm
 default-resources:
 
   slurm_partition: general
-  runtime: 2h
+  runtime: 24h
 
 organism_resources:
 
   homo:
     bamCoverage1:
-      runtime: 4h
       mem: 18GB * attempt
     bamCoverage2:
       mem: 32GB * attempt
@@ -62,10 +61,8 @@ organism_resources:
     computeMatrix2:
       mem: 6GB * attempt
     multiBamSummary1:
-      runtime: 6h
       mem: 32GB * attempt
     multiBamSummary2:
-      runtime: 6h
       mem: 24GB * attempt
     process_results:
       runtime: 20
@@ -97,5 +94,5 @@ organism_resources:
       runtime: 48h
       mem: 40GB * attempt
     process_results:
-      runtime: 20
+      runtime: 30
       mem: 4GB

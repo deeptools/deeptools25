@@ -44,4 +44,12 @@ This is how it should look like:
 
 ## Run benchmark
 
-Adjust the variables at the top of `Snakefile` however you like it, and then just `$ run.sh` ;)
+Adjust the `Nthreads` variable at the top of `Snakefile` however you like it, and then:
+
+`snakemake --use-conda --benchmark-extended --config organism=homo`
+
+If you wanted to run this on an HPC cluster, we do provide an executor config file, just `$ run.sh` ;)
+
+> [!NOTE]
+>
+> The executor config file (`snk-slurm-exe/config.yaml`) doesn't specify number of CPUs. Instead, we are relying on the `Nthreads` parameter from `Snakefile`, same as when running locally. But you can adjust Slurm partition, memory, and runtime form there.

@@ -5,8 +5,8 @@ BinSizes = {
     "multiBamSummary": 5000,
 }
 
-Ntimes = 5
-Nthreads = 72
+Ntimes = 3
+Nthreads = 32
 
 ORGANISM = config.get("organism", "homo")
 

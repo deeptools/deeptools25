@@ -47,30 +47,21 @@ default-resources:
 
 set-resources:
   bamCoverage1:
-    runtime: 48h
     mem: 32GB
   bamCoverage2:
-    runtime: 24h 
     mem: 128GB
   bamCompare1:
-    runtime: 48h
     mem: 32GB
   bamCompare2:
-    runtime: 24h
     mem: 128GB
   computeMatrix1:
-    runtime: 48h
     mem: 32GB
   computeMatrix2:
-    runtime: 24h
     mem: 128GB
   multiBamSummary1:
-    runtime: 48h
     mem: 32GB
   multiBamSummary2:
-    runtime: 48h
     mem: 128GB
   process_results:
     runtime: 30
-    mem: 8GB
-
+    mem: 4GB

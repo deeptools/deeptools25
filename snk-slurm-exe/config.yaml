@@ -49,19 +49,19 @@ set-resources:
   bamCoverage1:
     mem: 32GB
   bamCoverage2:
-    mem: 128GB
+    mem: 64GB
   bamCompare1:
     mem: 32GB
   bamCompare2:
-    mem: 128GB
+    mem: 64GB
   computeMatrix1:
     mem: 32GB
   computeMatrix2:
-    mem: 128GB
+    mem: 64GB
   multiBamSummary1:
     mem: 32GB
   multiBamSummary2:
-    mem: 128GB
+    mem: 64GB
   process_results:
     runtime: 30
     mem: 4GB

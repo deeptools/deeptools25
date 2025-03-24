@@ -41,59 +41,36 @@ wait-for-files:
 executor: slurm
 
 default-resources:
-
   slurm_partition: general
   cpus: 144
   runtime: 24h
 
-organism_resources:
+set-resources:
+  bamCoverage1:
+    runtime: 48h
+    mem: 32GB
+  bamCoverage2:
+    runtime: 24h 
+    mem: 128GB
+  bamCompare1:
+    runtime: 48h
+    mem: 32GB
+  bamCompare2:
+    runtime: 24h
+    mem: 128GB
+  computeMatrix1:
+    runtime: 48h
+    mem: 32GB
+  computeMatrix2:
+    runtime: 24h
+    mem: 128GB
+  multiBamSummary1:
+    runtime: 48h
+    mem: 32GB
+  multiBamSummary2:
+    runtime: 48h
+    mem: 128GB
+  process_results:
+    runtime: 30
+    mem: 8GB
 
-  homo:
-    bamCoverage1:
-      mem: 128GBg
-    bamCoverage2:
-      mem: 128GBg
-    bamCompare1:
-      mem: 128GBg
-    bamCompare2:
-      mem: 128GBg
-    computeMatrix1:
-      mem: 128GBg
-    computeMatrix2:
-      mem: 128GBg
-    multiBamSummary1:
-      mem: 128GBg
-    multiBamSummary2:
-      mem: 128GBg
-    process_results:
-      runtime: 20
-      mem: 8GB
-
-  triticum:
-    bamCoverage1:
-      runtime: 48h
-      mem: 128GBg
-    bamCoverage2:
-      runtime: 24h 
-      mem: 128GBg
-    bamCompare1:
-      runtime: 48h
-      mem: 128GBg
-    bamCompare2:
-      runtime: 24h
-      mem: 128GBg
-    computeMatrix1:
-      runtime: 48h
-      mem: 128GBg
-    computeMatrix2:
-      runtime: 24h
-      mem: 128GBg
-    multiBamSummary1:
-      runtime: 48h
-      mem: 128GBg
-    multiBamSummary2:
-      runtime: 48h
-      mem: 128GBg
-    process_results:
-      runtime: 30
-      mem: 8GB

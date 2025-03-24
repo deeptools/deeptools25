@@ -6,7 +6,7 @@ BinSizes = {
 }
 
 Ntimes = 3
-Nthreads = 32
+Nthreads = 16
 
 ORGANISM = config.get("organism", "homo")
 
@@ -18,62 +18,7 @@ elif ORGANISM == "triticum":
 else:
     raise ValueError(f"Unsupported organism: {ORGANISM}")
 
-# Apply resource adjustments based on organism, but only when running via slurm
-def set_organism_resources():
-    """Apply organism-specific resource configurations from config.yaml when using Slurm executor"""
-    import yaml
-    import os
-    
-    # Check if we're likely running with the Slurm executor
-    is_slurm = False
-    
-    # Method 1: Check if we're running under a Slurm profile
-    if workflow.config.get("cluster", None) or workflow.config.get("profile", "").endswith("slurm"):
-        is_slurm = True
-    
-    # Method 2: Check for common Snakemake-to-Slurm environment variables
-    if os.environ.get("SNAKEMAKE_CLUSTER_SLURM") or os.environ.get("SNAKEMAKE_PROFILE", "").endswith("slurm"):
-        is_slurm = True
-        
-    # Method 3: Check for specific Slurm variables that might be present
-    if os.environ.get("SLURM_JOB_ID") or os.environ.get("SLURM_CLUSTER_NAME"):
-        is_slurm = True
-    
-    if not is_slurm:
-        print("Not running via Slurm executor - skipping organism-specific resource configuration")
-        return
-        
-    print("Running via Slurm executor - applying organism-specific resources")
-    
-    # First, get the organism-specific resources
-    organism_resources = None
-    try:
-        config_path = "snk-slurm-exe/config.yaml"
-        if not os.path.exists(config_path):
-            print(f"Warning: Config file {config_path} not found, skipping organism resources")
-            return
-            
-        with open(config_path, "r") as f:
-            config_data = yaml.safe_load(f)
-            if "organism_resources" in config_data and ORGANISM in config_data["organism_resources"]:
-                organism_resources = config_data["organism_resources"][ORGANISM]
-                print(f"Found {ORGANISM}-specific resources in config")
-            else:
-                print(f"No organism-specific resources found for {ORGANISM}")
-                return
-    except Exception as e:
-        print(f"Warning: Could not load organism-specific resources: {e}")
-        return
-    
-    # If organism-specific resources exist, update rule resources
-    if organism_resources:
-        for rule_name, rule_resources in organism_resources.items():
-            if rule_name in workflow.rules:
-                snakemake_rule = workflow.rules[rule_name]
-                for resource_name, value in rule_resources.items():
-                    snakemake_rule.resources[resource_name] = value
-                print(f"Updated resources for {rule_name} with {ORGANISM}-specific settings: {rule_resources}")
-
+# Set the time command based on the platform
 import platform
 system = platform.system()
 if system == "Linux":
@@ -101,97 +46,6 @@ function on_error() {{
     
     return 1  # This will propagate the error
 }}; 
-
-function verify_file() {{
-    local timeout=300  # Default timeout 5 minutes
-    local verbose=false
-    
-    # Process options
-    while [[ "$1" == "-"* ]]; do
-        case "$1" in
-            -t|--timeout)
-                timeout=$2
-                shift 2
-                ;;
-            -v|--verbose)
-                verbose=true
-                shift
-                ;;
-            *)
-                echo "Unknown option: $1" >&2
-                return 1
-                ;;
-        esac
-    done
-    
-    # Check if there are no files to check
-    if [ $# -eq 0 ]; then
-        echo "ERROR: No files specified for verification" >&2
-        return 1
-    fi
-    
-    $verbose && echo "Verifying $(($#)) files with timeout of $timeout seconds..."
-    
-    local start_time=$(date +%s)
-    local end_time=$((start_time + timeout))
-    local check_count=0
-    
-    # First quick check - if all files exist right away, return immediately
-    local missing=0
-    for file in "$@"; do
-        if [ ! -f "$file" ] || [ ! -r "$file" ]; then
-            missing=$((missing + 1))
-            $verbose && echo "Initially missing: $file"
-        fi
-    done
-    
-    if [ $missing -eq 0 ]; then
-        $verbose && echo "All files present immediately."
-        return 0
-    fi
-    
-    # Loop until timeout
-    while [ $(date +%s) -lt $end_time ]; do
-        check_count=$((check_count + 1))
-        missing=0
-        
-        # Check each file
-        for file in "$@"; do
-            if [ ! -f "$file" ] || [ ! -r "$file" ]; then
-                missing=$((missing + 1))
-                if $verbose && [ $((check_count % 6)) -eq 0 ]; then
-                    # Only print every ~60 seconds if verbose
-                    echo "Still waiting for: $file"
-                fi
-            fi
-        done
-        
-        # If all files exist and are readable, we're good
-        if [ $missing -eq 0 ]; then
-            elapsed=$(($(date +%s) - start_time))
-            echo "All files present after $elapsed seconds."
-            return 0
-        fi
-        
-        # Wait before checking again (but only print status occasionally)
-        if $verbose && [ $((check_count % 6)) -eq 0 ]; then
-            elapsed=$(($(date +%s) - start_time))
-            remaining=$((timeout - elapsed))
-            echo "Still missing $missing files after $elapsed seconds. Will wait $remaining more seconds."
-        fi
-        
-        sleep 10
-    done
-    
-    # Timeout occurred - report missing files
-    echo "ERROR: Not all input files found after $timeout seconds:" >&2
-    for file in "$@"; do
-        if [ ! -f "$file" ] || [ ! -r "$file" ]; then
-            echo "  - Missing or unreadable: $file" >&2
-        fi
-    done
-    return 1
-}};
 """
 )
 
@@ -243,7 +97,6 @@ rule bamCoverage2:
     conda: "v4.env.yaml"
     shell:
         """
-        #verify_file -t600 {input.bam} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
         mkdir -p {output.bed}
         [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
         curr_iter=$(cat {output.iter_file})
@@ -254,9 +107,6 @@ rule bamCoverage2:
             -bs {params.binsize} -p {threads} \
                 > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
                 
-        # Verify output files were created properly
-        #verify_file -t3600 $out_file || {{ on_error "$log_file" "{output.iter_file}" && echo "Output file verification failed!" && exit 1; }}
-        
         # Create done marker file
         touch output/bamCoverage2_{wildcards.protocol}_done_${{curr_iter}}.txt
                 
@@ -279,7 +129,6 @@ rule bamCoverage1:
     conda: "v3.env.yaml"
     shell:
         """
-        #verify_file -t600 {input.bam} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
         mkdir -p {output.bed}
         [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
         curr_iter=$(cat {output.iter_file})
@@ -290,9 +139,6 @@ rule bamCoverage1:
             -bs {params.binsize} -p {threads} \
                 > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
                 
-        # Verify output files were created properly
-        #verify_file -t3600 $out_file || {{ on_error "$log_file" "{output.iter_file}" && echo "Output file verification failed!" && exit 1; }}
-        
         # Create done marker file
         touch output/bamCoverage1_{wildcards.protocol}_done_${{curr_iter}}.txt
                 
@@ -316,7 +162,6 @@ rule bamCompare2:
     conda: "v4.env.yaml"
     shell:
         """
-        #verify_file -t600 {input.bam1} {input.bam2} || exit 1
         mkdir -p {output.bw}
         [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
         curr_iter=$(cat {output.iter_file})
@@ -326,9 +171,6 @@ rule bamCompare2:
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o $out_file -bs {params.binsize} -p {threads} \
                 > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
-                
-        # Verify output files were created properly
-        #verify_file -t3600 $out_file || {{ on_error "$log_file" "{output.iter_file}" && echo "Output file verification failed!" && exit 1; }}
                 
         # Create done marker file
         touch output/bamCompare2_done_${{curr_iter}}.txt
@@ -353,7 +195,6 @@ rule bamCompare1:
     conda: "v3.env.yaml"
     shell:
         """
-        #verify_file -t1200 {input.bam1} {input.bam2} || exit 1
         mkdir -p {output.bw}
         [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
         curr_iter=$(cat {output.iter_file})
@@ -363,9 +204,6 @@ rule bamCompare1:
         {timeCmd} bamCompare -b1 {input.bam1} -b2 {input.bam2} \
             -o $out_file -bs {params.binsize} -p {threads} \
                 > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
-                
-        # Verify output files were created properly
-        #verify_file -t3600 $out_file || {{ on_error "$log_file" "{output.iter_file}" && echo "Output file verification failed!" && exit 1; }}
                 
         # Create done marker file
         touch output/bamCompare1_done_${{curr_iter}}.txt
@@ -407,21 +245,16 @@ rule computeMatrix2:
         fi
         
         if [ "{ORGANISM}" = "homo" ]; then
-          #verify_file -t600 $input_bw {humanBigwigs} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
         else
-          #verify_file -t600 $input_bw || {{ echo "Timeout! Not all input files were found." && exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
         fi
-        
-        # Verify output files were created properly
-        #verify_file -t3600 $out_file || {{ on_error "$log_file" "{output.iter_file}" && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/computeMatrix2_done_${{curr_iter}}.txt
@@ -463,21 +296,16 @@ rule computeMatrix1:
         fi
         
         if [ "{ORGANISM}" = "homo" ]; then
-          #verify_file -t600 $input_bw {humanBigwigs} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
         else
-          #verify_file -t600 $input_bw || {{ echo "Timeout! Not all input files were found." && exit 1; }}
           {timeCmd} computeMatrix reference-point \
               -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
         fi
-        
-        # Verify output files were created properly
-        #verify_file -t3600 $out_file || {{ on_error "$log_file" "{output.iter_file}" && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/computeMatrix1_done_${{curr_iter}}.txt
@@ -501,7 +329,6 @@ rule multiBamSummary2:
     conda: "v4.env.yaml"
     shell:
         """
-        #verify_file -t600 {input.bam} || exit 1
         mkdir -p {output.npz}
         [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
         curr_iter=$(cat {output.iter_file})
@@ -518,9 +345,6 @@ rule multiBamSummary2:
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
                     > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
         fi
-        
-        # Verify output files were created properly
-        #verify_file -t3600 $out_raw $out_npz || {{ on_error "$log_file" "{output.iter_file}" && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/multiBamSummary2_done_${{curr_iter}}.txt
@@ -544,7 +368,6 @@ rule multiBamSummary1:
     conda: "v3.env.yaml"
     shell:
         """
-        #verify_file -t600 {input.bam} || exit 1
         mkdir -p {output.npz}
         [ ! -f {output.iter_file} ] && echo "1" > {output.iter_file} || :
         curr_iter=$(cat {output.iter_file})
@@ -561,9 +384,6 @@ rule multiBamSummary1:
                 -o $out_npz --outRawCounts $out_raw -bs {params.binsize} -p {threads} \
                     > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
         fi
-        
-        # Verify output files were created properly
-        #verify_file -t3600 $out_raw $out_npz || {{ on_error "$log_file" "{output.iter_file}" && echo "Output file verification failed!" && exit 1; }}
         
         # Create done marker file
         touch output/multiBamSummary1_done_${{curr_iter}}.txt
@@ -638,8 +458,6 @@ rule process_results:
         multiBamSummary_output = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}"
     shell:
         """
-        #verify_file -t600 {input} || {{ echo "Timeout! Not all input files were found." && exit 1; }}
-        
         python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.bamCoverage_output}.png \
             {input.bamCoverage1_chip},{input.bamCoverage1_rna},{input.bamCoverage1_wgs} \
             {input.bamCoverage2_chip},{input.bamCoverage2_rna},{input.bamCoverage2_wgs}
@@ -652,12 +470,4 @@ rule process_results:
             
         python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.multiBamSummary_output}.png \
             {input.multiBamSummary1} {input.multiBamSummary2}
-        
-        # Verify all output files were created
-        #verify_file -t300 \
-            {output.bamCoverage_cpu_time_plot} {output.bamCoverage_wall_time_plot} {output.bamCoverage_mem_plot} \
-            {output.bamCompare_cpu_time_plot} {output.bamCompare_wall_time_plot} {output.bamCompare_mem_plot} \
-            {output.computeMatrix_cpu_time_plot} {output.computeMatrix_wall_time_plot} {output.computeMatrix_mem_plot} \
-            {output.multiBamSummary_cpu_time_plot} {output.multiBamSummary_wall_time_plot} {output.multiBamSummary_mem_plot} \
-            || {{ echo "Output plot verification failed!" && exit 1; }}
         """

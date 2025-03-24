@@ -50,21 +50,21 @@ organism_resources:
 
   homo:
     bamCoverage1:
-      mem: 128GB * attempt
+      mem: 128GBg
     bamCoverage2:
-      mem: 128GB * attempt
+      mem: 128GBg
     bamCompare1:
-      mem: 128GB * attempt
+      mem: 128GBg
     bamCompare2:
-      mem: 128GB * attempt
+      mem: 128GBg
     computeMatrix1:
-      mem: 128GB * attempt
+      mem: 128GBg
     computeMatrix2:
-      mem: 128GB * attempt
+      mem: 128GBg
     multiBamSummary1:
-      mem: 128GB * attempt
+      mem: 128GBg
     multiBamSummary2:
-      mem: 128GB * attempt
+      mem: 128GBg
     process_results:
       runtime: 20
       mem: 8GB
@@ -72,28 +72,28 @@ organism_resources:
   triticum:
     bamCoverage1:
       runtime: 48h
-      mem: 128GB * attempt
+      mem: 128GBg
     bamCoverage2:
       runtime: 24h 
-      mem: 128GB * attempt
+      mem: 128GBg
     bamCompare1:
       runtime: 48h
-      mem: 128GB * attempt
+      mem: 128GBg
     bamCompare2:
       runtime: 24h
-      mem: 128GB * attempt
+      mem: 128GBg
     computeMatrix1:
       runtime: 48h
-      mem: 128GB * attempt
+      mem: 128GBg
     computeMatrix2:
       runtime: 24h
-      mem: 128GB * attempt
+      mem: 128GBg
     multiBamSummary1:
       runtime: 48h
-      mem: 128GB * attempt
+      mem: 128GBg
     multiBamSummary2:
       runtime: 48h
-      mem: 128GB * attempt
+      mem: 128GBg
     process_results:
       runtime: 30
       mem: 8GB

@@ -1235,10 +1235,10 @@ def create_boxplot(
             source = "kernel"
         else:
             metric_key = "wall_time"
-            source = "python"
+            source = "python"  # Could also use "kernel" since both have wall_time
     elif metric == "memory":
-        metric_key = "memory_mb"
-        source = "kernel"  # Use kernel memory data
+        metric_key = "max_rss"
+        source = "kernel"
     else:
         # Use the metric name directly for other metrics
         metric_key = metric

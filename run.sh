@@ -21,7 +21,7 @@ snakemake --profile snk-slurm-exe --benchmark-extended $ORGANISM_ARG
 
 # Save everything except for data output files and flags
 find output -mindepth 1 -maxdepth 1 -type d | xargs rm -rf
-find output -type f \( -name "*_done_*.txt" -o -name "bechmark_iteration_*.txt" \) -delete
+find output -type f \( -name "*_done_*.txt" -o -name "iter_count_*.txt" \) -delete
 mv .snakemake/log/*.snakemake.log logs/
 mv .snakemake/slurm_logs logs/
 mv logs output/

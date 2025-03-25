@@ -49,6 +49,9 @@ logging.basicConfig(
 logger = logging.getLogger("benchmark")
 logger.info(f"Logging to file: {log_file}")
 
+# Global variable to track the first command name encountered
+cmd_being_process = None
+
 
 class BenchmarkResult:
     """
@@ -636,10 +639,15 @@ def read_benchmark(file_path, expected_count=None, n_threads=None):
     Returns:
         BenchmarkResult object
     """
+    global cmd_being_process  # Use the global variable
     logger.info(f"Reading {file_path}")
 
     try:
         command, backend, binsize, protocol = extract_metadata_from_path(file_path)
+
+        if cmd_being_process is None:
+            cmd_being_process = command
+
     except ValueError as e:
         logger.error(f"{e}")
         return BenchmarkResult(error=str(e))
@@ -1647,3 +1655,13 @@ if __name__ == "__main__":
         process_single_files(
             args.data1_files, args.data2_files, base_path, n_times, n_threads
         )
+
+    # Rename the log file
+    if cmd_being_process:
+        new_log_file = log_file.replace(
+            "present_results", f"present_results_{cmd_being_process}"
+        )
+        try:
+            os.rename(log_file, new_log_file)
+        except Exception as e:
+            logger.warning(f"Could not rename log file: {e}")

@@ -1,7 +1,7 @@
 ### Dependencies
 
 1. Install `rustc` >= 1.73
-1. Install `matplotlib`, `Snakemake` and other optional dependencies you may need or want. For example: `conda create -n snkmk matplotlib snakemake snakemake-executor-plugin-slurm samtools bedtools ucsc-bigwiginfo`
+1. Install `matplotlib`, `Snakemake` and other optional dependencies you may need or want. For example: `conda create -n snkmk matplotlib snakemake snakemake-executor-plugin-slurm samtools bedtools ucsc-bigwiginfo pandoc`
 
 #### Download data
 
@@ -42,6 +42,10 @@ This is how it should look like:
     └── triticum_wgs_SRR27887047.bam.csi
 ```
 
+> [!NOTE]
+>
+> There's also some extra data files in our zenodo repo, these were part of the paper but not the benchmark.
+
 ## Run benchmark
 
 Adjust the `Nthreads` variable at the top of `Snakefile` however you like it, and then:
@@ -50,6 +54,19 @@ Adjust the `Nthreads` variable at the top of `Snakefile` however you like it, an
 
 If you wanted to run this on an HPC cluster, we do provide an executor config file, just `$ run.sh` ;)
 
+> [!WARNING]
+>
+> The executor config file (`snk-slurm-exe/config.yaml`) doesn't specify number of CPUs. Instead, we are relying on the `Nthreads` parameter from `Snakefile`, same as when running locally. But you can adjust Slurm partition, memory, and runtime from there.
+
+### Read results
+
 > [!NOTE]
 >
-> The executor config file (`snk-slurm-exe/config.yaml`) doesn't specify number of CPUs. Instead, we are relying on the `Nthreads` parameter from `Snakefile`, same as when running locally. But you can adjust Slurm partition, memory, and runtime form there.
+> Everything parsed from the results is saved as `*.csv` files.
+
+Aside from `*walltime.png` and `*memory.png` boxplots, there're other plots that may provide further insight into performance gains. Furthermore, there is a script to aggregate results from different configurations (`Nthreads`), you may use it as this:
+
+```{bash}
+./aggregate_runs.py --folders ~/data/bioinfo/benchmarking/hpc8_homo:8,~/data/bioinfo/benchmarking/hpc12_homo:12,~/data/bioinfo/benchmarking/hpc16_homo:16 --output memory_comparison --verbose
+pandoc memory_comparison/memory_comparison_summary.md -o memory_comparison/summary.html
+```

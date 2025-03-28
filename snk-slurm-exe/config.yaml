@@ -10,6 +10,8 @@ restart-times: 2
 
 max-inventory-time: 600
 latency-wait: 1200
+# latency-wait applies for OUTPUT files, but with shared resources
+# we'd like to also wait for all INPUT files and avoid errors...
 wait-for-files:
   - zenodo/triticum_chip_SRR1686799.bam
   - zenodo/bigwigs/human_chip_SRR28592125.bw
@@ -42,8 +44,11 @@ executor: slurm
 
 default-resources:
   slurm_partition: general
-  cpus: 144
   runtime: 24h
+
+  # we are aiming directly to reserve one of the bigger nodes just for us. this is wrong.
+  # but somewhat justified for a benchmark...
+  cpus: 144
 
 set-resources:
   bamCoverage1:

@@ -215,27 +215,30 @@ def extract_metadata_from_path(file_path):
         raise ValueError(f"Could not parse filename pattern from {file_path}: {e}")
 
 
-def parse_benchmark_file(file_path, n_threads):
+def parse_benchmark_file(file_path, n_threads, platform_override="auto"):
     """
-    Parse benchmark files, separating wall time and CPU time data.
+    Parse benchmark files, separating Snakemake benchmark (python_data) and time command output (kernel_data).
+
+    Wall time is the only metric that would come primarily from Snakemake.
 
     Args:
         file_path: Path to benchmark log file
+        n_threads: Number of threads used
+        platform_override: Override platform detection (auto, Linux, Darwin)
 
     Returns:
-        BenchmarkResult with wall time and CPU time data
+        BenchmarkResult with separated python and kernel data
     """
-    # Initialize data arrays
-    wall_times, max_rss = [], []
-    cpu_times, cpu_usage = [], []
-    io_in, io_out, mean_load = [], [], []
-    max_uss, max_pss = [], []
+    # Get platform with possible override
+    current_platform = get_platform(platform_override)
 
+    # Initialize data arrays
+    python_wall_times, python_max_rss = [], []
     error_detected = False
     error_message = None
     error_indices = []
 
-    # Read file just once for both error detection and parsing
+    # First - parse Snakemake benchmark file (metrics_*.txt)
     try:
         with open(file_path, "r") as file:
             content = file.readlines()
@@ -292,20 +295,11 @@ def parse_benchmark_file(file_path, n_threads):
                     ):
                         error_indices.append(current_run_index)
 
-                    # For multi-run files without specific indication, assume all runs affected
-                    if pattern in [
-                        "BamTruncatedRecord",
-                        "segmentation fault",
-                        "Killed",
-                        "out of memory",
-                    ]:
-                        break  # These are catastrophic errors, no need to check more patterns
-
-            # Skip header line
+            # Skip header line for Snakemake benchmark data
             content = content[1:]
 
-            # Parse lines for both wall time and CPU time
-            run_index = 0  # Track which run we're processing
+            # Parse Snakemake benchmark data
+            run_index = 0
             for line_num, line in enumerate(content, 2):
                 # Skip error message lines
                 if any(
@@ -318,48 +312,21 @@ def parse_benchmark_file(file_path, n_threads):
                     parts = line.strip().split("\t")
 
                     # Skip lines with incomplete data
-                    if len(parts) < 16:
+                    if len(parts) < 3:
                         continue
 
-                    # Parse wall time (column 1) and CPU time (column 10)
+                    # Parse wall time (column 1) and max_rss (column 3)
                     wall_time = float(parts[0])
-                    cpu_time = float(parts[9])
-
-                    # Parse memory values - max_rss (column 3) and max_uss (column 5)
                     max_rss_val = float(parts[2])
-                    max_uss_val = float(parts[4])
-                    max_pss_val = float(parts[5])
-
-                    # Parse other metrics
-                    io_in_val = float(parts[6])
-                    io_out_val = float(parts[7])
-                    mean_load_val = float(parts[8])
-
-                    # Parse CPU usage percentage (column 16)
-                    cpu_usage_val = float(parts[15])
 
                     # If this run had an error, mark the data as invalid
                     if run_index in error_indices:
                         wall_time = None
-                        cpu_time = None
                         max_rss_val = None
-                        max_uss_val = None
-                        max_pss_val = None
-                        io_in_val = None
-                        io_out_val = None
-                        mean_load_val = None
-                        cpu_usage_val = None
 
-                    # Store the values
-                    wall_times.append(wall_time)
-                    cpu_times.append(cpu_time)
-                    max_rss.append(max_rss_val)
-                    max_uss.append(max_uss_val)
-                    max_pss.append(max_pss_val)
-                    io_in.append(io_in_val)
-                    io_out.append(io_out_val)
-                    mean_load.append(mean_load_val)
-                    cpu_usage.append(cpu_usage_val)
+                    # Store python data
+                    python_wall_times.append(wall_time)
+                    python_max_rss.append(max_rss_val)
 
                     # Move to next run
                     run_index += 1
@@ -373,37 +340,221 @@ def parse_benchmark_file(file_path, n_threads):
         error_message = "File not found"
         logger.warning(f"{error_message}: {file_path}")
 
-    # Create the data dictionaries with clearer naming
-    python_data = {
-        "wall_time": wall_times,  # Rename for clarity
-        "memory_mb": max_rss,  # Rename for clarity
-    }
-
-    # Calculate parallelization efficiency
-    parallelization_efficiency = calculate_parallelization_efficiency(
-        wall_times, cpu_times, n_threads
-    )
-    memory_metrics = calculate_memory_metrics(max_rss, max_uss, n_threads)
-
-    # Add to your kernel_data dictionary
+    # Now parse time command output from log files
     kernel_data = {
-        "wall_time": wall_times,
-        "cpu_time": cpu_times,
-        "max_rss": max_rss,
-        "max_uss": max_uss,
-        "max_pss": max_pss,
-        "io_in": io_in,
-        "io_out": io_out,
-        "mean_load": mean_load,
-        "cpu_usage_pct": cpu_usage,
-        "parallelization_efficiency": parallelization_efficiency,
-        "memory_per_thread": memory_metrics["memory_per_thread"],
-        "uss_rss_ratio": memory_metrics["uss_rss_ratio"],
-        "memory_efficiency": memory_metrics["memory_efficiency"],
+        "cpu_time": [],
+        "wall_time": [],
+        "max_rss": [],
+        "max_uss": [],
+        "max_pss": [],
+        "io_in": [],
+        "io_out": [],
+        "mean_load": [],
+        "cpu_usage_pct": [],
     }
+
+    # Get command name, backend, binsize, protocol from file path
+    try:
+        command, backend, binsize, protocol = extract_metadata_from_path(file_path)
+    except Exception as e:
+        logger.warning(f"Could not extract metadata from file path: {e}")
+        command = "unknown"
+        backend = "unknown"
+        protocol = None
+
+    # The log files follow a different naming pattern than the benchmark files
+    # Format should be: logs/bamCompare1_1.txt, logs/bamCoverage1_chip_1.txt etc.
+    log_files = []
+
+    # Try different log patterns based on command structure
+    if protocol:
+        # For commands like bamCoverage that have a protocol
+        log_pattern = f"logs/{command}{backend}_{protocol}_[0-9]*.txt"
+    else:
+        # For commands like bamCompare that don't have a protocol
+        log_pattern = f"logs/{command}{backend}_[0-9]*.txt"
+
+    log_files = glob.glob(log_pattern)
+
+    if not log_files:
+        logger.warning(
+            f"No log files found for {command}{backend} using pattern: {log_pattern}"
+        )
+
+    # Log what we found for debugging
+    logger.debug(
+        f"Found {len(log_files)} log files for {command}{backend} at: {log_files}"
+    )
+
+    # Now instead of using platform.system(), use the current_platform variable:
+    if current_platform == "Linux":
+        # Extract time command data from Linux output
+        for log_file in log_files:
+            try:
+                with open(log_file, "r") as f:
+                    log_content = f.read()
+
+                    # Extract run number from log file name
+                    run_match = re.search(r"_(\d+)\.txt$", log_file)
+                    run_index = int(run_match.group(1)) - 1 if run_match else -1
+
+                    # Skip if this run had errors
+                    if run_index in error_indices:
+                        kernel_data["cpu_time"].append(None)
+                        kernel_data["wall_time"].append(None)
+                        kernel_data["max_rss"].append(None)
+                        kernel_data["max_uss"].append(None)
+                        kernel_data["max_pss"].append(None)
+                        kernel_data["io_in"].append(None)
+                        kernel_data["io_out"].append(None)
+                        kernel_data["mean_load"].append(None)
+                        kernel_data["cpu_usage_pct"].append(None)
+                        continue
+
+                    # Parse Linux time command output
+                    user_match = re.search(
+                        r"User time \(seconds\): (\d+\.\d+)", log_content
+                    )
+                    sys_match = re.search(
+                        r"System time \(seconds\): (\d+\.\d+)", log_content
+                    )
+                    wall_match = re.search(
+                        r"Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): (\d+:\d+\.\d+)",
+                        log_content,
+                    )
+                    memory_match = re.search(
+                        r"Maximum resident set size \(kbytes\): (\d+)", log_content
+                    )
+
+                    # Get CPU time (user + system)
+                    if user_match and sys_match:
+                        user_time = float(user_match.group(1))
+                        sys_time = float(sys_match.group(1))
+                        cpu_time = user_time + sys_time
+                    else:
+                        cpu_time = None
+
+                    if wall_match:
+                        # Convert mm:ss to seconds
+                        time_str = wall_match.group(1)
+                        minutes, seconds = time_str.split(":")
+                        wall_time = float(minutes) * 60 + float(seconds)
+                    else:
+                        wall_time = None
+
+                    if memory_match:
+                        # Convert to MB
+                        memory = float(memory_match.group(1)) / 1024
+                    else:
+                        memory = None
+
+                    # Append kernel data
+                    kernel_data["cpu_time"].append(cpu_time)
+                    kernel_data["wall_time"].append(wall_time)
+                    kernel_data["max_rss"].append(memory)
+                    # Use None for metrics we can't parse directly from time output
+                    kernel_data["max_uss"].append(None)
+                    kernel_data["max_pss"].append(None)
+                    kernel_data["io_in"].append(None)
+                    kernel_data["io_out"].append(None)
+                    kernel_data["mean_load"].append(None)
+                    kernel_data["cpu_usage_pct"].append(None)
+
+            except Exception as e:
+                logger.warning(f"Error parsing kernel metrics from {log_file}: {e}")
+
+    elif current_platform == "Darwin":
+        # Extract time command data from macOS output
+        for log_file in log_files:
+            try:
+                with open(log_file, "r") as f:
+                    log_content = f.read()
+
+                    # Extract run number from log file name
+                    run_match = re.search(r"_(\d+)\.txt$", log_file)
+                    run_index = int(run_match.group(1)) - 1 if run_match else -1
+
+                    # Skip if this run had errors
+                    if run_index in error_indices:
+                        kernel_data["cpu_time"].append(None)
+                        kernel_data["wall_time"].append(None)
+                        kernel_data["max_rss"].append(None)
+                        kernel_data["max_uss"].append(None)
+                        kernel_data["max_pss"].append(None)
+                        kernel_data["io_in"].append(None)
+                        kernel_data["io_out"].append(None)
+                        kernel_data["mean_load"].append(None)
+                        kernel_data["cpu_usage_pct"].append(None)
+                        continue
+
+                    # Parse macOS time command output
+                    real_match = re.search(r"real\s+(\d+\.\d+)", log_content)
+                    user_match = re.search(r"user\s+(\d+\.\d+)", log_content)
+                    sys_match = re.search(r"sys\s+(\d+\.\d+)", log_content)
+                    memory_match = re.search(r"(\d+)\s+maximum resident", log_content)
+
+                    if user_match and sys_match:
+                        user_time = float(user_match.group(1))
+                        sys_time = float(sys_match.group(1))
+                        cpu_time = user_time + sys_time
+                    else:
+                        cpu_time = None
+
+                    if real_match:
+                        wall_time = float(real_match.group(1))
+                    else:
+                        wall_time = None
+
+                    if memory_match:
+                        # Convert to MB
+                        memory = float(memory_match.group(1)) / 1024
+                    else:
+                        memory = None
+
+                    # Append kernel data
+                    kernel_data["cpu_time"].append(cpu_time)
+                    kernel_data["wall_time"].append(wall_time)
+                    kernel_data["max_rss"].append(memory)
+                    # Use None for metrics we can't parse directly from time output
+                    kernel_data["max_uss"].append(None)
+                    kernel_data["max_pss"].append(None)
+                    kernel_data["io_in"].append(None)
+                    kernel_data["io_out"].append(None)
+                    kernel_data["mean_load"].append(None)
+                    kernel_data["cpu_usage_pct"].append(None)
+
+            except Exception as e:
+                logger.warning(f"Error parsing kernel metrics from {log_file}: {e}")
+
+    # Create Python data dictionary with clearer naming
+    python_data = {
+        "wall_time": python_wall_times,
+        "memory_mb": python_max_rss,
+    }
+
+    # Calculate derived metrics if we have enough data
+    if (
+        n_threads
+        and any(x is not None for x in kernel_data["cpu_time"])
+        and any(x is not None for x in kernel_data["wall_time"])
+    ):
+        # Calculate parallelization efficiency
+        parallelization_efficiency = calculate_parallelization_efficiency(
+            kernel_data["wall_time"], kernel_data["cpu_time"], n_threads
+        )
+        kernel_data["parallelization_efficiency"] = parallelization_efficiency
+
+    # Add memory metrics if available
+    if any(x is not None for x in kernel_data["max_rss"]) and any(
+        x is not None for x in kernel_data["max_uss"]
+    ):
+        memory_metrics = calculate_memory_metrics(
+            kernel_data["max_rss"], kernel_data["max_uss"], n_threads
+        )
+        kernel_data.update(memory_metrics)
 
     # If we detected errors and got no data, add placeholder values
-    if error_detected and not wall_times:
+    if error_detected and not python_wall_times:
         python_data = {key: [None] for key in python_data}
         kernel_data = {key: [None] for key in kernel_data}
 
@@ -415,8 +566,9 @@ def parse_benchmark_file(file_path, n_threads):
     )
 
 
-def handle_macos_memory(command, backend, protocol, memory):
-    if not platform.system() == "Darwin":
+def handle_macos_memory(command, backend, protocol, memory, platform_override="auto"):
+    # Use the overridden platform
+    if get_platform(platform_override) != "Darwin":
         return memory
 
     n_times = len(memory)
@@ -627,7 +779,9 @@ def save_results_to_csv(results, command, backend, binsize, protocol):
     return output_file
 
 
-def read_benchmark(file_path, expected_count=None, n_threads=None):
+def read_benchmark(
+    file_path, expected_count=None, n_threads=None, platform_override="auto"
+):
     """
     Read and parse a benchmark file with validation against expected measurement count.
 
@@ -635,6 +789,7 @@ def read_benchmark(file_path, expected_count=None, n_threads=None):
         file_path: Path to the benchmark file
         expected_count: Expected number of measurements
         n_threads: Number of threads used in benchmark
+        platform_override: Override platform detection (auto, Linux, Darwin)
 
     Returns:
         BenchmarkResult object
@@ -652,14 +807,18 @@ def read_benchmark(file_path, expected_count=None, n_threads=None):
         logger.error(f"{e}")
         return BenchmarkResult(error=str(e))
 
-    result = parse_benchmark_file(file_path, n_threads)
+    result = parse_benchmark_file(file_path, n_threads, platform_override)
 
-    # Handle macOS memory
+    # Handle macOS memory - use overridden platform detection here too
     try:
         memory_data = result.get_metric("memory")
         if memory_data and not all(m is None for m in memory_data):
             updated_memory = handle_macos_memory(
-                command, backend, protocol, memory_data
+                command,
+                backend,
+                protocol,
+                memory_data,
+                platform_override=platform_override,
             )
             result.data["memory"] = updated_memory
     except Exception as e:
@@ -669,29 +828,34 @@ def read_benchmark(file_path, expected_count=None, n_threads=None):
     if expected_count is not None:
         result = validate_measurements(result, expected_count)
 
-    # Check consistency between Python and kernel data on Linux
-    inconsistencies = validate_data_consistency(result, n_threads)
-    if inconsistencies:
-        # Only log a warning if we have actual inconsistencies (outliers in CPU-bound tasks)
-        if any(key.startswith("cpu_time_") for key in inconsistencies):
-            # Only log a summary instead of each individual measurement
-            inconsistent_measurements = len(
-                [k for k in inconsistencies if k.startswith("cpu_time_")]
-            )
-            total_measurements = len(result.get_metric("wall_time"))
-            logger.warning(
-                f"CPU/Wall time inconsistencies in {inconsistent_measurements}/{total_measurements} "
-                f"measurements in {file_path}"
-            )
-            # Log just the first example as a sample
-            first_key = next(k for k in inconsistencies if k.startswith("cpu_time_"))
-            logger.warning(f"Example: {first_key}: {inconsistencies[first_key]}")
-        elif "summary" in inconsistencies:
-            # For non-CPU-bound tasks with significant deviation, log as warning
-            logger.warning(f"Workload anomaly detected: {inconsistencies['summary']}")
+    # Check consistency between Python and kernel data (only for Linux, unless overridden)
+    if get_platform(platform_override) == "Linux":
+        inconsistencies = validate_data_consistency(result, n_threads)
+        if inconsistencies:
+            # Only log a warning if we have actual inconsistencies (outliers in CPU-bound tasks)
+            if any(key.startswith("cpu_time_") for key in inconsistencies):
+                # Only log a summary instead of each individual measurement
+                inconsistent_measurements = len(
+                    [k for k in inconsistencies if k.startswith("cpu_time_")]
+                )
+                total_measurements = len(result.get_metric("wall_time"))
+                logger.warning(
+                    f"CPU/Wall time inconsistencies in {inconsistent_measurements}/{total_measurements} "
+                    f"measurements in {file_path}"
+                )
+                # Log just the first example as a sample
+                first_key = next(
+                    k for k in inconsistencies if k.startswith("cpu_time_")
+                )
+                logger.warning(f"Example: {first_key}: {inconsistencies[first_key]}")
+            elif "summary" in inconsistencies:
+                # For non-CPU-bound tasks with significant deviation, log as warning
+                logger.warning(
+                    f"Workload anomaly detected: {inconsistencies['summary']}"
+                )
 
-        # Add to result data but don't treat as errors
-        result.data["data_inconsistencies"] = inconsistencies
+            # Add to result data but don't treat as errors
+            result.data["data_inconsistencies"] = inconsistencies
 
     # Save results to CSV even if there were errors
     save_results_to_csv(result, command, backend, binsize, protocol)
@@ -903,11 +1067,17 @@ def apply_boxplot_style(bp, colors=["lightblue", "lightgreen"]):
 
 
 def process_single_files(
-    data1_file, data2_file, base_path, n_times, n_threads, extension=".png"
+    data1_file,
+    data2_file,
+    base_path,
+    n_times,
+    n_threads,
+    extension=".png",
+    platform_override="auto",
 ):
     """Process single files and generate comparison plots with both CPU and wall time."""
-    result1 = read_benchmark(data1_file, n_times, n_threads)
-    result2 = read_benchmark(data2_file, n_times, n_threads)
+    result1 = read_benchmark(data1_file, n_times, n_threads, platform_override)
+    result2 = read_benchmark(data2_file, n_times, n_threads, platform_override)
 
     # Set up titles with error indicators if needed
     error_suffix = (
@@ -996,7 +1166,14 @@ def process_single_files(
 
 
 def process_multiprotocol(
-    data1_files, data2_files, base_path, protocols, n_times, n_threads, extension=".png"
+    data1_files,
+    data2_files,
+    base_path,
+    protocols,
+    n_times,
+    n_threads,
+    extension=".png",
+    platform_override="auto",
 ):
     """Process multiple protocol files and generate comparison plots with both CPU and wall time."""
     data1_file_list = data1_files.split(",")
@@ -1004,11 +1181,15 @@ def process_multiprotocol(
 
     # Read all benchmark files with expected count
     result1_list = [
-        read_benchmark(file, n_times, n_threads) if idx < len(data1_file_list) else None
+        read_benchmark(file, n_times, n_threads, platform_override)
+        if idx < len(data1_file_list)
+        else None
         for idx, file in enumerate(data1_file_list)
     ]
     result2_list = [
-        read_benchmark(file, n_times, n_threads) if idx < len(data2_file_list) else None
+        read_benchmark(file, n_times, n_threads, platform_override)
+        if idx < len(data2_file_list)
+        else None
         for idx, file in enumerate(data2_file_list)
     ]
 
@@ -1590,6 +1771,33 @@ def plot_workload_analysis(
     logger.info(f"Saved {output_file}")
 
 
+def get_platform(platform_override="auto"):
+    """
+    Get the current platform with possible override.
+
+    Args:
+        platform_override: Platform to use instead of the current one.
+                          Values can be 'auto', 'Linux', or 'Darwin'
+
+    Returns:
+        String representing the platform to use for parsing
+    """
+    if platform_override == "auto":
+        return platform.system()
+
+    # Validate the override
+    if platform_override not in ["Linux", "Darwin"]:
+        logger.warning(
+            f"Invalid platform override '{platform_override}', using detected platform"
+        )
+        return platform.system()
+
+    logger.info(
+        f"Platform override: Using '{platform_override}' instead of '{platform.system()}'"
+    )
+    return platform_override
+
+
 def parse_command_line_args():
     parser = argparse.ArgumentParser(description="Generate benchmark comparison plots")
 
@@ -1606,6 +1814,15 @@ def parse_command_line_args():
         required=True,
         help="Number of expected measurement repetitions",
     )
+
+    parser.add_argument(
+        "--platform",
+        type=str,
+        choices=["auto", "Linux", "Darwin"],
+        default="auto",
+        help="Override platform detection for parsing results from another OS (default: auto)",
+    )
+
     parser.add_argument(
         "output_template",
         help="Output file template (e.g., 'output/bamCoverage_human_bs100.png')",
@@ -1637,23 +1854,41 @@ if __name__ == "__main__":
     output_template = args.output_template
     n_times = args.ntimes
     n_threads = args.threads
+    platform_override = args.platform
 
     # Parse the output path
     output_path = Path(output_template)
     base_path = output_path.with_suffix("")
+
+    # Log platform information
+    logger.info(f"Running on: {platform.system()}")
+    if platform_override != "auto":
+        logger.info(f"Platform override: Using {platform_override} for parsing")
 
     # Process differently based on whether we're doing multi-file processing
     # (detected by comma in the input files)
     if "," in args.data1_files:
         # For bamCoverage, we know the protocols are chip,rna,wgs in that order
         protocols = ["chip", "rna", "wgs"]
+        # Update these function calls to pass platform_override
         process_multiprotocol(
-            args.data1_files, args.data2_files, base_path, protocols, n_times, n_threads
+            args.data1_files,
+            args.data2_files,
+            base_path,
+            protocols,
+            n_times,
+            n_threads,
+            platform_override=platform_override,
         )
     else:
         # For single file comparisons (bamCompare, computeMatrix, multiBamSummary)
         process_single_files(
-            args.data1_files, args.data2_files, base_path, n_times, n_threads
+            args.data1_files,
+            args.data2_files,
+            base_path,
+            n_times,
+            n_threads,
+            platform_override=platform_override,
         )
 
     # Rename the log file

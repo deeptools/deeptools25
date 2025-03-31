@@ -229,7 +229,9 @@ def plot_memory_comparison(cmd_key, memory_data, output_dir):
     if match:
         cmd, backend, rest = match.groups()
         if "_" in rest:
-            binsize, protocol = rest.split("_")
+            parts = rest.split("_")
+            binsize = parts[0]
+            protocol = parts[1]
             display_name = (
                 f"{cmd} (Backend {backend}, Bin Size {binsize}, {protocol.upper()})"
             )
@@ -313,31 +315,50 @@ def generate_summary_report(results, output_file, used_folders):
 
         f.write("## Tools Analyzed\n\n")
 
-        # Group by command
-        by_command = {}
+        # Group by command, protocol, and binsize
+        by_command_protocol = {}
         for cmd_key in results:
             match = re.match(r"(\w+)(\d+)_(.*)", cmd_key)
             if match:
                 cmd, backend, rest = match.groups()
-                if cmd not in by_command:
-                    by_command[cmd] = []
-                by_command[cmd].append((cmd_key, results[cmd_key]))
+
+                # Split rest into binsize and protocol if protocol exists
+                if "_" in rest:
+                    binsize, protocol = rest.split("_")
+                    # Include protocol in the key to treat each protocol as separate
+                    command_key = f"{cmd}_{protocol}"
+                else:
+                    binsize = rest
+                    command_key = cmd
+
+                # Add binsize to the key so different binsizes are grouped separately
+                command_key = f"{command_key}_bs{binsize}"
+
+                if command_key not in by_command_protocol:
+                    by_command_protocol[command_key] = []
+                by_command_protocol[command_key].append((cmd_key, results[cmd_key]))
 
         # Write details for each command
-        for cmd, items in sorted(by_command.items()):
-            f.write(f"### {cmd}\n\n")
+        for command_key, items in sorted(by_command_protocol.items()):
+            # Format the section header more nicely
+            if "_bs" in command_key:
+                parts = command_key.split("_bs")
+                cmd_part = parts[0].replace("_", " ")
+                binsize = parts[1]
+                header = f"{cmd_part} (Bin Size {binsize})"
+            else:
+                header = command_key.replace("_", " ")
+
+            f.write(f"### {header}\n\n")
 
             for cmd_key, plot_path in sorted(items):
-                display_name = cmd_key.replace("_", " ")
-
                 match = re.match(r"(\w+)(\d+)_(.*)", cmd_key)
                 if match:
                     cmd, backend, rest = match.groups()
                     if "_" in rest:
-                        binsize, protocol = rest.split("_")
-                        display_name = f"{cmd} (Backend {backend}, Bin Size {binsize}, {protocol.upper()})"
+                        display_name = f"{cmd} (Backend {backend})"
                     else:
-                        display_name = f"{cmd} (Backend {backend}, Bin Size {rest})"
+                        display_name = f"{cmd} (Backend {backend})"
 
                 f.write(f"#### {display_name}\n\n")
                 f.write(

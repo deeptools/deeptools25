@@ -829,8 +829,11 @@ def read_benchmark(
         result = validate_measurements(result, expected_count)
 
     # Check consistency between Python and kernel data (only for Linux, unless overridden)
-    if get_platform(platform_override) == "Linux":
-        inconsistencies = validate_data_consistency(result, n_threads)
+    here_platform = get_platform(platform_override)
+    if here_platform == "Linux":
+        inconsistencies = validate_data_consistency(
+            result, n_threads, current_platform=here_platform
+        )
         if inconsistencies:
             # Only log a warning if we have actual inconsistencies (outliers in CPU-bound tasks)
             if any(key.startswith("cpu_time_") for key in inconsistencies):
@@ -878,18 +881,22 @@ def parse_memory_from_logs(log_files):
     return memory_values
 
 
-def validate_data_consistency(result, n_threads=None):
+def validate_data_consistency(result, n_threads=None, current_platform=None):
     """
     Validate consistency between wall time and CPU time measurements.
 
     Args:
         result: BenchmarkResult object
         n_threads: Number of threads used (if known)
+        current_platform: Platform detection passed from read_benchmark
 
     Returns:
         Dictionary of inconsistencies found
     """
-    if platform.system() != "Linux" or not n_threads or n_threads <= 1:
+
+    # Skip validation for non-Linux platforms
+    assert current_platform is not None
+    if current_platform != "Linux" or not n_threads or n_threads <= 1:
         return {}
 
     inconsistencies = {}

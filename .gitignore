@@ -5,3 +5,6 @@ regions/
 output*/
 logs/
 data/
+*_homo/
+*_triticum/
+memory_comparison/

@@ -443,10 +443,10 @@ rule process_results:
                                  organism=ORGANISM, binsize=BinSizes["multiBamSummary"])
     output:
         # CPU Time plots
-        bamCoverage_cpu_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}_cputime.png",
-        bamCompare_cpu_time_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes['bamCompare']}_cputime.png",
-        computeMatrix_cpu_time_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes['computeMatrix']}_cputime.png",
-        multiBamSummary_cpu_time_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}_cputime.png",
+        bamCoverage_cputime_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}_cputime.png",
+        bamCompare_cputime_plot = f"output/bamCompare_{ORGANISM}_bs{BinSizes['bamCompare']}_cputime.png",
+        computeMatrix_cputime_plot = f"output/computeMatrix_{ORGANISM}_bs{BinSizes['computeMatrix']}_cputime.png",
+        multiBamSummary_cputime_plot = f"output/multiBamSummary_{ORGANISM}_bs{BinSizes['multiBamSummary']}_cputime.png",
         
         # Wall Time plots
         bamCoverage_wall_time_plot = f"output/bamCoverage_{ORGANISM}_bs{BinSizes['bamCoverage']}_walltime.png",
@@ -485,13 +485,13 @@ rule process_results:
 rule create_md:
     input:
         expand("output/bamCoverage_{organism}_bs{binsize}_{type}.png", 
-               organism=ORGANISM, binsize=BinSizes["bamCoverage"], type=["walltime", "cpu_time", "memory"]),
+               organism=ORGANISM, binsize=BinSizes["bamCoverage"], type=["walltime", "cputime", "memory"]),
         expand("output/bamCompare_{organism}_bs{binsize}_{type}.png", 
-               organism=ORGANISM, binsize=BinSizes["bamCompare"], type=["walltime", "cpu_time", "memory"]),
+               organism=ORGANISM, binsize=BinSizes["bamCompare"], type=["walltime", "cputime", "memory"]),
         expand("output/computeMatrix_{organism}_bs{binsize}_{type}.png", 
-               organism=ORGANISM, binsize=BinSizes["computeMatrix"], type=["walltime", "cpu_time", "memory"]),
+               organism=ORGANISM, binsize=BinSizes["computeMatrix"], type=["walltime", "cputime", "memory"]),
         expand("output/multiBamSummary_{organism}_bs{binsize}_{type}.png",
-               organism=ORGANISM, binsize=BinSizes["multiBamSummary"], type=["walltime", "cpu_time", "memory"])
+               organism=ORGANISM, binsize=BinSizes["multiBamSummary"], type=["walltime", "cputime", "memory"])
     output:
         report = "output/report.md"
     params:

@@ -10,24 +10,9 @@ Nthreads = 16
 
 ORGANISM = config.get("organism", "homo")
 
-# Do not edit any further
-if ORGANISM == "homo":
-    GTF = f"regions/{ORGANISM}.v91.sample25k.gtf"
-elif ORGANISM == "triticum":
-    GTF = f"regions/{ORGANISM}.v60.sample25k.gtf"
-else:
-    raise ValueError(f"Unsupported organism: {ORGANISM}")
-
-# Set the time command based on the platform
-import platform
-system = platform.system()
-if system == "Linux":
-    timeCmd = "/usr/bin/time -v"
-elif system == "Darwin":
-    timeCmd = "/usr/bin/time -al"
-else:
-    raise ValueError(f"Unsupported platform: {system}")
-
+###############################################################
+################### Do not edit any further ###################
+###############################################################
 # Helper fn. to keep logs of failed jobs and verify file existence
 shell.prefix("""
 function on_error() {{ 
@@ -49,6 +34,17 @@ function on_error() {{
 """
 )
 
+# Set the time command based on the platform
+import platform
+system = platform.system()
+if system == "Linux":
+    timeCmd = "/usr/bin/time -v"
+elif system == "Darwin":
+    timeCmd = "/usr/bin/time -al"
+else:
+    raise ValueError(f"Unsupported platform: {system}")
+
+# Input files
 PROTOCOLS = ["chip", "rna", "wgs"]
 FILES = {
     "homo_chip": "zenodo/human_chip_SRR28592124.bam",
@@ -63,24 +59,38 @@ FILES = {
 # For Triticum, we'll simply repeat the same BW a couple of times. For multiBamSummary (both sp.) we'll do something similar (repeat same input many times.)
 humanBigwigs = "zenodo/bigwigs/human_chip_SRR28592124.bw zenodo/bigwigs/human_chip_SRR28592125.bw zenodo/bigwigs/human_chip_SRR28592131.bw zenodo/bigwigs/human_chip_SRR28592132.bw zenodo/bigwigs/human_rna_SRR28012902.bw zenodo/bigwigs/human_rna_SRR28012903.bw zenodo/bigwigs/human_rna_SRR28012904.bw zenodo/bigwigs/human_rna_SRR28012905.bw zenodo/bigwigs/human_wgs_SRR15494527.bw"
 
-# TODO: if we were to use triticumBigwigs, adjut README.md accordingly,
-# ├── triticum_chip_SRR1686799_fw.bw
-# ├── triticum_chip_SRR1686799_mapq10.bw
-# ├── triticum_chip_SRR1686799_markdup.bw
-# ├── triticum_chip_SRR1686799_nodup.bw
-# ├── triticum_chip_SRR1686799_reverse.bw
+if ORGANISM == "homo":
+    GTF = f"regions/{ORGANISM}.v91.sample25k.gtf"
+elif ORGANISM == "triticum":
+    GTF = f"regions/{ORGANISM}.v60.sample25k.gtf"
+else:
+    raise ValueError(f"Unsupported organism: {ORGANISM}")
 
 rule all:
-    input:
-        expand("output/bamCoverage_{organism}_bs{binsize}_{type}.png", 
-               organism=ORGANISM, binsize=BinSizes["bamCoverage"], type=["walltime", "cputime", "memory"]),
-        expand("output/bamCompare_{organism}_bs{binsize}_{type}.png", 
-               organism=ORGANISM, binsize=BinSizes["bamCompare"], type=["walltime", "cputime", "memory"]),
-        expand("output/computeMatrix_{organism}_bs{binsize}_{type}.png", 
-               organism=ORGANISM, binsize=BinSizes["computeMatrix"], type=["walltime", "cputime", "memory"]),
-        expand("output/multiBamSummary_{organism}_bs{binsize}_{type}.png",
-               organism=ORGANISM, binsize=BinSizes["multiBamSummary"], type=["walltime", "cputime", "memory"])
+    input: "output/report.html"
 
+rule downsample_gtf:
+    input: GTF.replace('sample25k', 'full')
+    output: GTF
+    conda: "extras.env.yaml"
+    log: "logs/downsample_gtf.log"
+    params:
+        transcript_count = 25000
+    shell:
+        """
+        # Check if input file exists and has sufficient entries
+        if [ ! -f {input} ]; then
+            echo "Error: Input GTF file {input} does not exist" > {log}
+            exit 1
+        fi
+        transcript_count=$(grep -c 'transcript_id' {input})
+        if [ $transcript_count -lt {params.transcript_count} ]; then
+            echo "Warning: Input GTF doesn't have enough transcripts ($transcript_count)" > {log}
+        fi
+        
+        # Perform downsampling
+        grep 'transcript_id' {input} | shuf | head -n {params.transcript_count} | bedtools sort -i - > {output}
+        """
 
 rule bamCoverage2:
     input:
@@ -471,3 +481,109 @@ rule process_results:
         python3 present_results.py --threads {Nthreads} --ntimes {Ntimes} {params.multiBamSummary_output}.png \
             {input.multiBamSummary1} {input.multiBamSummary2}
         """
+
+rule create_md:
+    input:
+        expand("output/bamCoverage_{organism}_bs{binsize}_{type}.png", 
+               organism=ORGANISM, binsize=BinSizes["bamCoverage"], type=["walltime", "cpu_time", "memory"]),
+        expand("output/bamCompare_{organism}_bs{binsize}_{type}.png", 
+               organism=ORGANISM, binsize=BinSizes["bamCompare"], type=["walltime", "cpu_time", "memory"]),
+        expand("output/computeMatrix_{organism}_bs{binsize}_{type}.png", 
+               organism=ORGANISM, binsize=BinSizes["computeMatrix"], type=["walltime", "cpu_time", "memory"]),
+        expand("output/multiBamSummary_{organism}_bs{binsize}_{type}.png",
+               organism=ORGANISM, binsize=BinSizes["multiBamSummary"], type=["walltime", "cpu_time", "memory"])
+    output:
+        report = "output/report.md"
+    params:
+        organism = ORGANISM.capitalize(),
+        threads = Nthreads,
+        ntimes = Ntimes,
+        bamCoverage_bs = BinSizes["bamCoverage"],
+        bamCompare_bs = BinSizes["bamCompare"],
+        computeMatrix_bs = BinSizes["computeMatrix"],
+        multiBamSummary_bs = BinSizes["multiBamSummary"]
+    shell:
+        """
+        cat > {output.report} << EOL
+# {params.organism}
+
+> Threads: {params.threads}
+>
+> Ntimes: {params.ntimes}
+>
+
+## bamCoverage
+
+> Bin Size: {params.bamCoverage_bs}
+
+### Walltime
+
+![](./bamCoverage_{ORGANISM}_bs{params.bamCoverage_bs}_walltime.png)
+
+### CPU Time
+
+![](./bamCoverage_{ORGANISM}_bs{params.bamCoverage_bs}_cputime.png)
+
+### Memory
+
+![](./bamCoverage_{ORGANISM}_bs{params.bamCoverage_bs}_memory.png)
+
+## bamCompare
+
+> Bin Size: {params.bamCompare_bs}
+
+### Walltime
+
+![](./bamCompare_{ORGANISM}_bs{params.bamCompare_bs}_walltime.png)
+
+### CPU Time
+
+![](./bamCompare_{ORGANISM}_bs{params.bamCompare_bs}_cputime.png)
+
+### Memory
+
+![](./bamCompare_{ORGANISM}_bs{params.bamCompare_bs}_memory.png)
+
+## computeMatrix
+
+> Bin Size: {params.computeMatrix_bs}
+>
+> Upstream: {params.computeMatrix_bs * 2}
+>
+> Downstream: {params.computeMatrix_bs * 2}
+
+### Walltime
+
+![](./computeMatrix_{ORGANISM}_bs{params.computeMatrix_bs}_walltime.png)
+
+### CPU Time
+
+![](./computeMatrix_{ORGANISM}_bs{params.computeMatrix_bs}_cputime.png)
+
+### Memory
+
+![](./computeMatrix_{ORGANISM}_bs{params.computeMatrix_bs}_memory.png)
+
+## multiBamSummary
+
+> Bin Size: {params.multiBamSummary_bs}
+
+### Walltime
+
+![](./multiBamSummary_{ORGANISM}_bs{params.multiBamSummary_bs}_walltime.png)
+
+### CPU Time
+
+![](./multiBamSummary_{ORGANISM}_bs{params.multiBamSummary_bs}_cputime.png)
+
+### Memory
+
+![](./multiBamSummary_{ORGANISM}_bs{params.multiBamSummary_bs}_memory.png)
+EOL
+        """
+
+rule render_md:
+    input: "output/report.md"
+    output: "output/report.html"
+    conda: "extras.env.yaml"
+    shell: "pandoc {input} -o {output}"

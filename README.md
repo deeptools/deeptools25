@@ -1,12 +1,12 @@
 ### Dependencies
 
 1. Install `rustc` >= 1.73
-1. Install `matplotlib`, `Snakemake` and other optional dependencies you may need or want. For example: `conda create -n snkmk matplotlib snakemake snakemake-executor-plugin-slurm samtools bedtools ucsc-bigwiginfo pandoc`
+1. Install `matplotlib`, `Snakemake` and other optional dependencies you may need or want. For example: `conda create -n snkmk matplotlib snakemake snakemake-executor-plugin-slurm`
 
 #### Download data
 
 1. **Download the data from [here](https://zenodo.org/record/14760356)** (`10.5281/zenodo.14760356`), put these BAM files under `zenodo/` directory.
-1. **Get GTF files from Ensembl for human and/ or wheat**. Put these under `regions/` directory. If you are not inclined into benchmarking on full transcriptome, downsample those files like this: `grep 'transcript_id' homo.v91.full.gtf | shuf | head -n 25000 | bedtools sort -i - > homo.v91.sample25k.gtf`
+1. **Get GTF files from Ensembl for human and/ or wheat**. Put these under `regions/` directory and name them like we did.
 
 This is how it should look like:
 
@@ -14,9 +14,7 @@ This is how it should look like:
 .
 ├── regions
 │   ├── homo.v91.full.gtf
-│   ├── homo.v91.sample25k.gtf
-│   ├── triticum.v60.full.gtf
-│   └── triticum.v60.sample25k.gtf
+│   └──  triticum.v60.full.gtf
 └── zenodo
     ├── bigwigs
     │   ├── human_chip_SRR28592124.bw
@@ -64,7 +62,7 @@ If you wanted to run this on an HPC cluster, we do provide an executor config fi
 >
 > Everything parsed from the results is saved as `*.csv` files.
 
-Aside from `*walltime.png` and `*memory.png` boxplots, there're other plots that may provide further insight into performance gains. Furthermore, there is a script to aggregate results from different configurations (`Nthreads`), you may use it as this:
+Aside from `*walltime.png` and `*memory.png` boxplots (included in `output/report.html` on each run), there're other plots that may provide further insight into performance gains. Furthermore, there is a script to aggregate results from different configurations (`Nthreads`), you may use it as this:
 
 ```{bash}
 ./aggregate_runs.py --folders ~/data/bioinfo/benchmarking/hpc8_homo:8,~/data/bioinfo/benchmarking/hpc12_homo:12,~/data/bioinfo/benchmarking/hpc16_homo:16 --output memory_comparison --verbose

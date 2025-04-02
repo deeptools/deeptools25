@@ -46,11 +46,11 @@ This is how it should look like:
 
 ## Run benchmark
 
-Adjust the `Nthreads` variable at the top of `Snakefile` however you like it, and then:
-
-`snakemake --use-conda --benchmark-extended --config organism=homo`
+`snakemake --use-conda --benchmark-extended --config organism=homo ntimes=3 nthreads=8`
 
 If you wanted to run this on an HPC cluster, we do provide an executor config file, just `$ run.sh` ;)
+
+Optionally, you may want to adjust the different bin sizes at the top of the Snakefile, or even the hardcoded number of transcripts to be taken from the GTF.
 
 > [!WARNING]
 >

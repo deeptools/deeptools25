@@ -1,3 +1,9 @@
+# Parameters for the workflow, with defaults to be overridden with snakemake `--config`
+Ntimes = config.get("ntimes", 3)
+Nthreads = config.get("nthreads", 16)
+ORGANISM = config.get("organism", "homo")
+
+# These are customizable too
 BinSizes = {
     "bamCoverage": 10,
     "bamCompare": 100,
@@ -5,15 +11,7 @@ BinSizes = {
     "multiBamSummary": 5000,
 }
 
-Ntimes = 3
-Nthreads = 16
-
-ORGANISM = config.get("organism", "homo")
-
-###############################################################
-################### Do not edit any further ###################
-###############################################################
-# Helper fn. to keep logs of failed jobs and verify file existence
+# Helper fn. to keep logs of failed jobs
 shell.prefix("""
 function on_error() {{ 
     cp $1 $1.failed.$(date +%Y%m%d_%H%M%S)
@@ -59,6 +57,7 @@ FILES = {
 # For Triticum, we'll simply repeat the same BW a couple of times. For multiBamSummary (both sp.) we'll do something similar (repeat same input many times.)
 humanBigwigs = "zenodo/bigwigs/human_chip_SRR28592124.bw zenodo/bigwigs/human_chip_SRR28592125.bw zenodo/bigwigs/human_chip_SRR28592131.bw zenodo/bigwigs/human_chip_SRR28592132.bw zenodo/bigwigs/human_rna_SRR28012902.bw zenodo/bigwigs/human_rna_SRR28012903.bw zenodo/bigwigs/human_rna_SRR28012904.bw zenodo/bigwigs/human_rna_SRR28012905.bw zenodo/bigwigs/human_wgs_SRR15494527.bw"
 
+# The number of transcripts is hardcoded in filenames here, sorry.
 if ORGANISM == "homo":
     GTF = f"regions/{ORGANISM}.v91.sample25k.gtf"
 elif ORGANISM == "triticum":

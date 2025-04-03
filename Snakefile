@@ -1,4 +1,4 @@
-# Parameters for the workflow, with defaults to be overridden with snakemake `--config`
+# Parameters for the workflow, with defaults to be overridden with snakemake, e.g. `--config organism=triticum`
 Ntimes = config.get("ntimes", 3)
 Nthreads = config.get("nthreads", 16)
 ORGANISM = config.get("organism", "homo")

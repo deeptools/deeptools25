@@ -17,7 +17,7 @@ mkdir -p {output,logs} && mv output trash/ && mv logs trash/
 rm -rf trash
 
 # Check input files were transferred okay, then execute the pipeline
-samtools quickcheck zenodo/*.bam && sleep 3h
+samtools quickcheck zenodo/*.bam && sleep 3s
 snakemake --use-conda --benchmark-extended $ORGANISM_ARG ntimes=3 nthreads=64
 
 # Save everything except for data output files and flags

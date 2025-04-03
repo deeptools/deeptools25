@@ -41,4 +41,4 @@ echo "=== libclang location ==="
 ls -l $LIBCLANG_DIR/libclang*
 
 # Install dependencies
-pip install git+https://github.com/deeptools/deepTools.git@filtering #4.0.0
+pip install git+https://github.com/deeptools/deepTools.git@4.0.0

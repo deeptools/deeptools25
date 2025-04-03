@@ -506,10 +506,10 @@ rule create_md:
         cat > {output.report} << EOL
 
 <style>
-img {
+img {{
   max-width: 100%;
   height: auto;
-}
+}}
 </style>
 
 # {params.organism}

@@ -554,10 +554,6 @@ img {{
 ## computeMatrix
 
 > Bin Size: {params.computeMatrix_bs}
->
-> Upstream: {params.computeMatrix_bs * 2}
->
-> Downstream: {params.computeMatrix_bs * 2}
 
 ### Walltime
 

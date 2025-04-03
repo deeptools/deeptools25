@@ -9,15 +9,16 @@ ORGANISM=${1:-$DEFAULT_ORGANISM}
 ORGANISM_ARG="--config organism=$ORGANISM"
 ORGANISM_TAG="_$ORGANISM"
 
-# Rest of the file, modified to use the arguments
+# Tidy-up folders and so on...
+mkdir -p {.snakemake,trash}/conda
 rm -rf trash && mv .snakemake trash
 mkdir .snakemake && mv trash/conda .snakemake/
 mkdir -p {output,logs} && mv output trash/ && mv logs trash/
 rm -rf trash
 
 # Check input files were transferred okay, then execute the pipeline
-samtools quickcheck zenodo/*.bam && sleep 3s
-snakemake --profile snk-slurm-exe --benchmark-extended $ORGANISM_ARG
+samtools quickcheck zenodo/*.bam && sleep 3h
+snakemake --use-conda --benchmark-extended $ORGANISM_ARG ntimes=3 nthreads=64
 
 # Save everything except for data output files and flags
 find output -mindepth 1 -maxdepth 1 -type d | xargs rm -rf

@@ -504,6 +504,14 @@ rule create_md:
     shell:
         """
         cat > {output.report} << EOL
+
+<style>
+img {
+  max-width: 100%;
+  height: auto;
+}
+</style>
+
 # {params.organism}
 
 > Threads: {params.threads}

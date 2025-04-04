@@ -42,23 +42,25 @@ This is how it should look like:
 
 > [!NOTE]
 >
-> There's also some extra data files in our zenodo repo, these were part of the paper but not the benchmark.
+> There's also some extra data files in our zenodo repo, these were part of the paper but not the benchmark. Just ignore or `rm` them.
 
 ## Run benchmark
 
+<!--Optionally, you may want to adjust the different bin sizes at the top of the Snakefile, or even the hardcoded number of transcripts to be taken from the GTF.-->
+
+### Directly
+
 `snakemake --use-conda --benchmark-extended --config organism=homo ntimes=3 nthreads=8`
+
+### Slurm
 
 If you wanted to run this on an HPC cluster, we do provide an executor config file, just `$ run.sh` ;)
 
-Optionally, you may want to adjust the different bin sizes at the top of the Snakefile, or even the hardcoded number of transcripts to be taken from the GTF.
+The executor config file (`snk-slurm-exe/config.yaml`) doesn't specify number of CPUs. Instead, we are relying on the `Nthreads` parameter from `Snakefile`, same as when running locally. But you can adjust Slurm partition, memory, and runtime from there.
 
-> [!WARNING]
->
-> The executor config file (`snk-slurm-exe/config.yaml`) doesn't specify number of CPUs. Instead, we are relying on the `Nthreads` parameter from `Snakefile`, same as when running locally. But you can adjust Slurm partition, memory, and runtime from there.
+## Read results
 
-### Read results
-
-> [!NOTE]
+> [!IMPORTANT]
 >
 > Everything parsed from the results is saved as `*.csv` files.
 

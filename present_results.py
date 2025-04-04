@@ -18,6 +18,8 @@ import pandas as pd
 PREV_VERSION_LABEL = "Previous version"
 CURRENT_VERSION_LABEL = "4.0"
 
+# The protocol can be any of these (for bamCoverage only at the moment)
+VALID_PROTOCOLS = ["chip", "rna", "wgs"]
 
 # Matplotlib settings for our use-case(s)
 mpl.use("Agg")
@@ -1172,6 +1174,63 @@ def process_single_files(
         )
 
 
+def extract_protocols_from_files(files_list):
+    protocols = []
+    for file_path in files_list:
+        try:
+            _, _, _, protocol = extract_metadata_from_path(file_path)
+            if protocol:
+                protocols.append(protocol)
+        except ValueError as e:
+            logger.warning(f"Could not extract protocol from {file_path}: {e}")
+    return protocols
+
+
+def validate_protocol(protocol):
+    if protocol and protocol not in VALID_PROTOCOLS:
+        logger.warning(f"Unexpected protocol: {protocol}")
+    return protocol
+
+
+def extract_metadata_from_path(file_path):
+    # Try multiple patterns to increase robustness
+    patterns = [
+        r"/metrics_(\w+?)(\d+)_(?:.*?)(?:_bs(\d+))?(?:_(\w+))?\.txt",
+        r"/metrics_(\w+?)(\d+)(?:_(\w+))?_bs(\d+)\.txt",
+        r"logs/metrics_(\w+?)(\d+)_(\w+)\.txt",
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, file_path)
+        if match:
+            # Extract groups with error handling
+            try:
+                command = match.group(1)
+                backend = match.group(2)
+
+                # Different patterns might have groups in different positions
+                if len(match.groups()) == 4:
+                    binsize = match.group(3)
+                    protocol = match.group(4)
+                elif len(match.groups()) == 3:
+                    # Handle different 3-group patterns
+                    if "bs" in pattern:
+                        protocol = None
+                        binsize = match.group(3)
+                    else:
+                        protocol = match.group(3)
+                        binsize = None
+                else:
+                    binsize = None
+                    protocol = None
+
+                return command, backend, binsize, protocol
+            except IndexError:
+                continue
+
+    raise ValueError(f"Could not parse filename pattern from {file_path}")
+
+
 def process_multiprotocol(
     data1_files,
     data2_files,
@@ -1185,6 +1244,26 @@ def process_multiprotocol(
     """Process multiple protocol files and generate comparison plots with both CPU and wall time."""
     data1_file_list = data1_files.split(",")
     data2_file_list = data2_files.split(",")
+
+    # Try to extract protocols from files
+    extracted_protocols = extract_protocols_from_files(
+        data1_file_list + data2_file_list
+    )
+
+    # Use provided protocols if valid, otherwise use extracted or fallback
+    if protocols is None:
+        if extracted_protocols:
+            protocols = list(dict.fromkeys(extracted_protocols))  # Remove duplicates
+            logger.info(f"Using extracted protocols: {protocols}")
+        else:
+            protocols = VALID_PROTOCOLS  # Default fallback
+            logger.warning(f"Using default protocols: {protocols}")
+
+    # Ensure number of protocols matches number of files
+    if len(protocols) != len(data1_file_list):
+        logger.warning(
+            f"Mismatch between protocol count ({len(protocols)}) and file count ({len(data1_file_list)})"
+        )
 
     # Read all benchmark files with expected count
     result1_list = [
@@ -1298,9 +1377,11 @@ def make_protocol_boxplots(
     title,
     ylabel,
     metric="times",
-    protocols=["chip", "rna", "wgs"],
+    protocols=None,
     use_cpu_time=True,
 ):
+    if protocols is None:
+        protocols = VALID_PROTOCOLS
     """Create boxplots for multiple protocols."""
     fig, axes = plt.subplots(1, len(protocols), figsize=(15, 5))
     fig.suptitle(title)
@@ -1875,9 +1956,8 @@ if __name__ == "__main__":
     # Process differently based on whether we're doing multi-file processing
     # (detected by comma in the input files)
     if "," in args.data1_files:
-        # For bamCoverage, we know the protocols are chip,rna,wgs in that order
-        protocols = ["chip", "rna", "wgs"]
-        # Update these function calls to pass platform_override
+        # For bamCoverage, we use the valid protocols in the standard order
+        protocols = VALID_PROTOCOLS
         process_multiprotocol(
             args.data1_files,
             args.data2_files,

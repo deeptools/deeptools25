@@ -14,7 +14,7 @@ This is how it should look like:
 .
 ├── regions
 │   ├── homo.v91.full.gtf
-│   └──  triticum.v60.full.gtf
+│   └── triticum.v60.full.gtf
 └── zenodo
     ├── bigwigs
     │   ├── human_chip_SRR28592124.bw

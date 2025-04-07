@@ -1,0 +1,15 @@
+platform,mode,organism,type,threads,dt3,dt4
+rhel8.8:x86_64,bamcoverage,triticum,RNA,10,0m59.116s,0m45.073s
+rhel8.8:x86_64,bamcoverage,human,RNA,10,10m10.682s,4m37.614s
+rhel8.8:x86_64,bamcoverage,human,ChIP,10,1m29.567s,0m41.202s
+rhel8.8:x86_64,bamcoverage,triticum,ChIP,10,3m15.172s,1m28.648s
+rhel8.8:x86_64,bamcoverage,human,WGS,10,14m57.137s,8m17.895s
+rhel8.8:x86_64,bamcoverage,triticum,WGS,10,23m40.372s,15m11.167s
+rhel8.8:x86_64,bamcompare,human,ChIP,10,15m13.694s,7m26.202s
+rhel8.8:x86_64,bamcompare,triticum,ChIP,10,26m52.755s,15m16.654s
+rhel8.8:x86_64,mbs,human,bins_3,10,29m34.533s,8m37.088s
+rhel8.8:x86_64,mbs,triticum,bins_3,10,20m47.073s,10m56.811s
+rhel8.8:x86_64,mbs,human,bins_18,10,132m50.346s,34m26.952s
+rhel8.8:x86_64,mbs,triticum,bins_18,10,112m32.829s,52m45.947s
+rhel8.8:x86_64,computematrix,human,gtf_4,10,16m33.264s,1m46.598s
+rhel8.8:x86_64,computematrix,triticum,gtf_4,10,10m43.924s,3m37.203s

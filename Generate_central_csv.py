@@ -158,7 +158,7 @@ def collect_time_data(folders, output_dir):
                                     formatted_time_dt4 = f"{minutes}m{seconds:.3f}s"
                                     print(f"Formatted real time (dt4): {formatted_time_dt4}")
                                     break
-                    file1.write(f"{system},{mode},{organism},{file_type},{key},{formatted_time_dt3},{formatted_time_dt4}\n")
+                    file1.write(f"{system.lower()},{mode.lower()},{organism.lower()},{file_type.lower()},{key},{formatted_time_dt3},{formatted_time_dt4}\n")
 
     return None
 

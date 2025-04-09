@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # USAGE: #Generate_central_csv.py --folders /Volumes/ExtremeSSD/deeptools25/20250408_mac_bs5000_human:8,/Volumes/ExtremeSSD/deeptools25/mac_20250407_bs10_triticum:12 --output results
+#python3 Generate_central_csv.py --folders /Volumes/ExtremeSSD/deeptools25/20250409_deep22_bs5000_triticum:64 --output results --system linux
 
 
 import argparse
@@ -113,7 +114,7 @@ def collect_files_by_command(folders):
 
     return command_files
 
-def collect_time_data(folders, output_dir):
+def collect_time_data(folders, output_dir, system):
     """
     Collect time data from all log files in the given folders.
     """
@@ -127,7 +128,10 @@ def collect_time_data(folders, output_dir):
         file_path = os.path.join(output_dir, f"{folder_name}_benchmark_results.csv")
         with open(file_path, 'w') as file1:  # Changed from 'a' to 'w'
             file1.write("platform,mode,organism,type,threads,dt3,dt4\n")
-            system = platform.system()
+            if system == "linux":
+                system = "rhel8.8:x86_64"
+            else:
+                system = platform.system()
             print(f"System: {system}")
             for cmd_key, cpu_files in command_files.items():           
                 print(f"Processing command: {cmd_key}")
@@ -139,25 +143,44 @@ def collect_time_data(folders, output_dir):
                     formatted_time_dt4=""
                     with open(value, 'r') as file:
                         for line in file:
-                            if "real" in line:
-                                real_time_seconds = float(line.split()[0])
-                                minutes = int(real_time_seconds // 60)
-                                seconds = real_time_seconds % 60
-                                formatted_time_dt3 = f"{minutes}m{seconds:.3f}s"
-                                print(f"Formatted real time (dt3): {formatted_time_dt3}")
-                                break
+                            if system == "rhel8.8:x86_64":
+                                if "User time (seconds): " in line:
+                                    print("here")
+                                    real_time_seconds = float(line.split(": ")[1])
+                                    minutes = int(real_time_seconds // 60)
+                                    seconds = real_time_seconds % 60
+                                    formatted_time_dt3 = f"{minutes}m{seconds:.3f}s"
+                                    print(f"Formatted real time (dt3): {formatted_time_dt3}")
+                                    break
+                            else:
+                                if "real" in line:
+                                    real_time_seconds = float(line.split()[0])
+                                    minutes = int(real_time_seconds // 60)
+                                    seconds = real_time_seconds % 60
+                                    formatted_time_dt3 = f"{minutes}m{seconds:.3f}s"
+                                    print(f"Formatted real time (dt3): {formatted_time_dt3}")
+                                    break
 
                     second_file = value.replace("1_", "2_")
                     if os.path.exists(second_file):
                         with open(second_file, 'r') as file:
                             for line in file:
-                                if "real" in line:
-                                    real_time_seconds = float(line.split()[0])
-                                    minutes = int(real_time_seconds // 60)
-                                    seconds = real_time_seconds % 60
-                                    formatted_time_dt4 = f"{minutes}m{seconds:.3f}s"
-                                    print(f"Formatted real time (dt4): {formatted_time_dt4}")
-                                    break
+                                if system == "rhel8.8:x86_64":
+                                    if "User time (seconds): " in line:
+                                        real_time_seconds = float(line.split(": ")[1])
+                                        minutes = int(real_time_seconds // 60)
+                                        seconds = real_time_seconds % 60
+                                        formatted_time_dt4 = f"{minutes}m{seconds:.3f}s"
+                                        print(f"Formatted real time (dt4): {formatted_time_dt4}")
+                                        break
+                                else:
+                                    if "real" in line:
+                                        real_time_seconds = float(line.split()[0])
+                                        minutes = int(real_time_seconds // 60)
+                                        seconds = real_time_seconds % 60
+                                        formatted_time_dt4 = f"{minutes}m{seconds:.3f}s"
+                                        print(f"Formatted real time (dt4): {formatted_time_dt4}")
+                                        break
                     file1.write(f"{system.lower()},{mode.lower()},{organism.lower()},{file_type.lower()},{key},{formatted_time_dt3},{formatted_time_dt4}\n")
 
     return None
@@ -182,8 +205,13 @@ def main():
         "--verbose", "-v", action="store_true", help="Enable verbose logging"
     )
 
+    parser.add_argument(
+        "--system", "-s", type=str, help="Specify the system (e.g., linux, mac, windows)"
+    )
+
     args = parser.parse_args()
     folders = []
+    system = args.system if args.system else platform.system()
     for folder_spec in args.folders.split(","):
         parts = folder_spec.split(":")
         if len(parts) != 2:
@@ -203,7 +231,7 @@ def main():
 
     # Collect memory data
     logger.info("Collecting data from CSV files...")
-    time_data = collect_time_data(folders, args.output)
+    time_data = collect_time_data(folders, args.output, system)
 
 
 if __name__ == "__main__":

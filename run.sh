@@ -33,14 +33,6 @@ SNAKEMAKE_DIR=".snakemake"
 TRASH_DIR="trash"
 CONDA_DIR="${SNAKEMAKE_DIR}/conda"
 
-# Clean up and reorganize directories
-echo "Setting up directory structure..."
-mkdir -p "${SNAKEMAKE_DIR}" "${TRASH_DIR}/${CONDA_DIR}"
-rm -rf "${TRASH_DIR}" && mv "${SNAKEMAKE_DIR}" "${TRASH_DIR}"
-mkdir "${SNAKEMAKE_DIR}" && mv "${TRASH_DIR}/conda" "${SNAKEMAKE_DIR}/"
-mkdir -p "${OUTPUT_DIR}" "${LOGS_DIR}" && mv "${OUTPUT_DIR}" "${TRASH_DIR}/" && mv "${LOGS_DIR}" "${TRASH_DIR}/"
-rm -rf "${TRASH_DIR}"
-
 # Validate input files
 echo "Checking input BAM files..."
 if ! samtools quickcheck zenodo/*.bam; then
@@ -64,9 +56,9 @@ if [ -d "${SNAKEMAKE_DIR}/slurm_logs" ]; then
     mv "${SNAKEMAKE_DIR}/slurm_logs" "${LOGS_DIR}/"
 fi
 mv "${SNAKEMAKE_DIR}/log/"*.snakemake.log "${LOGS_DIR}/"
-mv "${LOGS_DIR}" "${OUTPUT_DIR}/"
+mv "${LOGS_DIR}" "${OUTPUT_DIR}/${LOGS_DIR}_bs99_${ORGANISM}"
 
 # Rename output directory with timestamp
-FINAL_DIR="run_${FINISHTIME}_${ORGANISM}"
+FINAL_DIR="run_t${NTHREADS}n${NTIMES}_${FINISHTIME}_${ORGANISM}"
 mv "${OUTPUT_DIR}" "${FINAL_DIR}"
 echo "Finished: ${FINAL_DIR}"

@@ -59,37 +59,37 @@ humanBigwigs = "zenodo/bigwigs/human_chip_SRR28592124.bw zenodo/bigwigs/human_ch
 
 # The number of transcripts is hardcoded in filenames here, sorry.
 if ORGANISM == "homo":
-    GTF = f"regions/{ORGANISM}.v91.sample25k.gtf"
+    GTF = f"regions/{ORGANISM}.v91.full.gtf"
 elif ORGANISM == "triticum":
-    GTF = f"regions/{ORGANISM}.v60.sample25k.gtf"
+    GTF = f"regions/{ORGANISM}.v60.full.gtf"
 else:
     raise ValueError(f"Unsupported organism: {ORGANISM}")
 
 rule all:
     input: "output/report.html"
 
-rule downsample_gtf:
-    input: GTF.replace('sample25k', 'full')
-    output: GTF
-    conda: "extras.env.yaml"
-    log: "logs/downsample_gtf.log"
-    params:
-        transcript_count = 25000
-    shell:
-        """
-        # Check if input file exists and has sufficient entries
-        if [ ! -f {input} ]; then
-            echo "Error: Input GTF file {input} does not exist" > {log}
-            exit 1
-        fi
-        transcript_count=$(grep -c 'transcript_id' {input})
-        if [ $transcript_count -lt {params.transcript_count} ]; then
-            echo "Warning: Input GTF doesn't have enough transcripts ($transcript_count)" > {log}
-        fi
-        
-        # Perform downsampling
-        grep 'transcript_id' {input} | shuf | head -n {params.transcript_count} | bedtools sort -i - > {output}
-        """
+#rule downsample_gtf:
+#    input: GTF.replace('sample25k', 'full')
+#    output: GTF
+#    conda: "extras.env.yaml"
+#    log: "logs/downsample_gtf.log"
+#    params:
+#        transcript_count = 25000
+#    shell:
+#        """
+#        # Check if input file exists and has sufficient entries
+#        if [ ! -f {input} ]; then
+#            echo "Error: Input GTF file {input} does not exist" > {log}
+#            exit 1
+#        fi
+#        transcript_count=$(grep -c 'transcript_id' {input})
+#        if [ $transcript_count -lt {params.transcript_count} ]; then
+#            echo "Warning: Input GTF doesn't have enough transcripts ($transcript_count)" > {log}
+#        fi
+#        
+#        # Perform downsampling
+#        grep 'transcript_id' {input} | shuf | head -n {params.transcript_count} | bedtools sort -i - > {output}
+#        """
 
 rule bamCoverage2:
     input:

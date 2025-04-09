@@ -143,18 +143,17 @@ def collect_time_data(folders, output_dir, system):
                     formatted_time_dt4=""
                     with open(value, 'r') as file:
                         for line in file:
-                            if system == "rhel8.8:x86_64":
-                                if "User time (seconds): " in line:
-                                    print("here")
-                                    real_time_seconds = float(line.split(": ")[1])
+                            if system == "darwin":
+                                if "real" in line:
+                                    real_time_seconds = float(line.split()[0])
                                     minutes = int(real_time_seconds // 60)
                                     seconds = real_time_seconds % 60
                                     formatted_time_dt3 = f"{minutes}m{seconds:.3f}s"
                                     print(f"Formatted real time (dt3): {formatted_time_dt3}")
                                     break
                             else:
-                                if "real" in line:
-                                    real_time_seconds = float(line.split()[0])
+                                if "User time (seconds): " in line:
+                                    real_time_seconds = float(line.split(": ")[1])
                                     minutes = int(real_time_seconds // 60)
                                     seconds = real_time_seconds % 60
                                     formatted_time_dt3 = f"{minutes}m{seconds:.3f}s"
@@ -165,17 +164,17 @@ def collect_time_data(folders, output_dir, system):
                     if os.path.exists(second_file):
                         with open(second_file, 'r') as file:
                             for line in file:
-                                if system == "rhel8.8:x86_64":
-                                    if "User time (seconds): " in line:
-                                        real_time_seconds = float(line.split(": ")[1])
+                                if system == "darwin":
+                                    if "real" in line:
+                                        real_time_seconds = float(line.split()[0])
                                         minutes = int(real_time_seconds // 60)
                                         seconds = real_time_seconds % 60
                                         formatted_time_dt4 = f"{minutes}m{seconds:.3f}s"
                                         print(f"Formatted real time (dt4): {formatted_time_dt4}")
                                         break
                                 else:
-                                    if "real" in line:
-                                        real_time_seconds = float(line.split()[0])
+                                    if "User time (seconds): " in line:
+                                        real_time_seconds = float(line.split(": ")[1])
                                         minutes = int(real_time_seconds // 60)
                                         seconds = real_time_seconds % 60
                                         formatted_time_dt4 = f"{minutes}m{seconds:.3f}s"

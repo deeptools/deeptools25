@@ -8,7 +8,7 @@ BinSizes = {
     "bamCoverage": 10,
     "bamCompare": 100,
     "computeMatrix": 300,
-    "multiBamSummary": 5000,
+    "multiBamSummary": 500,
 }
 
 # Helper fn. to keep logs of failed jobs

@@ -143,7 +143,7 @@ def collect_time_data(folders, output_dir, system):
                     formatted_time_dt4=""
                     with open(value, 'r') as file:
                         for line in file:
-                            if system == "darwin":
+                            if system == "Darwin":
                                 if "real" in line:
                                     real_time_seconds = float(line.split()[0])
                                     minutes = int(real_time_seconds // 60)
@@ -164,7 +164,7 @@ def collect_time_data(folders, output_dir, system):
                     if os.path.exists(second_file):
                         with open(second_file, 'r') as file:
                             for line in file:
-                                if system == "darwin":
+                                if system == "Darwin":
                                     if "real" in line:
                                         real_time_seconds = float(line.split()[0])
                                         minutes = int(real_time_seconds // 60)

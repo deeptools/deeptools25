@@ -42,7 +42,7 @@ fi
 sleep 3s
 
 # Run the pipeline
-echo "Running snakemake pipeline for organism: ${ORGANISM}"
+echo "Running snakemake pipeline for: organism=${ORGANISM} ntimes=${NTIMES} threads=${NTHREADS}"
 snakemake $FIRST_ARG --benchmark-extended --config organism=$ORGANISM ntimes=$NTIMES nthreads=$NTHREADS
 
 # Archive results

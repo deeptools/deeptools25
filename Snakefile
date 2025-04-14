@@ -67,8 +67,35 @@ else:
     raise ValueError(f"Unsupported organism: {ORGANISM}")
 
 rule all:
-    input: "output/report.html"
+    input:
+        "output/report.html",
+        "output/run_params.yaml"
 
+rule save_params:
+    output:
+        yaml_file = "output/run_params.yaml"
+    run:
+        import yaml
+        import platform
+        
+        # Collect all parameters to save
+        params_dict = {
+            "platform": platform.system(),
+            "python_version": platform.python_version(),
+            "processor": platform.processor(),
+            "bin_sizes": dict(BinSizes),
+            "organism": ORGANISM,
+            "n_threads": Nthreads,
+            "n_times": Ntimes,
+            "date": shell("date +'%Y-%m-%d %H:%M:%S'", read=True).strip()
+        }
+        
+        # Write to YAML file
+        with open(output.yaml_file, 'w') as f:
+            yaml.dump(params_dict, f, default_flow_style=False)
+
+
+## We've been running on full GTF since around the time when 'filtering' branch was merged.
 #rule downsample_gtf:
 #    input: GTF.replace('sample25k', 'full')
 #    output: GTF

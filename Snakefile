@@ -53,9 +53,10 @@ FILES = {
     "triticum_wgs": "zenodo/triticum_wgs_SRR27887047.bam"
 }
 
-# For human we have a more intensive computeMatrix comparison
-# For Triticum, we'll simply repeat the same BW a couple of times. For multiBamSummary (both sp.) we'll do something similar (repeat same input many times.)
+# We have a more intensive computeMatrix comparison
 humanBigwigs = "zenodo/bigwigs/human_chip_SRR28592124.bw zenodo/bigwigs/human_chip_SRR28592125.bw zenodo/bigwigs/human_chip_SRR28592131.bw zenodo/bigwigs/human_chip_SRR28592132.bw zenodo/bigwigs/human_rna_SRR28012902.bw zenodo/bigwigs/human_rna_SRR28012903.bw zenodo/bigwigs/human_rna_SRR28012904.bw zenodo/bigwigs/human_rna_SRR28012905.bw zenodo/bigwigs/human_wgs_SRR15494527.bw"
+wheatBigwigs = " zenodo/bigwigs/triticum_chip_SRR1686799_mapq10.bw zenodo/bigwigs/triticum_chip_SRR1686799_nodup.bw zenodo/bigwigs/triticum_rna_SRR27822150_mapq10.bw zenodo/bigwigs/triticum_wgs_mapq20.bw"
+# For multiBamSummary (both sp.) we'll do something similar (repeat same input many times.)
 
 # The number of transcripts is hardcoded in filenames here, sorry.
 if ORGANISM == "homo":
@@ -254,13 +255,13 @@ rule computeMatrix2:
         fi
         
         if [ "{ORGANISM}" = "homo" ]; then
-          {timeCmd} computeMatrix reference-point \
+          {timeCmd} computeMatrix reference-point --verbose \
               -S $input_bw {humanBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
         else
-          {timeCmd} computeMatrix reference-point \
-              -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
+          {timeCmd} computeMatrix reference-point --verbose \
+              -S $input_bw {wheatBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
         fi
@@ -311,7 +312,7 @@ rule computeMatrix1:
                   > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
         else
           {timeCmd} computeMatrix reference-point \
-              -S $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw $input_bw \
+              -S $input_bw {wheatBigwigs} \
               -R {input.gtf} -o $out_file -a {params.downstream} -b {params.upstream} -bs {params.binsize} -p {threads} --missingDataAsZero \
                   > $log_file 2>&1 || {{ on_error "$log_file" "{output.iter_file}" && exit 1; }}
         fi

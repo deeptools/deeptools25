@@ -64,7 +64,7 @@ set-resources:
   computeMatrix1:
     mem: 20GB
   computeMatrix2:
-    mem: 30GB
+    mem: 40GB
   multiBamSummary1:
     mem: 20GB
   multiBamSummary2:

@@ -9,6 +9,9 @@ From there, you can set up the conda environment
  > conda activate deeptools_benchmark
  > CFLAGS=-I/$CONDA_PREFIX/include LIBCLANG_PATH=$CONDA_PREFIX/lib pip install -r conf/requirements.txt
 
+# bam
+After setting up the environments, make sure to download the files from the zenodo repository, and place them in 
+
 Subsequently, run the benchmark.
 
  > snakemake -d working_directory -s path_to_repo/benchmark.smk --use-conda --config os=RHEL

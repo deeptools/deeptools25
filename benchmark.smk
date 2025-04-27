@@ -63,6 +63,7 @@ include: 'rules/benchmark_bamcoverage.smk'
 include: 'rules/benchmark_bamcompare.smk'
 include: 'rules/benchmark_multibamsummary.smk'
 include: 'rules/benchmark_computematrix.smk'
+include: 'rules/plotter.smk'
 
 rule all:
   input:
@@ -77,4 +78,7 @@ rule all:
     expand("benchmarks/mbs/{run}_dt3.txt", run=multibamSummary_samples.keys()),
     # computeMatrix
     expand("benchmarks/computeMatrix/{run}_dt4.txt", run=computeMatrix_samples.keys()),
-    expand("benchmarks/computeMatrix/{run}_dt3.txt", run=computeMatrix_samples.keys())
+    expand("benchmarks/computeMatrix/{run}_dt3.txt", run=computeMatrix_samples.keys()),
+    # performance
+    'results/performance.csv',
+    'results/performance.png'

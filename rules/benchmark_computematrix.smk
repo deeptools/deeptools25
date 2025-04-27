@@ -7,7 +7,9 @@ rule computeMatrix_dt4:
   output:
     npz = temp("output/computeMatrix_{run}.dt4.npz")
   benchmark: repeat("benchmarks/computeMatrix/{run}_dt4.txt", 3)
-  threads: 10
+  threads: 4
+  resources:
+    mem_mb = 120000
   shell:'''
   computeMatrix reference-point -p {threads} \
     -o {output.npz} \
@@ -24,7 +26,9 @@ rule computeMatrix_dt3:
   output:
     npz = temp("output/computeMatrix_{run}.dt3.npz")
   benchmark: repeat("benchmarks/computeMatrix/{run}_dt3.txt", 3)
-  threads: 10
+  threads: 4
+  resources:
+    mem_mb = 120000
   shell:'''
   computeMatrix_old reference-point -p {threads} \
     -o {output.npz} \

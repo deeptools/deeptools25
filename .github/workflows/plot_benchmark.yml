@@ -14,4 +14,5 @@ jobs:
               environment-file: conf/env.yml
           - name: pip
             run: |
+              conda activate test
               CFLAGS=-I/$CONDA_PREFIX/include LIBCLANG_PATH=$CONDA_PREFIX/lib pip install -r conf/requirements.txt

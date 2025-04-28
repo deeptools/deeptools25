@@ -6,7 +6,7 @@ You need to have [rust](https://rustup.rs/) installed on your system before cont
 From there, you can set up the conda environment
 
  > conda env create -f conf/env.yml -n deeptools_benchmark  
- > conda activate deeptools_benchmark
+ > conda activate deeptools_benchmark  
  > CFLAGS=-I/$CONDA_PREFIX/include LIBCLANG_PATH=$CONDA_PREFIX/lib pip install -r conf/requirements.txt
 
 # bam

@@ -1,5 +1,6 @@
 import pandas as pd
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 def read_benchmark(file):
     _version = file.split('/')[-1].split('.')[0].split('_')[-1]
@@ -19,8 +20,6 @@ for file in snakemake.input:
     _dfs.append(read_benchmark(file))
 
 a = pd.concat(_dfs, ignore_index=True)
-print(df)
-
 a.to_csv(snakemake.output.csv, sep='\t', index=False)
 
 

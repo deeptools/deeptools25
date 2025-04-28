@@ -1,3 +1,6 @@
+import os
+os.environ["TMPDIR"] = "/tmp"
+
 bamCoverage_samples = {
   'bcov_human_chip': 'human_chip_SRR28592124',
   'bcov_human_rna': 'human_rna_SRR28012902',

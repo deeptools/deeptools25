@@ -1,4 +1,5 @@
 rule plot_benchmarks:
+  localrule: True
   input:
     bcov4 = expand("benchmarks/bamcoverage/{bamcoverage}_dt4.txt", bamcoverage=bamCoverage_samples),
     bcov3 = expand("benchmarks/bamcoverage/{bamcoverage}_dt3.txt", bamcoverage=bamCoverage_samples),
@@ -14,6 +15,6 @@ rule plot_benchmarks:
   params:
     os = config['os']
   conda: 'env/plotter.yaml'
-  threads: 2
+  threads: 1
   script:
     'scripts/plotter.py'

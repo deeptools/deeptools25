@@ -8,16 +8,12 @@ jobs:
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v4
-          - uses: actions/setup-python@v5
+          - uses: conda-incubator/setup-miniconda@v3
             with:
-                python-version: '3.13'
-          - name: install
+              auto-update-conda: true
+              environment-file: benchmark/conf/env.yml
+          - name: pip
+            shell: bash -l {0}
             run: |
-              pip install -r .github/reqs_plotting.txt
-          - name: plot
-            run: |
-              python scripts/plot_benchmark.py -i results/benchmark_results.csv -o benchmark.svg
-          - uses: actions/upload-artifact@v4
-            with:
-              name: benchmark_plot
-              path: benchmark.svg
+              conda activate test
+              CFLAGS=-I/$CONDA_PREFIX/include LIBCLANG_PATH=$CONDA_PREFIX/lib pip install -r benchmark/conf/requirements.txt

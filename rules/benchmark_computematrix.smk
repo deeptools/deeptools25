@@ -3,7 +3,7 @@ rule computeMatrix_dt4:
     bw_files = lambda wildcards: ' '.join(
         [f"zenodo/bigwigs/{i}.bw" for i in computeMatrix_samples[wildcards.run]]
     ),
-    gtf = lambda wildcards: f"zenodo/gtf/{wildcards.run}.gtf"
+    gtf = lambda wildcards: f"zenodo/gtf/{wildcards.run.split('_')[1]}.gtf"
   output:
     npz = temp("output/computeMatrix_{run}.dt4.npz")
   benchmark: repeat("benchmarks/computeMatrix/{run}_dt4.txt", 3)
@@ -23,7 +23,7 @@ rule computeMatrix_dt3:
     bw_files = lambda wildcards: ' '.join(
         [f"zenodo/bigwigs/{i}.bw" for i in computeMatrix_samples[wildcards.run]]
     ),
-    gtf = lambda wildcards: f"zenodo/gtf/{wildcards.run}.gtf"
+    gtf = lambda wildcards: f"zenodo/gtf/{wildcards.run.split('_')[1]}.gtf"
   output:
     npz = temp("output/computeMatrix_{run}.dt3.npz")
   benchmark: repeat("benchmarks/computeMatrix/{run}_dt3.txt", 3)

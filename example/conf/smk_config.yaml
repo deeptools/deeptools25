@@ -1,0 +1,5 @@
+workdir: '/data/manke/processing/deboutte/tmp'
+source: 'raw'
+# Only needed if source = 'raw'
+snakepipes_env: 'snakepipes_3.1.0'
+snakepipes_genome: 'GRCm39'

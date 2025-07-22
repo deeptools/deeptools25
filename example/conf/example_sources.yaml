@@ -1,0 +1,94 @@
+samples:
+  NPC_9sca_ctrl_H3K27ac_rep1: SRR15829033
+  NPC_9sca_ctrl_H3K27ac_rep2: SRR15829034
+  NPC_9sca_ctrl_H3K27me3_rep1: SRR15829036
+  NPC_9sca_ctrl_H3K27me3_rep2: SRR15829037
+  NPC_9sca_ctrl_H3K4me1_rep1: SRR15829042
+  NPC_9sca_ctrl_H3K4me1_rep2: SRR15829043
+  NPC_9sca_ctrl_H3K4me3_rep1: SRR15829045
+  NPC_9sca_ctrl_H3K4me3_rep2: SRR15829046
+  NPC_9sca_ctrl_H3K9me3_rep1: SRR15829048
+  NPC_9sca_ctrl_H3K9me3_rep2: SRR15829049
+  NPC_9sca_ctrl_input_rep1: SRR15829058
+  NPC_9sca_ctrl_input_rep2: SRR15829059
+  NPC_9sca_ctrl_RNA_rep1: SRR15829077
+  NPC_9sca_ctrl_RNA_rep2: SRR15829078
+  NPC_9sca_ctrl_ATAC_rep1: SRR15829121
+  NPC_9sca_ctrl_ATAC_rep2: SRR15829122
+  NPC_9sca_ctrl_BS_rep1: SRR15829019
+  NPC_9sca_ctrl_BS_rep2: SRR15829020
+  NPC_9sca_ko_ATAC_rep1: SRR15829084
+  NPC_9sca_ko_ATAC_rep2: SRR15829085
+  NPC_9sca_ko_BS_rep1: SRR15829089
+  NPC_9sca_ko_BS_rep2: SRR15829090
+  NPC_9sca_ko_H3K27ac_rep1: SRR15829101
+  NPC_9sca_ko_H3K27ac_rep2: SRR15829102
+  NPC_9sca_ko_H3K27me3_rep1:  SRR15829103
+  NPC_9sca_ko_H3K27me3_rep2:  SRR15829104
+  NPC_9sca_ko_H3K4me1_rep1: SRR15829107 
+  NPC_9sca_ko_H3K4me1_rep2: SRR15829108
+  NPC_9sca_ko_H3K4me3_rep1: SRR15829109 
+  NPC_9sca_ko_H3K4me3_rep2: SRR15829110
+  NPC_9sca_ko_H3K9me3_rep1: SRR15829111
+  NPC_9sca_ko_H3K9me3_rep2: SRR15829124
+  NPC_9sca_ko_input1_rep1:  SRR15829131
+  NPC_9sca_ko_input1_rep2:  SRR15829132
+  NPC_9sca_ko_RNA_rep1:  SRR15829149
+  NPC_9sca_ko_RNA_rep2:  SRR15829150
+md5sums:   
+  bam:
+    NPC_9sca_ctrl_ATAC_rep1.bam: ab357591635ad4911644f8e6d25493f8
+    NPC_9sca_ctrl_ATAC_rep2.bam: 76569f49cb6cebb530171d0ec0fccde2
+    NPC_9sca_ctrl_H3K27ac_rep1.bam: 44a7d8c16a9932c1f64916169b796e54
+    NPC_9sca_ctrl_H3K27ac_rep2.bam: 203606f731784d0bd7f8faf8f346c45b
+    NPC_9sca_ctrl_H3K27me3_rep1.bam: 2b120525d6bce4bc7b93dcb4bac688a3
+    NPC_9sca_ctrl_H3K27me3_rep2.bam: a2fd5080d697339d0cf8820c382f509a
+    NPC_9sca_ctrl_H3K4me1_rep1.bam: 65f8ad3ac6c568ec39d1ac16f2d5dfa6
+    NPC_9sca_ctrl_H3K4me1_rep2.bam: 2bfec2e0a9009f28c42e4dca5b4d5f85
+    NPC_9sca_ctrl_H3K4me3_rep1.bam: ca442dc7f948c28d89184d1e06b9a03c
+    NPC_9sca_ctrl_H3K4me3_rep2.bam: aaeb0e4b419f6d4c86bba2e5a433a789
+    NPC_9sca_ctrl_H3K9me3_rep1.bam: 6d1efb910f4cbd1f246379219a866ef1
+    NPC_9sca_ctrl_H3K9me3_rep2.bam: 789ede7ed1721c1e45dbef3263ac4abd
+    NPC_9sca_ctrl_input_rep1.bam: f6c2618be4bac0b975957d1614037c05
+    NPC_9sca_ctrl_input_rep2.bam: 4a50990fe8d15be410c225df1a0248c4
+    NPC_9sca_ctrl_RNA_rep1.bam: be9bfc807374afb460a18b608898e230
+    NPC_9sca_ctrl_RNA_rep2.bam: 9f2ea6550391c74e02a74e1b49062fe8
+    NPC_9sca_ctrl_BS_rep1.bam: 0c4dc76e68a79627f01bcd115267ce5a
+    NPC_9sca_ctrl_BS_rep2.bam: ebf667d08af9bdaac673448b674f9c81
+  fq:
+    NPC_9sca_ko_RNA_rep1: [2631d7fd8df9a6ee7bbfe596ed1708e8, 19541c693a38b523538852a1f7a08d84]
+    NPC_9sca_ko_ATAC_rep1: [29e9863724666887e23113b52b3fe148, b89a4c9b00d3ece5decacc69dc0fdd98]
+    NPC_9sca_ctrl_H3K4me3_rep1: [2bd2b09d385d233ddd51d9db7027b689, 148fe635b1b22a6da08539c66b65bd65]
+    NPC_9sca_ko_input1_rep2: [4835661446ef56cd86fcd6906a62d499, b8b0de90bb6cbec6513fdbc435362930]
+    NPC_9sca_ko_H3K4me3_rep1: [7f63fb00af384fd22081306f48350b36, 419ec6950c30b7003ce06557e789b118]
+    NPC_9sca_ctrl_H3K27me3_rep1: [28e7ac06979bd37ed4ffca5f09292a68, 978f9313ceca9442ec9261297de85f17]
+    NPC_9sca_ko_H3K27me3_rep1: [010074e9a28f5be637c65f8f0a66d570, 6ed9f6b4787eb5f7b3982e0766e4eeb8]
+    NPC_9sca_ctrl_H3K4me1_rep1: [ce23a41362723aee813d35f2fe4e9a74, 1b9ef4faba36cea9472e19737cd53309]
+    NPC_9sca_ko_H3K4me1_rep1: [fd47b293020c537ce52177d9dbcaeb72, eb0532d471a6ce8f24abf0074a8d179f]
+    NPC_9sca_ctrl_input_rep2: [577d14f7f03e18f8b84e7ff115bf8001, f9aa3a54522877bd04b2eec48c5935e5]
+    NPC_9sca_ko_H3K27ac_rep2: [17a0f1d75b66c4bd65d42e14383bc122, b6727f6866a7f57c9f0830dd3972349d]
+    NPC_9sca_ko_BS_rep2: [c65f95cfcdbbc96ea9342ad122a556ca, adb4caf64139c716b025d1925e702450]
+    NPC_9sca_ctrl_RNA_rep1: [553af3b3ebba595b8a44e82cb81cc64f, 828893948d3115847903d0d3754b2796]
+    NPC_9sca_ctrl_H3K27ac_rep2: [29e83e5179140ffb3f761bb202989624, bc390f0fce9f5bda991a03bcdd23ec0d]
+    NPC_9sca_ko_H3K9me3_rep1: [d931c4d4ae4e3a8d59aa23469a5dee0b, 9dd2a6327df2deb27fcf8cb833cb8b13]
+    NPC_9sca_ctrl_H3K9me3_rep1: [ea259aa34f5dfe9e7d310b3f57a4879c, 9b51fba48549736c25fa2abb85118384]
+    NPC_9sca_ctrl_ATAC_rep1: [93171fdedaee81589b9693896276e57f, 4bc673d0906d3b72ae9aed924ef926b4]
+    NPC_9sca_ctrl_BS_rep2: [5e9cf4da9d65d06ceb9fcb5e8510243a, bcf7bc2f2de183b96c069edc3215b57f]
+    NPC_9sca_ctrl_ATAC_rep2: [345176280579ad7c8100b47b50e86d17, 17efcd2f634ec726d003681c73e1e0da]
+    NPC_9sca_ctrl_BS_rep1: [2668596ec12286307cf9e7dc9edfc60f, a96b1d22957c94eb4b479e5090b838c5]
+    NPC_9sca_ko_BS_rep1: [c822218344e50f17e7d337e9a11d2cd3, 28e2716fbff6241d1edcf7b47cd3f0b4]
+    NPC_9sca_ctrl_RNA_rep2: [b8658b24c3cd1517340c59d8be2b5261, be9e2a685beee233034018d5def3cbd4]
+    NPC_9sca_ctrl_H3K27ac_rep1: [981688758b2ac7402d1325bc866a30d6, 5e342e9c92b5282ec88ff6c228393dae]
+    NPC_9sca_ko_H3K27ac_rep1: [c6e8d89c900d8e5e9838d90ebf52012d, 311b7e7c9f6e555f219265ecf08c4f62]
+    NPC_9sca_ctrl_H3K9me3_rep2: [d719cb0d884dd8e53bd3f06a67a6d50a, 13f03baa73ca22f6cae6bedde7f42d8f]
+    NPC_9sca_ko_H3K9me3_rep2: [e04b2cf7ff0d78c5a298da8e64cb76cd, 8e0d76b0cdf865d50485b12fad46381f]
+    NPC_9sca_ctrl_input_rep1: [8e101eb1024f4ceca5cf8a267ad72645, b9a097958c29099bbb2c7a489881e2eb]
+    NPC_9sca_ko_H3K27me3_rep2: [3a58071b0f25bb704fe4929c99bc7b6b, eb2a5d43a7b051ea73b0ade0dc9eb1ea]
+    NPC_9sca_ko_H3K4me1_rep2: [89b644183ed056d64196ca41e459e815, 2c9d6a6fc2bd82b76213511eb52b1f67]
+    NPC_9sca_ctrl_H3K4me1_rep2: [e08f14ad0890c03c1ab4c8bd99da61ee, 0b638bfc4da805dee6f7ac00437724f9]
+    NPC_9sca_ctrl_H3K27me3_rep2: [fdfa8aec85567485254c0cc92ceaa5fa, 7a3a517890b437b31530e942c2092952]
+    NPC_9sca_ko_input1_rep1: [4a03ded1144a02e2b4ed60cecc1fba57, d3f753741cd9fe284eb59ad403f067fc]
+    NPC_9sca_ko_H3K4me3_rep2: [ac700305163cf66693f17506557fdc28, d145301dc6b320508e98d9070f302676]
+    NPC_9sca_ko_ATAC_rep2: [73fe94b07921dc2435279a19a9a9ce11, 00c9b7a26f8fe2ffdd0db7b01c02fd06]
+    NPC_9sca_ctrl_H3K4me3_rep2: [a74511d4214ae54b72ebdb5ab8994e25, b5df771f79e49ddf52d3bfa7c127f938]
+    NPC_9sca_ko_RNA_rep2: [f582a03674bfdeffac19771f1ff3df51, 2630f6baa76ce48fbd0a480e03a07cf1]

@@ -176,7 +176,6 @@ elif config['source'] == 'zenodo':
             bai = 'deeptools_input/{sample}.bam.bai'
         threads: 10
         shell:'''
-        samtools view -b 
         samtools view -@ {threads} -T {input.fna} -b -o {output.bam} {input.cramfile}
         samtools index -@ {threads} {output.bam}
         '''

@@ -13,4 +13,5 @@ include: 'rules/get_data.smk'
 rule all:
   input:
     # input data
-     expand('fq/{sample}.valid', sample=SAMPLES),
+    #['fq/atac', 'fq/bs', 'fq/rna', 'fq/chip'],
+    expand("deeptools_input/{sample}.bam", sample=SAMPLES)

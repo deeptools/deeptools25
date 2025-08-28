@@ -1,5 +1,5 @@
 workdir: '/data/manke/processing/deboutte/tmp'
-source: 'raw'
+source: 'zenodo'
 # Only needed if source = 'raw'
-snakepipes_env: 'snakepipes_3.1.0'
+snakepipes_env: 'snakepipes_3.2.0'
 snakepipes_genome: 'GRCm39'

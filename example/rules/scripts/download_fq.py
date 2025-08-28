@@ -29,5 +29,5 @@ def fqdump(tup):
     if Path(sra).exists() and Path(sra).is_dir():
         shutil.rmtree(sra)
 
-with Pool(10) as p:
+with Pool(snakemake.threads) as p:
     p.map(fqdump, its)

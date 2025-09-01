@@ -1,4 +1,4 @@
-name: plot_benchmark
+name: benchmark
 on:
   push:
   pull_request:
@@ -16,4 +16,4 @@ jobs:
             shell: bash -l {0}
             run: |
               conda activate test
-              CFLAGS=-I/$CONDA_PREFIX/include LIBCLANG_PATH=$CONDA_PREFIX/lib pip install -r benchmark/conf/requirements.txt
+              CFLAGS=-I/$CONDA_PREFIX/include LIBCLANG_PATH=$CONDA_PREFIX/lib pip install -r conf/requirements.txt

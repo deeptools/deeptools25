@@ -11,7 +11,7 @@ jobs:
           - uses: conda-incubator/setup-miniconda@v3
             with:
               auto-update-conda: true
-              environment-file: benchmark/conf/env.yml
+              environment-file: conf/env.yml
           - name: pip
             shell: bash -l {0}
             run: |

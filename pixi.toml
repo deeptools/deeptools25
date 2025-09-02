@@ -1,0 +1,23 @@
+[workspace]
+authors = ["WardDeb <w@rddeboutte.com>"]
+channels = ["conda-forge", "bioconda"]
+name = "deeptools25"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[dependencies]
+python = "3.12.*"
+clang = "*"
+libclang = "*"
+perl = "*"
+sra-tools = "*"
+samtools = "*"
+
+[pypi-dependencies]
+snakemake = ">=8"
+snakemake-storage-plugin-zenodo = "*"
+snakemake-executor-plugin-cluster-generic = "*"
+deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "benchmarking_4.0.0" }
+
+[activation.env]
+LD_LIBRARY_PATH="$CONDA_PREFIX/lib"

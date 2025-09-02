@@ -8,3 +8,6 @@ data/
 *_homo/
 *_triticum/
 memory_comparison/
+# pixi environments
+.pixi/*
+!.pixi/config.toml

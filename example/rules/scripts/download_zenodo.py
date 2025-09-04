@@ -6,12 +6,16 @@ import shutil
 
 odir = Path(snakemake.params.odir)
 odir.mkdir(exist_ok=True, parents=True)
+only_fna = snakemake.params.only_fna
 
 record_id = snakemake.params.zenodo_id
 api_url = f"https://zenodo.org/api/records/{record_id}"
 
 r = requests.get(api_url).json()
-targets = [(f["key"], f["links"]["self"]) for f in r["files"] if 'example' in f["key"] or 'mouse.fna.gz' in f["key"]]
+if only_fna:
+    targets = [(f["key"], f["links"]["self"]) for f in r["files"] if 'mouse.fna.gz' in f["key"]]
+else:
+    targets = [(f["key"], f["links"]["self"]) for f in r["files"] if 'example' in f["key"] or 'mouse.fna.gz' in f["key"]]
 
 def download_file(tup):
     key, url = tup

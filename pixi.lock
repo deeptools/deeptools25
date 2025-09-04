@@ -22,6 +22,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/keyutils-1.6.3-hb9d3cd8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/krb5-1.21.3-h659f571_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ld_impl_linux-64-2.44-h1423503_1.conda
+      - conda: https://conda.anaconda.org/bioconda/linux-64/libbigwig-0.4.8-h44aa6d8_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libclang-21.1.0-default_hddf928d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libclang-cpp21.1-21.1.0-default_hddf928d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libclang13-21.1.0-default_ha444ac7_0.conda
@@ -38,7 +39,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libiconv-1.18-h3b78370_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libllvm21-21.1.0-hecd9e04_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/liblzma-5.8.1-hb9d3cd8_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libnghttp2-1.64.0-h161d5f1_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libnghttp2-1.67.0-had1ee68_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libnsl-2.0.1-hb9d3cd8_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libsqlite-3.50.4-h0c1763c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libssh2-1.11.1-hcf80075_0.conda
@@ -48,6 +49,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcrypt-4.4.36-hd590300_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxml2-2.13.8-h2cb61b6_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
+      - conda: https://conda.anaconda.org/bioconda/linux-64/methyldackel-0.6.1-h577a1d6_9.tar.bz2
       - conda: https://conda.anaconda.org/bioconda/linux-64/ncbi-vdb-3.2.1-h9948957_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.5-h2d0b736_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/openssl-3.5.2-h26f9b46_0.conda
@@ -73,7 +75,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/perl-pathtools-3.75-pl5321hb9d3cd8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/perl-scope-guard-0.21-pl5321hd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/perl-sub-info-0.002-pl5321hd8ed1ab_0.tar.bz2
-      - conda: https://conda.anaconda.org/bioconda/noarch/perl-term-table-0.024-pl5321hdfd78af_0.tar.bz2
+      - conda: https://conda.anaconda.org/bioconda/noarch/perl-term-table-0.025-pl5321hdfd78af_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/perl-test-fatal-0.016-pl5321ha770c72_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/perl-test-warnings-0.031-pl5321ha770c72_0.conda
       - conda: https://conda.anaconda.org/bioconda/noarch/perl-test2-suite-0.000163-pl5321hdfd78af_0.tar.bz2
@@ -151,13 +153,12 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/08/5b/a2a3d4514c64818925f4e886d39981f1926eeb5288a4549c6b3c17ed66bb/smart_open-7.3.0.post1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/be/d09147ad1ec7934636ad912901c5fd7667e1c858e19d355237db0d0cd5e4/smmap-5.0.2-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/7c/c5/a934641f3cdf95e5259c8f75525105a210f5e2e0976b0dd1bc1953050046/snakemake-9.10.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/72/a4/1cabb89926ce72279b00a417c0a3a5d7fc8da66f6112923a3e14aaf82c7e/snakemake-9.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ae/b9/a0284debbe1b125c3402976029d3f67e5b678701ff7b1fa8145693fa2b1d/snakemake_executor_plugin_cluster_generic-1.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/24/de0615747b9eebd2b5abf9f629120224338bac0a09a46ab86ec72d401645/snakemake_interface_common-1.21.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7a/8b/fec4419acedfa5924549f40664cb2134f2ea5fae3d8a39df5e24035df06a/snakemake_interface_executor_plugins-9.3.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/40/c1/5af0e20e8284c890968af059868290e8c070f3676751abc524b3c4cd42a8/snakemake_interface_logger_plugins-1.2.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/02/e0/fad8a90958288c47a26bd0b055301de6915df4bbc19cc1fd5eb5a8e29d4d/snakemake_interface_report_plugins-1.2.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/39/b1/39c424e4aea0490b41f955056eb27930ab9bbb25b40e53d8a5fd3148115e/snakemake_interface_scheduler_plugins-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/77/97/4389957c0db9628a7661f6562fa7248a2f3881067bc83752220a80a34f34/snakemake_interface_storage_plugins-4.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/24/e8/b542fffa7e6faa009a1a825fbbaecfd6d5fdce89dd4dd1e20d18941a1cca/snakemake_storage_plugin_zenodo-0.1.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c8/78/3565d011c61f5a43488987ee32b6f3f656e7f107ac2782dd57bdd7d91d9a/snowballstemmer-3.0.1-py3-none-any.whl
@@ -707,6 +708,18 @@ packages:
   purls: []
   size: 676044
   timestamp: 1752032747103
+- conda: https://conda.anaconda.org/bioconda/linux-64/libbigwig-0.4.8-h44aa6d8_0.tar.bz2
+  sha256: a7c20ac50af2a75d87d011bb1850b591a1d3d32968d5e34dfea3fb2c5cc58cb4
+  md5: aa7de4386949d4a8cbf7090255974a54
+  depends:
+  - libcurl >=8.11.1,<9.0a0
+  - libgcc >=13
+  - libzlib >=1.3.1,<2.0a0
+  - zlib
+  license: MIT
+  purls: []
+  size: 319632
+  timestamp: 1737127780348
 - conda: https://conda.anaconda.org/conda-forge/linux-64/libclang-21.1.0-default_hddf928d_0.conda
   sha256: 21df35f5e6a9a2114909dfac5f85b494915646ce38093ff3f788aed3d26e0331
   md5: c1fd7e8ee399363b580c72e34e09b54a
@@ -903,23 +916,23 @@ packages:
   purls: []
   size: 112894
   timestamp: 1749230047870
-- conda: https://conda.anaconda.org/conda-forge/linux-64/libnghttp2-1.64.0-h161d5f1_0.conda
-  sha256: b0f2b3695b13a989f75d8fd7f4778e1c7aabe3b36db83f0fe80b2cd812c0e975
-  md5: 19e57602824042dfd0446292ef90488b
+- conda: https://conda.anaconda.org/conda-forge/linux-64/libnghttp2-1.67.0-had1ee68_0.conda
+  sha256: a4a7dab8db4dc81c736e9a9b42bdfd97b087816e029e221380511960ac46c690
+  md5: b499ce4b026493a13774bcf0f4c33849
   depends:
   - __glibc >=2.17,<3.0.a0
-  - c-ares >=1.32.3,<2.0a0
+  - c-ares >=1.34.5,<2.0a0
   - libev >=4.33,<4.34.0a0
   - libev >=4.33,<5.0a0
-  - libgcc >=13
-  - libstdcxx >=13
+  - libgcc >=14
+  - libstdcxx >=14
   - libzlib >=1.3.1,<2.0a0
-  - openssl >=3.3.2,<4.0a0
+  - openssl >=3.5.2,<4.0a0
   license: MIT
   license_family: MIT
   purls: []
-  size: 647599
-  timestamp: 1729571887612
+  size: 666600
+  timestamp: 1756834976695
 - conda: https://conda.anaconda.org/conda-forge/linux-64/libnsl-2.0.1-hb9d3cd8_1.conda
   sha256: 927fe72b054277cde6cb82597d0fcf6baf127dcbce2e0a9d8925a68f1265eef5
   md5: d864d34357c3b65a4b731f78c0801dc4
@@ -1048,6 +1061,18 @@ packages:
   - setuptools-scm>=7 ; extra == 'dev'
   - setuptools>=64 ; extra == 'dev'
   requires_python: '>=3.10'
+- conda: https://conda.anaconda.org/bioconda/linux-64/methyldackel-0.6.1-h577a1d6_9.tar.bz2
+  sha256: 6d2d3678f5435eaf6dbbfc08e626f68bb8d43b3fc35fea874c754950e430dfdb
+  md5: 8e9c9bca0adeb678649b129a56aa9da7
+  depends:
+  - htslib >=1.21,<1.23.0a0
+  - libbigwig >=0.4.8,<0.5.0a0
+  - libgcc >=13
+  - libzlib >=1.3.1,<2.0a0
+  license: MIT
+  purls: []
+  size: 142851
+  timestamp: 1746453228312
 - pypi: https://files.pythonhosted.org/packages/a9/82/0340caa499416c78e5d8f5f05947ae4bc3cba53c9f038ab6e9ed964e22f1/nbformat-5.10.4-py3-none-any.whl
   name: nbformat
   version: 5.10.4
@@ -1452,17 +1477,17 @@ packages:
   purls: []
   size: 19020
   timestamp: 1663840434982
-- conda: https://conda.anaconda.org/bioconda/noarch/perl-term-table-0.024-pl5321hdfd78af_0.tar.bz2
-  sha256: c08bbc92c0278d2189e8d1ae5a8260d8c7c07f8772b88e65bb977140e3cd169d
-  md5: a1a7fa5cdba18a5409274e7b40f59c4f
+- conda: https://conda.anaconda.org/bioconda/noarch/perl-term-table-0.025-pl5321hdfd78af_0.conda
+  sha256: edb2a2e6d3605362fc1cd403ce88e5e69a211a0d10570a422fdc769e240b5693
+  md5: 4740773caf9bdc262d2607d1814f7df0
   depends:
   - perl >=5.32.1,<6.0a0 *_perl5
   - perl-carp
   - perl-importer
   license: perl_5
   purls: []
-  size: 24686
-  timestamp: 1735359943478
+  size: 24620
+  timestamp: 1756668297689
 - conda: https://conda.anaconda.org/conda-forge/linux-64/perl-test-fatal-0.016-pl5321ha770c72_0.tar.bz2
   sha256: d5420f90b3bca641cdad0c5674b356a060bf1587e82d3828f382a466bdaba6d1
   md5: 5c397b1fd3095004f4ff149af1c0dd3c
@@ -1933,10 +1958,10 @@ packages:
   version: 5.0.2
   sha256: b30115f0def7d7531d22a0fb6502488d879e75b260a9db4d0819cfb25403af5e
   requires_python: '>=3.7'
-- pypi: https://files.pythonhosted.org/packages/7c/c5/a934641f3cdf95e5259c8f75525105a210f5e2e0976b0dd1bc1953050046/snakemake-9.10.1-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/72/a4/1cabb89926ce72279b00a417c0a3a5d7fc8da66f6112923a3e14aaf82c7e/snakemake-9.9.0-py3-none-any.whl
   name: snakemake
-  version: 9.10.1
-  sha256: 5bb49aaea98e5a8fa3ecbfd93e62aa5be7fb7342af2a797094dfe5ba8711ae3a
+  version: 9.9.0
+  sha256: fae92d7f4679bc32e349d9c92bba83c147a460a0af43fb63cd9712b32e024531
   requires_dist:
   - appdirs
   - immutables
@@ -1961,7 +1986,6 @@ packages:
   - snakemake-interface-storage-plugins>=4.1.0,<5.0
   - snakemake-interface-report-plugins>=1.1.0,<2.0.0
   - snakemake-interface-logger-plugins>=1.1.0,<2.0.0
-  - snakemake-interface-scheduler-plugins>=2.0.0,<3.0.0
   - tabulate
   - throttler
   - wrapt
@@ -2014,13 +2038,6 @@ packages:
   sha256: 3f2fa6f49029f50f00b380f9a688a6d61b267f971b81faedff33188c0bf661f8
   requires_dist:
   - snakemake-interface-common>=1.16.0,<2.0.0
-  requires_python: '>=3.11,<4.0'
-- pypi: https://files.pythonhosted.org/packages/39/b1/39c424e4aea0490b41f955056eb27930ab9bbb25b40e53d8a5fd3148115e/snakemake_interface_scheduler_plugins-2.0.0-py3-none-any.whl
-  name: snakemake-interface-scheduler-plugins
-  version: 2.0.0
-  sha256: a8c6484d86ce6e91a92aafc04452cd282f1540bd951c10986d2b6b0506b748d2
-  requires_dist:
-  - snakemake-interface-common>=1.20.1,<2.0
   requires_python: '>=3.11,<4.0'
 - pypi: https://files.pythonhosted.org/packages/77/97/4389957c0db9628a7661f6562fa7248a2f3881067bc83752220a80a34f34/snakemake_interface_storage_plugins-4.2.2-py3-none-any.whl
   name: snakemake-interface-storage-plugins

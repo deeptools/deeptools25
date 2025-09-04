@@ -10,6 +10,17 @@ if config['source'] == 'raw':
         threads: 10
         script:
             'scripts/download_fq.py'
+    
+    rule download_fna:
+        output:
+            fna = 'fq/mouse.fna'
+        params:
+            odir = 'fq',
+            zenodo_id = sampleconfig['zenodo']['ID'],
+            only_fna = True
+        threads: 10
+        script:
+            'scripts/download_zenodo.py'
 
     rule validate_fqfiles:
         input:
@@ -138,6 +149,17 @@ if config['source'] == 'raw':
                     bai = bam.parent / (bam.name + '.bai')
                     _ofbai = Path('deeptools_input') / bai.name.replace('.filtered.bam', '.bam')
                     shutil.copy2(bai, _ofbai)
+    
+    rule generate_bs_bedgraph:
+        input:
+            bam = 'deeptools_input/{bssample}.bam',
+            fna = 'fq/mouse.fna'
+        output:
+            'deeptools_input/{bssample}_CpG.bedGraph'
+        threads: 10
+        shell:'''
+        MethylDackel extract -@ {threads} {input.fna} {input.bam}
+        '''
 
 elif config['source'] == 'zenodo':
     rule download_cram:
@@ -146,7 +168,8 @@ elif config['source'] == 'zenodo':
             fna = 'zenodo_dl/mouse.fna'
         params:
             odir = 'zenodo_dl',
-            zenodo_id = sampleconfig['zenodo']['ID']
+            zenodo_id = sampleconfig['zenodo']['ID'],
+            only_fna = False
         threads: 10
         script:
             'scripts/download_zenodo.py'
@@ -175,7 +198,18 @@ elif config['source'] == 'zenodo':
             bam = 'deeptools_input/{sample}.bam',
             bai = 'deeptools_input/{sample}.bam.bai'
         threads: 10
+        run:
+            shell('samtools view -f 0x2 -@ {threads} -T {input.fna} -b -o {output.bam} {input.cramfile}')
+            shell('samtools index -@ {threads} {output.bam}')
+    
+    rule generate_bs_bedgraph_zenodo:
+        input:
+            bam = 'deeptools_input/{bssample}.bam',
+            bai = 'deeptools_input/{bssample}.bam.bai',
+            fna = 'zenodo_dl/mouse.fna'
+        output:
+            'deeptools_input/{bssample}_CpG.bedGraph'
+        threads: 10
         shell:'''
-        samtools view -@ {threads} -T {input.fna} -b -o {output.bam} {input.cramfile}
-        samtools index -@ {threads} {output.bam}
+        MethylDackel extract -@ {threads} {input.fna} {input.bam}
         '''

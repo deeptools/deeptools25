@@ -35,6 +35,27 @@ samples:
   NPC_9sca_ko_input1_rep2:  SRR15829132
   NPC_9sca_ko_RNA_rep1:  SRR15829149
   NPC_9sca_ko_RNA_rep2:  SRR15829150
+chipdict:  
+  NPC_9sca_ctrl_H3K27ac_rep1: NPC_9sca_ctrl_input_rep1
+  NPC_9sca_ctrl_H3K27ac_rep2: NPC_9sca_ctrl_input_rep2
+  NPC_9sca_ctrl_H3K27me3_rep1: NPC_9sca_ctrl_input_rep1
+  NPC_9sca_ctrl_H3K27me3_rep2: NPC_9sca_ctrl_input_rep2
+  NPC_9sca_ctrl_H3K4me1_rep1: NPC_9sca_ctrl_input_rep1
+  NPC_9sca_ctrl_H3K4me1_rep2: NPC_9sca_ctrl_input_rep2
+  NPC_9sca_ctrl_H3K4me3_rep1: NPC_9sca_ctrl_input_rep1
+  NPC_9sca_ctrl_H3K4me3_rep2: NPC_9sca_ctrl_input_rep2
+  NPC_9sca_ctrl_H3K9me3_rep1: NPC_9sca_ctrl_input_rep1
+  NPC_9sca_ctrl_H3K9me3_rep2: NPC_9sca_ctrl_input_rep2
+  NPC_9sca_ko_H3K27ac_rep1: NPC_9sca_ko_input1_rep1
+  NPC_9sca_ko_H3K27ac_rep2: NPC_9sca_ko_input1_rep2
+  NPC_9sca_ko_H3K27me3_rep1: NPC_9sca_ko_input1_rep1
+  NPC_9sca_ko_H3K27me3_rep2: NPC_9sca_ko_input1_rep2
+  NPC_9sca_ko_H3K4me1_rep1: NPC_9sca_ko_input1_rep1 
+  NPC_9sca_ko_H3K4me1_rep2: NPC_9sca_ko_input1_rep2
+  NPC_9sca_ko_H3K4me3_rep1: NPC_9sca_ko_input1_rep1 
+  NPC_9sca_ko_H3K4me3_rep2: NPC_9sca_ko_input1_rep2
+  NPC_9sca_ko_H3K9me3_rep1: NPC_9sca_ko_input1_rep1
+  NPC_9sca_ko_H3K9me3_rep2: NPC_9sca_ko_input1_rep2
 zenodo:
   ID: 16978663
 md5sums:   

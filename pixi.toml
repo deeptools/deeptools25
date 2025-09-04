@@ -12,12 +12,14 @@ libclang = "*"
 perl = "*"
 sra-tools = "*"
 samtools = "*"
+methyldackel = "*"
 
 [pypi-dependencies]
-snakemake = ">=8"
+snakemake = "== 9.9"
 snakemake-storage-plugin-zenodo = "*"
 snakemake-executor-plugin-cluster-generic = "*"
 deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "benchmarking_4.0.0" }
 
-[activation.env]
-LD_LIBRARY_PATH="$CONDA_PREFIX/lib"
+[tool.pixi.environment]
+CFLAGS = "-I${PIXI_ENVIRONMENT_PATH}/include"
+LIBCLANG_PATH = "-L${PIXI_ENVIRONMENT_PATH}/lib"

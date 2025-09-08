@@ -1,0 +1,13 @@
+human_chip_SRR28592124.bam
+human_rna_SRR28012902.bam
+human_wgs_SRR15494527.bam
+triticum_chip_SRR1686799.bam
+triticum_rna_SRR27822150.bam
+triticum_wgs_SRR27887047.bam
+
+human_wgs_SRR15494527.bw
+human_chip_SRR28592124.bw
+human_rna_SRR28012904.bw
+triticum_wgs_mapq20.bw
+triticum_chip_SRR1686799_nodup.bw
+triticum_rna_SRR27822150_mapq10.bw

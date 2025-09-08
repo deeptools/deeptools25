@@ -13,6 +13,8 @@ perl = "*"
 sra-tools = "*"
 samtools = "*"
 methyldackel = "*"
+wiggletools = "*"
+ucsc-wigtobigwig = "*"
 
 [pypi-dependencies]
 snakemake = "== 9.9"

@@ -20,9 +20,9 @@ def fqdump(tup):
             # R1 / R2
             (ofp/f"{sra}_1.fastq").rename( (ofp/f"{sra}_R1.fastq") )
             (ofp/f"{sra}_2.fastq").rename( (ofp/f"{sra}_R2.fastq") )
-            compressc = ['pigz', '-p', '1', '-n', '-9', str(ofp/f"{sra}_R1.fastq")]
+            compressc = ['pigz', '-p', '5', '-n', '-9', str(ofp/f"{sra}_R1.fastq")]
             sp.run(compressc)
-            compressc = ['pigz', '-p', '1', '-n', '-9', str(ofp/f"{sra}_R2.fastq")]
+            compressc = ['pigz', '-p', '5', '-n', '-9', str(ofp/f"{sra}_R2.fastq")]
             sp.run(compressc)
         (ofp/f"{sra}_R1.fastq.gz").rename( (ofp/f"{sample}_R1.fastq.gz") )
         (ofp/f"{sra}_R2.fastq.gz").rename( (ofp/f"{sample}_R2.fastq.gz") )

@@ -12,6 +12,14 @@ RNASAMPLES = [sample for sample in SAMPLES if 'RNA' in sample]
 BSSAMPLES = [sample for sample in SAMPLES if 'BS' in sample]
 CHIPS = list(set([sample.split('_')[3] for sample in sampleconfig['chipdict'].keys()]))
 
+cmap = {
+  'H3K4me3': 'Greens',
+  'H3K27ac': 'Greens',
+  'H3K4me1': 'Greens',
+  'H3K9me3': 'Purples',
+  'H3K27me3': 'Purples'
+}
+
 include: 'rules/get_data.smk'
 include: 'rules/deeptools.smk'
 

@@ -15,6 +15,13 @@ samtools = "*"
 methyldackel = "*"
 wiggletools = "*"
 ucsc-wigtobigwig = "*"
+uropa = "*"
+bioconductor-deseq2 = "*"
+pandas = "*"
+r-tidyr = "*"
+r-dplyr = "*"
+subread = "*"
+pip = "*"
 
 [pypi-dependencies]
 snakemake = "== 9.9"

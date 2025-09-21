@@ -15,11 +15,17 @@ rule bamCoverage_atac:
     input:
         bam = 'deeptools_input/{atacsample}.bam'
     output:
-        bw = 'deeptools_output/atac/{atacsample}.bw'
+        bw = 'deeptools_output/atac/{atacsample}.bw',
+        bw_raw = temp('deeptools_output/atac/{atacsample}_raw.bw'),
+        wig = temp('deeptools_output/atac/{atacsample}.wig'),
+    params:
+        chromsizes = config['chromsizes']
     threads: 10
     shell:'''
-    bamCoverage -b {input.bam} -o {output.bw} \
+    bamCoverage -b {input.bam} -o {output.bw_raw} \
       --normalizeUsing RPKM -bs 10 -p {threads}
+    wiggletools log 2 {output.bw_raw} > {output.wig}
+    wigToBigWig {output.wig} {params.chromsizes} {output.bw} 
     '''
 
 rule bamCoverage_RNA:
@@ -46,7 +52,8 @@ rule computeMatrix_chip:
         mat = 'deeptools_output/chip_{chip}.npz'
     params:
         bws = lambda wildcards, input: ' '.join([i for i in input.bw if wildcards.chip in i]),
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw if wildcards.chip in i] )
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw if wildcards.chip in i] ),
+        regions = lambda wildcards: "/data/manke/processing/deboutte/tmp/region_generator/uptss.bed /data/manke/processing/deboutte/tmp/region_generator/downtss.bed" if wildcards.chip in ['H3K4me3','H3K27ac','H3K4me1'] else "/data/manke/processing/deboutte/tmp/region_generator/H3K27me3_DEgene.bed /data/manke/processing/deboutte/tmp/region_generator/H3K9me3_DEgene.bed"
     threads: 10
     shell:'''
     computeMatrix reference-point -p {threads} \
@@ -56,7 +63,7 @@ rule computeMatrix_chip:
       --referencePoint center \
       -bs 10 \
       --missingDataAsZero \
-      -R /data/manke/processing/deboutte/tmp/region_generator/uptss.bed /data/manke/processing/deboutte/tmp/region_generator/downtss.bed \
+      -R {params.regions} \
       --samplesLabel {params.labels}
     '''
 
@@ -65,9 +72,11 @@ rule plotHeatmap_chip:
         mat = 'deeptools_output/chip_{chip}.npz'
     output:
         png = 'deeptools_output/chip_{chip}.png'
+    params:
+        cmap = lambda wildcards: cmap[wildcards.chip]
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "\\-3kb" --endLabel "\\+3kb" --interpolationMethod bicubic
+      --startLabel "\\-3kb" --endLabel "\\+3kb" --interpolationMethod bicubic --colorMap {params.cmap} --zMin 0
     '''
 
 rule computeMatrix_atac:
@@ -97,7 +106,7 @@ rule plotHeatmap_atac:
         png = 'deeptools_output/atac.png'
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel r"-3kb" --endLabel r"+3kb" --interpolationMethod bicubic
+      --startLabel r"-3kb" --endLabel r"+3kb" --interpolationMethod bicubic --colorMap Blues
     '''
 
 rule computeMatrix_rna:
@@ -127,5 +136,5 @@ rule plotHeatmap_rna:
         png = 'deeptools_output/rna.png'
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "TSS" --endLabel "TES" --interpolationMethod bicubic
+      --startLabel "TSS" --endLabel "TES" --interpolationMethod bicubic --colorMap Reds --zMin 0
     '''

@@ -22,6 +22,8 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
+          conda-remove-defaults: true
+          auto-activate: true
           environment-file: conf/env.yml
       - name: pip
         shell: bash -l {0}

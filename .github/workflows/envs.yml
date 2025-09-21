@@ -5,7 +5,7 @@ on:
 
 jobs:
   conda_pixi_in_sync:
-    runs-ons: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6

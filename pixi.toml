@@ -28,6 +28,7 @@ macs3 = "*"
 snakemake = "== 9.9"
 snakemake-storage-plugin-zenodo = "*"
 snakemake-executor-plugin-cluster-generic = "*"
+snakemake-executor-plugin-slurm = "*"
 deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "benchmarking_4.0.0" }
 
 [activation.env]

@@ -319,6 +319,8 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/04/be/d09147ad1ec7934636ad912901c5fd7667e1c858e19d355237db0d0cd5e4/smmap-5.0.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/72/a4/1cabb89926ce72279b00a417c0a3a5d7fc8da66f6112923a3e14aaf82c7e/snakemake-9.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ae/b9/a0284debbe1b125c3402976029d3f67e5b678701ff7b1fa8145693fa2b1d/snakemake_executor_plugin_cluster_generic-1.0.9-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/03/8e/1c661a3b174e4889a6c862cbb77132d8bdc0cbc4147711228676d3e9ed8c/snakemake_executor_plugin_slurm-1.8.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/e5/53/a4aa78e3f9fe28e50fcd4e1c51631a2d8173b18dc1b6a272d55d72475ce0/snakemake_executor_plugin_slurm_jobstep-0.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/24/de0615747b9eebd2b5abf9f629120224338bac0a09a46ab86ec72d401645/snakemake_interface_common-1.21.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7a/8b/fec4419acedfa5924549f40664cb2134f2ea5fae3d8a39df5e24035df06a/snakemake_interface_executor_plugins-9.3.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/40/c1/5af0e20e8284c890968af059868290e8c070f3676751abc524b3c4cd42a8/snakemake_interface_logger_plugins-1.2.4-py3-none-any.whl
@@ -4099,6 +4101,26 @@ packages:
   name: snakemake-executor-plugin-cluster-generic
   version: 1.0.9
   sha256: 39a9af6fe16d8be5e6150cbffca40e6cfe76f42b3834874da3372ea0e5be3458
+  requires_dist:
+  - snakemake-interface-common>=1.13.0,<2.0.0
+  - snakemake-interface-executor-plugins>=9.0.0,<10.0.0
+  requires_python: '>=3.11,<4.0'
+- pypi: https://files.pythonhosted.org/packages/03/8e/1c661a3b174e4889a6c862cbb77132d8bdc0cbc4147711228676d3e9ed8c/snakemake_executor_plugin_slurm-1.8.0-py3-none-any.whl
+  name: snakemake-executor-plugin-slurm
+  version: 1.8.0
+  sha256: ae5719b7b9fc30717f2a148eb7dc14b7c8ed3cf32f3deb0ef891ecdcb1b7a507
+  requires_dist:
+  - numpy>=1.26.4,<3
+  - pandas>=2.2.3,<3.0.0
+  - snakemake-executor-plugin-slurm-jobstep>=0.3.0,<0.4.0
+  - snakemake-interface-common>=1.21.0,<2.0.0
+  - snakemake-interface-executor-plugins>=9.3.9,<10.0.0
+  - throttler>=1.2.2,<2.0.0
+  requires_python: '>=3.11,<4.0'
+- pypi: https://files.pythonhosted.org/packages/e5/53/a4aa78e3f9fe28e50fcd4e1c51631a2d8173b18dc1b6a272d55d72475ce0/snakemake_executor_plugin_slurm_jobstep-0.3.0-py3-none-any.whl
+  name: snakemake-executor-plugin-slurm-jobstep
+  version: 0.3.0
+  sha256: b0b045fa8e14ce4662f188fcead389228afe95a6aeef4ea094fcca672ea76fa2
   requires_dist:
   - snakemake-interface-common>=1.13.0,<2.0.0
   - snakemake-interface-executor-plugins>=9.0.0,<10.0.0

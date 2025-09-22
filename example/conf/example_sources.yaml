@@ -57,7 +57,7 @@ chipdict:
   NPC_9sca_ko_H3K9me3_rep1: NPC_9sca_ko_input1_rep1
   NPC_9sca_ko_H3K9me3_rep2: NPC_9sca_ko_input1_rep2
 zenodo:
-  ID: 16978663
+  ID: 17174618
 md5sums:   
   cram: 
     NPC_9sca_ctrl_ATAC_rep1: a1991c13f0bb59f77b76e1a9bb0a5e51

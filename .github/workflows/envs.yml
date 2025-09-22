@@ -4,13 +4,26 @@ on:
   pull_request:
 
 jobs:
-  conda:
+  conda_pixi_in_sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: pip install pyyaml
+      - run: python .github/scripts/sync_env_pixi.py
+  conda:
+    needs: conda_pixi_in_sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
       - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
+          conda-remove-defaults: true
+          auto-activate: true
           environment-file: conf/env.yml
       - name: pip
         shell: bash -l {0}
@@ -18,9 +31,10 @@ jobs:
           conda activate test
           CFLAGS=-I/$CONDA_PREFIX/include LIBCLANG_PATH=$CONDA_PREFIX/lib pip install -r conf/requirements.txt
   pixi:
+    needs: conda_pixi_in_sync
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up Pixi
         uses: prefix-dev/setup-pixi@v0.9.0
         with:

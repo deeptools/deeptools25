@@ -30,6 +30,6 @@ snakemake-storage-plugin-zenodo = "*"
 snakemake-executor-plugin-cluster-generic = "*"
 deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "benchmarking_4.0.0" }
 
-[tool.pixi.environment]
-CFLAGS = "-I${PIXI_ENVIRONMENT_PATH}/include"
-LIBCLANG_PATH = "-L${PIXI_ENVIRONMENT_PATH}/lib"
+[activation.env]
+LIBCLANG_PATH = "$CONDA_PREFIX/lib"
+CFLAGS = "-I$CONDA_PREFIX/include"

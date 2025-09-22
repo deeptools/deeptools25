@@ -11,6 +11,8 @@ ATACSAMPLES = [sample for sample in SAMPLES if 'ATAC' in sample]
 RNASAMPLES = [sample for sample in SAMPLES if 'RNA' in sample]
 BSSAMPLES = [sample for sample in SAMPLES if 'BS' in sample]
 CHIPS = list(set([sample.split('_')[3] for sample in sampleconfig['chipdict'].keys()]))
+INH_CHIPS = {k: v for k, v in sampleconfig['chipdict'].items() if 'H3K27me3' in k or 'H3K9me3' in k}
+INH_CHIP = ['H3K27me3', 'H3K9me3']
 
 cmap = {
   'H3K4me3': 'Greens',
@@ -21,6 +23,7 @@ cmap = {
 }
 
 include: 'rules/get_data.smk'
+include: 'rules/get_regions.smk'
 include: 'rules/deeptools.smk'
 
 rule all:
@@ -29,6 +32,13 @@ rule all:
     expand("deeptools_input/{sample}.bam", sample=SAMPLES),
     expand("deeptools_input/{sample}.bam.bai", sample=SAMPLES),
     expand("deeptools_input/{bssample}_CpG.bedGraph", bssample=BSSAMPLES),
+    'deeptools_input/mouse.fna',
+    'deeptools_input/mouse.gtf',
+    # Generate regions
+    'deeptools_input/counts.txt',
+    'deeptools_input/de_up.tsv',
+    'deeptools_input/de_down.tsv',
+    expand('regions/{inh_chip}_uropa_finalhits.txt', inh_chip = INH_CHIP),
     # Deeptools rules
     # ChIP
     expand('deeptools_output/chip_{chip}.png', chip=CHIPS),

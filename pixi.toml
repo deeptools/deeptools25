@@ -22,6 +22,7 @@ r-tidyr = "*"
 r-dplyr = "*"
 subread = "*"
 pip = "*"
+macs3 = "*"
 
 [pypi-dependencies]
 snakemake = "== 9.9"

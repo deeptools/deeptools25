@@ -53,7 +53,10 @@ rule computeMatrix_chip:
     params:
         bws = lambda wildcards, input: ' '.join([i for i in input.bw if wildcards.chip in i]),
         labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw if wildcards.chip in i] ),
-        regions = lambda wildcards: "/data/manke/processing/deboutte/tmp/region_generator/uptss.bed /data/manke/processing/deboutte/tmp/region_generator/downtss.bed" if wildcards.chip in ['H3K4me3','H3K27ac','H3K4me1'] else "/data/manke/processing/deboutte/tmp/region_generator/H3K27me3_DEgene.bed /data/manke/processing/deboutte/tmp/region_generator/H3K9me3_DEgene.bed"
+        regions = lambda wildcards: (
+            "/data/manke/processing/deboutte/tmp/region_generator/uptss.bed /data/manke/processing/deboutte/tmp/region_generator/downtss.bed" if wildcards.chip in ['H3K4me3','H3K27ac','H3K4me1']
+            else "/data/manke/processing/deboutte/tmp/region_generator/H3K27me3_upgene.bed /data/manke/processing/deboutte/tmp/region_generator/H3K27me3_downgene.bed" if wildcards.chip == 'H3K27me3'
+            else "/data/manke/processing/deboutte/tmp/region_generator/H3K9me3_upgene.bed /data/manke/processing/deboutte/tmp/region_generator/H3K9me3_downgene.bed")
     threads: 10
     shell:'''
     computeMatrix reference-point -p {threads} \

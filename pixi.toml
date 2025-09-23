@@ -16,10 +16,10 @@ methyldackel = "*"
 wiggletools = "*"
 ucsc-wigtobigwig = "*"
 uropa = "*"
-bioconductor-deseq2 = "*"
 pandas = "*"
 r-tidyr = "*"
 r-dplyr = "*"
+bioconductor-deseq2 = "*"
 subread = "*"
 pip = "*"
 macs3 = "*"
@@ -34,3 +34,4 @@ deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "benchma
 [activation.env]
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"
 CFLAGS = "-I$CONDA_PREFIX/include"
+

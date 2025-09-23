@@ -25,15 +25,14 @@ rule DE:
 
 rule call_peaks:
     input:
-        bam = 'deeptools_input/{sample}.bam'
+        bam = 'deeptools_input/{sample}.bam',
+        ctrl = lambda wildcards: f'deeptools_input/{INH_CHIPS[wildcards.sample]}.bam'
     output:
         peak = temp('regions/{sample}_peaks.broadPeak'),
         gappedpeak = temp('regions/{sample}_peaks.gappedPeak'),
         xls = temp('regions/{sample}_peaks.xls'),
-    params:
-        ctrl = lambda wildcards: f'deeptools_input/{INH_CHIPS[wildcards.sample]}.bam'
     shell:'''
-    macs3 callpeak --broad -q 1e-2 -t {input.bam} -c {params.ctrl} \
+    macs3 callpeak --broad -q 1e-2 -t {input.bam} -c {input.ctrl} \
       --keep-dup all \
       --outdir regions \
       -n {wildcards.sample} -f BAMPE -g mm

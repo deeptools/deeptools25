@@ -1,22 +1,22 @@
 import pandas as pd
 upg = []
 downg = [] 
-with open('upreg.tsv', 'r') as f:
+with open(snakemake.input.up, 'r') as f:
     for line in f:
         upg.append(line.strip().split('\t')[0])
-with open('downreg.tsv', 'r') as f:
+with open(snakemake.input.down, 'r') as f:
     for line in f:
         downg.append(line.strip().split('\t')[0])
 
 upg = set(upg)
 downg = set(downg)
 
-upo = open('upreg.gtf', 'w')
-downo = open('downreg.gtf', 'w')
-uptss = open('uptss.bed', 'w')
-downtss = open('downtss.bed', 'w')
+upo = open(snakemake.output.upgtf, 'w')
+downo = open(snakemake.output.downgtf, 'w')
+uptss = open(snakemake.output.upbed, 'w')
+downtss = open(snakemake.output.downbed, 'w')
 
-with open('/data/repository/organisms/GRCm39_ensembl_106/ensembl/release-106/genes.gtf') as f:
+with open(snakemake.input.gtf, 'r') as f:
     for line in f:
         if line.startswith('#'):
             continue
@@ -58,12 +58,12 @@ downo.close()
 uptss.close()
 downtss.close()
 
-k27uo = open('H3K27me3_upgene.bed', 'w')
-k9uo = open('H3K9me3_upgene.bed', 'w')
-k27do = open('H3K27me3_downgene.bed', 'w')
-k9do = open('H3K9me3_downgene.bed', 'w')
+k27uo = open(snakemake.output.k27_up, 'w')
+k9uo = open(snakemake.output.k9_up, 'w')
+k27do = open(snakemake.output.k27_down, 'w')
+k9do = open(snakemake.output.k9_down, 'w')
 
-k27df = pd.read_table('inh_chip/H3K27me3_uropa_finalhits.txt', low_memory=False)
+k27df = pd.read_table(snakemake.input.uro_k27, low_memory=False)
 for i in upg:
     tdf = k27df[k27df['gene_id'] == i]
     if len(tdf) == 0:
@@ -95,7 +95,7 @@ for i in downg:
 
 
 
-k9df = pd.read_table('inh_chip/H3K9me3_uropa_finalhits.txt', low_memory=False)
+k9df = pd.read_table(snakemake.input.uro_k9, low_memory=False)
 for i in upg:
     tdf = k9df[k9df['gene_id'] == i]
     if len(tdf) == 0:

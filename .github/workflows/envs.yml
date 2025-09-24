@@ -39,3 +39,6 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.9.0
         with:
           cache: true
+      - name: dryrun
+        run: |
+          pixi run snakemake -s example/example.smk --configfile example/conf/smk_config.yaml --cores 4 --dryrun

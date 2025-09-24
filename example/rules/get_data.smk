@@ -139,10 +139,16 @@ if config['source'] == 'raw':
             bam = 'deeptools_input/{bssample}.bam',
             fna = 'fq/mouse.fna'
         output:
-            'deeptools_input/{bssample}_CpG.bedGraph'
+            bg = temp('deeptools_input/{bssample}_CpG.bedGraph'),
+            bgs = temp('deeptools_input/{bssample}_CpG_subset.bedGraph'),
+            bw = 'deeptools_input/{bssample}_CpG.bw'
+        params:
+            chromsizes = config['chromsizes']
         threads: 10
         shell:'''
         MethylDackel extract -@ {threads} {input.fna} {input.bam}
+        cut -f1,2,3,4 {output.bg} > {output.bgs}
+        bedGraphToBigWig {output.bgs} {params.chromsizes} {output.bw}
         '''
     
     rule ship_fq_fna_gtf:
@@ -205,10 +211,16 @@ elif config['source'] == 'zenodo':
             bai = 'deeptools_input/{bssample}.bam.bai',
             fna = 'zenodo_dl/mouse.fna'
         output:
-            'deeptools_input/{bssample}_CpG.bedGraph'
+            bg = temp('deeptools_input/{bssample}_CpG.bedGraph'),
+            bgs = temp('deeptools_input/{bssample}_CpG_subset.bedGraph'),
+            bw = 'deeptools_input/{bssample}_CpG.bw'
+        params:
+            chromsizes = config['chromsizes']
         threads: 10
         shell:'''
         MethylDackel extract -@ {threads} {input.fna} {input.bam}
+        cut -f1,2,3,4 {output.bg} > {output.bgs}
+        bedGraphToBigWig {output.bgs} {params.chromsizes} {output.bw}
         '''
     
     rule ship_zen_fna_gtf:

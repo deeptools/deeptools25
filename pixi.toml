@@ -15,6 +15,7 @@ samtools = "*"
 methyldackel = "*"
 wiggletools = "*"
 ucsc-wigtobigwig = "*"
+ucsc-bedgraphtobigwig = "*"
 uropa = "*"
 pandas = "*"
 r-tidyr = "*"
@@ -23,6 +24,8 @@ bioconductor-deseq2 = "*"
 subread = "*"
 pip = "*"
 macs3 = "*"
+bedtools = "*"
+matplotlib = "*"
 
 [pypi-dependencies]
 snakemake = "== 9.9"
@@ -34,4 +37,3 @@ deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "benchma
 [activation.env]
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"
 CFLAGS = "-I$CONDA_PREFIX/include"
-

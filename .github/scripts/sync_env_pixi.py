@@ -15,7 +15,7 @@ with open('conf/requirements.txt', 'r') as f:
             _conda_deps.append(line.strip().split(' ')[0])
 
 _pixi_deps = list(pixi['dependencies'].keys()) + [i for i in list(pixi['pypi-dependencies'].keys()) if i != 'deeptools']
-
+print(list(pixi['pypi-dependencies'].keys()))
 for i in _pixi_deps:
     assert i in _conda_deps, f"{i} in pixi.toml not in conda env.yml"
 for i in _conda_deps:

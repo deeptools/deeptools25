@@ -6,13 +6,16 @@ repodir = Path(workflow.basedir)
 with open(repodir / 'conf' / 'example_sources.yaml') as f:
     sampleconfig = yaml.safe_load(f)
 config['chromsizes'] = str(repodir / 'conf' / 'genome.chrom.sizes')
+# samples
 SAMPLES = sampleconfig['samples'].keys()
 ATACSAMPLES = [sample for sample in SAMPLES if 'ATAC' in sample]
 RNASAMPLES = [sample for sample in SAMPLES if 'RNA' in sample]
 BSSAMPLES = [sample for sample in SAMPLES if 'BS' in sample]
+# ChIP samples, and types
 CHIPS = list(set([sample.split('_')[3] for sample in sampleconfig['chipdict'].keys()]))
 INH_CHIPS = {k: v for k, v in sampleconfig['chipdict'].items() if 'H3K27me3' in k or 'H3K9me3' in k}
 INH_CHIP = ['H3K27me3', 'H3K9me3']
+H3K4me1_CHIPS = {k:v for k,v in sampleconfig['chipdict'].items() if 'H3K4me1' in k}
 
 cmap = {
   'H3K4me3': 'Greens',
@@ -35,17 +38,10 @@ rule all:
     'deeptools_input/mouse.fna',
     'deeptools_input/mouse.gtf',
     # Generate regions
-    # 'deeptools_input/counts.txt',
-    # 'deeptools_input/de_up.tsv',
-    # 'deeptools_input/de_down.tsv',
-    # expand('regions/{inh_chip}_uropa_finalhits.txt', inh_chip = INH_CHIP),
-    'deeptools_input/upreg_tss.bed',
+    'regions/H3K4me1.bed',
     'deeptools_input/downreg_tss.bed',
-    'deeptools_input/upreg_genes.gtf',
     'deeptools_input/downreg_genes.gtf',
-    'deeptools_input/upreg_H3K27me3.bed',
     'deeptools_input/downreg_H3K27me3.bed',
-    'deeptools_input/upreg_H3K9me3.bed',
     'deeptools_input/downreg_H3K9me3.bed',
     # Deeptools rules
     # ChIP

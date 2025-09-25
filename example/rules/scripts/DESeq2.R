@@ -19,7 +19,22 @@ dds <- DESeqDataSetFromMatrix(
 
 dds <- DESeq(dds)
 res <- results(dds)
-up <- res %>% data.frame() %>% filter(padj < snakemake@params[['padj']]) %>% filter(log2FoldChange > snakemake@params[['l2fc']]) 
-down <- res %>% data.frame() %>% filter(padj < snakemake@params[['padj']]) %>% filter(log2FoldChange < -snakemake@params[['l2fc']]) 
-write.table(up, snakemake@output[['up']], sep='\t', quote=F)
+down <- res %>%
+ data.frame() %>%
+ filter(padj < snakemake@params[['padj']]) %>%
+ filter(log2FoldChange < -snakemake@params[['l2fc']]) 
+
+up <- res %>%
+ data.frame() %>%
+ filter(padj < snakemake@params[['padj']]) %>%
+ filter(log2FoldChange > snakemake@params[['l2fc']])
+
+none <- res %>% 
+  data.frame() %>% 
+  filter(
+    padj >= snakemake@params[['padj']] | abs(log2FoldChange) <= snakemake@params[['l2fc']]
+  )
+
 write.table(down, snakemake@output[['down']], sep='\t', quote=F)
+write.table(up, snakemake@output[['up']], sep='\t', quote=F)
+write.table(none, snakemake@output[['nonde']], sep='\t', quote=F)

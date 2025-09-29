@@ -1,3 +1,10 @@
+def return_peakfiles(chip, samples, broadmarks):
+    if chip in broadmarks:
+        return expand('regions/{sample}_peaks.broadPeak', sample=[s for s in samples if chip in s])
+    else:
+        return expand('regions/{sample}_peaks.narrowPeak', sample=[s for s in samples if chip in s])
+
+
 rule get_counts:
     input:
         bams = expand('deeptools_input/{sample}.bam', sample=RNASAMPLES),
@@ -27,13 +34,13 @@ rule DE:
 rule call_peaks:
     input:
         bam = 'deeptools_input/{sample}.bam',
-        ctrl = lambda wildcards: f'deeptools_input/{INH_CHIPS[wildcards.sample]}.bam'
+        ctrl = lambda wildcards: f'deeptools_input/{sampleconfig['chipdict'][wildcards.sample]}.bam'
     output:
-        peak = temp('regions/{sample}_peaks.broadPeak'),
-        gappedpeak = temp('regions/{sample}_peaks.gappedPeak'),
         xls = temp('regions/{sample}_peaks.xls'),
+    params:
+        broad = lambda wildcards: '--broad' if any(mark in wildcards.sample for mark in BROADMARKS) else ''
     shell:'''
-    macs3 callpeak --broad -q 1e-2 -t {input.bam} -c {input.ctrl} \
+    macs3 callpeak {params.broad} -q 1e-2 -t {input.bam} -c {input.ctrl} \
       --keep-dup all \
       --outdir regions \
       -n {wildcards.sample} -f BAMPE -g mm
@@ -41,54 +48,43 @@ rule call_peaks:
 
 rule merge_peaks:
     input:
-        expand('regions/{sample}_peaks.broadPeak', sample=INH_CHIPS.keys())
+        expand('regions/{sample}_peaks.xls', sample=SAMPLES)
     output:
-        bed = 'regions/{inh_chip}.bed',
+        bed = 'regions/{chip}.bed',
     params:
-        peaks = lambda wildcards: expand('regions/{sample}_peaks.broadPeak', sample=[s for s in INH_CHIPS.keys() if wildcards.inh_chip in s]),
+        peaks = lambda wildcards: return_peakfiles(wildcards.chip, SAMPLES, BROADMARKS)
     shell:'''
     cat {params.peaks} | sort -k1,1 -k2,2n | bedtools merge > {output.bed}
     '''
 
-rule call_H3K4me1_peaks:
+rule cleanup_peakfiles:
     input:
-        bam = 'deeptools_input/{sample}.bam',
-        ctrl = lambda wildcards: f'deeptools_input/{H3K4me1_CHIPS[wildcards.sample]}.bam'
+        expand('regions/{chip}.bed', chip=CHIPS)
     output:
-        peak = temp('regions/{sample}_peaks.narrowPeak'),
-        xls = temp('regions/{sample}_peaks.xls'),
-        summits = temp('regions/{sample}_summits.bed')
+        temp(touch('regions/peaks_cleaned.txt'))
     shell:'''
-    macs3 callpeak -q 1e-2 -t {input.bam} -c {input.ctrl} \
-      --keep-dup all \
-      --outdir regions \
-      -n {wildcards.sample} -f BAMPE -g mm
-    '''
-
-rule merge_H3K4me1_peaks:
-    input:
-        peaks = expand('regions/{sample}_peaks.narrowPeak', sample=H3K4me1_CHIPS.keys())
-    output:
-        bed = 'regions/H3K4me1.bed',
-    shell:'''
-    cat {input.peaks} | sort -k1,1 -k2,2n | bedtools merge > {output.bed}
+    rm -f regions/*_summits.bed
+    rm -f regions/*.gappedPeak
+    rm -f regions/*.broadPeak
+    rm -f regions/*.narrowPeak
     '''
 
 rule annotate_peaks:
     input:
         gtf = 'deeptools_input/mouse.gtf',
-        bed = 'regions/{ann_chip}.bed',
+        bed = 'regions/{chip}.bed',
+        clean = 'regions/peaks_cleaned.txt'
     output:
-        beda = temp('regions/{ann_chip}_uropa_allhits.bed'),
-        txta = temp('regions/{ann_chip}_uropa_allhits.txt'),
-        bedf = temp('regions/{ann_chip}_uropa_finalhits.bed'),
-        txtf = 'regions/{ann_chip}_uropa_finalhits.txt',
-        json = temp('regions/{ann_chip}_uropa.json'),
-        pdf = temp('regions/{ann_chip}_uropa_summary.pdf')
+        beda = temp('regions/{chip}_uropa_allhits.bed'),
+        txta = temp('regions/{chip}_uropa_allhits.txt'),
+        bedf = temp('regions/{chip}_uropa_finalhits.bed'),
+        txtf = 'regions/{chip}_uropa_finalhits.txt',
+        json = temp('regions/{chip}_uropa.json'),
+        pdf = temp('regions/{chip}_uropa_summary.pdf')
     threads: 10
     shell:'''
     uropa -b {input.bed} -g {input.gtf} --summary \
       --feature gene --distance 100000 100000 \
-      --internals 1 -p {wildcards.ann_chip}_uropa -o regions \
+      --internals 1 -p {wildcards.chip}_uropa -o regions \
       --show-attributes gene_id gene_name
     '''

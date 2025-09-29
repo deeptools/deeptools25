@@ -13,9 +13,7 @@ RNASAMPLES = [sample for sample in SAMPLES if 'RNA' in sample]
 BSSAMPLES = [sample for sample in SAMPLES if 'BS' in sample]
 # ChIP samples, and types
 CHIPS = list(set([sample.split('_')[3] for sample in sampleconfig['chipdict'].keys()]))
-INH_CHIPS = {k: v for k, v in sampleconfig['chipdict'].items() if 'H3K27me3' in k or 'H3K9me3' in k}
-INH_CHIP = ['H3K27me3', 'H3K9me3']
-H3K4me1_CHIPS = {k:v for k,v in sampleconfig['chipdict'].items() if 'H3K4me1' in k}
+BROADMARKS = ['H3K27me3', 'H3K9me3']
 
 cmap = {
   'H3K4me3': 'Greens',
@@ -38,15 +36,23 @@ rule all:
     'deeptools_input/mouse.fna',
     'deeptools_input/mouse.gtf',
     # Generate regions
-    'regions/H3K4me1.bed',
-    'deeptools_input/downreg_tss.bed',
-    'deeptools_input/downreg_genes.gtf',
-    'deeptools_input/downreg_H3K27me3.bed',
-    'deeptools_input/downreg_H3K9me3.bed',
-    # Deeptools rules
+    # expand('regions/{chip}_uropa_finalhits.txt', chip=CHIPS),
+    # expand('deeptools_input/downreg_{chip}.bed', chip=CHIPS),
+    # expand('deeptools_input/upreg_{chip}.bed', chip=CHIPS),
+    # expand('deeptools_input/nonreg_{chip}.bed', chip=CHIPS),
     # ChIP
     expand('deeptools_output/chip_{chip}.png', chip=CHIPS),
     'deeptools_output/atac.png',
     'deeptools_output/rna.png',
     'deeptools_output/meth.png',
     'deeptools_output/rna.png'
+    # 'regions/H3K4me1.bed',
+    # 'deeptools_input/downreg_tss.bed',
+    # 'deeptools_input/downreg_genes.gtf',
+    # 'deeptools_input/downreg_H3K27me3.bed',
+    # 'deeptools_input/downreg_H3K9me3.bed',
+
+    # Deeptools rules
+    # ChIP
+    # 
+    

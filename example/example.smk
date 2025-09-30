@@ -35,12 +35,13 @@ rule all:
     expand("deeptools_input/{bssample}_CpG.bw", bssample=BSSAMPLES),
     'deeptools_input/mouse.fna',
     'deeptools_input/mouse.gtf',
-    # Generate regions
-    # expand('regions/{chip}_uropa_finalhits.txt', chip=CHIPS),
-    # expand('deeptools_input/downreg_{chip}.bed', chip=CHIPS),
-    # expand('deeptools_input/upreg_{chip}.bed', chip=CHIPS),
-    # expand('deeptools_input/nonreg_{chip}.bed', chip=CHIPS),
-    # ChIP
+    # Regions
+    expand(
+      'regions/{mergedpeak}_uropa_finalhits.txt',
+      mergedpeak = ['ATAC'] + CHIPS
+    ),
+
+    # # ChIP
     expand('deeptools_output/chip_{chip}.png', chip=CHIPS),
     'deeptools_output/atac.png',
     'deeptools_output/rna.png',

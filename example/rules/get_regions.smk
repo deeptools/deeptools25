@@ -1,8 +1,8 @@
-def return_peakfiles(chip, samples, broadmarks):
-    if chip in broadmarks:
-        return expand('regions/{sample}_peaks.broadPeak', sample=[s for s in samples if chip in s])
+def return_peakfiles(mergedpeak, samples, broadmarks):
+    if mergedpeak in broadmarks:
+        return expand('regions/{sample}_peaks.broadPeak', sample=[s for s in samples if mergedpeak in s])
     else:
-        return expand('regions/{sample}_peaks.narrowPeak', sample=[s for s in samples if chip in s])
+        return expand('regions/{sample}_peaks.narrowPeak', sample=[s for s in samples if mergedpeak in s])
 
 
 rule get_counts:
@@ -33,33 +33,35 @@ rule DE:
 
 rule call_peaks:
     input:
-        bam = 'deeptools_input/{sample}.bam',
-        ctrl = lambda wildcards: f'deeptools_input/{sampleconfig['chipdict'][wildcards.sample]}.bam'
+        bam = expand('deeptools_input/{sample}.bam', sample=SAMPLES),
     output:
-        xls = temp('regions/{sample}_peaks.xls'),
+        xls = temp('regions/{peaksample}_peaks.xls'),
     params:
-        broad = lambda wildcards: '--broad' if any(mark in wildcards.sample for mark in BROADMARKS) else ''
+        bam = lambda wildcards: f'deeptools_input/{wildcards.peaksample}.bam',
+        ctrl = lambda wildcards: f'-c deeptools_input/{sampleconfig['chipdict'][wildcards.peaksample]}.bam' if wildcards.peaksample in sampleconfig['chipdict'] else '',
+        broad = lambda wildcards: '--broad' if any(mark in wildcards.peaksample for mark in BROADMARKS) else '',
+        atacpar = lambda wildcards: '--nomodel --shift -75 --extsize 150' if 'ATAC' in wildcards.peaksample else '',
     shell:'''
-    macs3 callpeak {params.broad} -q 1e-2 -t {input.bam} -c {input.ctrl} \
+    macs3 callpeak {params.broad} -q 1e-2 -t {params.bam} {params.ctrl} \
       --keep-dup all \
       --outdir regions \
-      -n {wildcards.sample} -f BAMPE -g mm
+      {params.atacpar} -n {wildcards.peaksample} -f BAMPE -g mm
     '''
 
 rule merge_peaks:
     input:
-        expand('regions/{sample}_peaks.xls', sample=SAMPLES)
+        expand('regions/{peaksample}_peaks.xls', peaksample = ATACSAMPLES + list(sampleconfig['chipdict'].keys()))
     output:
-        bed = 'regions/{chip}.bed',
+        bed = 'regions/{mergedpeak}.bed',
     params:
-        peaks = lambda wildcards: return_peakfiles(wildcards.chip, SAMPLES, BROADMARKS)
+        peaks = lambda wildcards: return_peakfiles(wildcards.mergedpeak, SAMPLES, BROADMARKS)
     shell:'''
     cat {params.peaks} | sort -k1,1 -k2,2n | bedtools merge > {output.bed}
     '''
 
 rule cleanup_peakfiles:
     input:
-        expand('regions/{chip}.bed', chip=CHIPS)
+        expand('regions/{mergedpeak}.bed', mergedpeak = ['ATAC'] + CHIPS)
     output:
         temp(touch('regions/peaks_cleaned.txt'))
     shell:'''
@@ -72,19 +74,19 @@ rule cleanup_peakfiles:
 rule annotate_peaks:
     input:
         gtf = 'deeptools_input/mouse.gtf',
-        bed = 'regions/{chip}.bed',
+        bed = 'regions/{mergedpeak}.bed',
         clean = 'regions/peaks_cleaned.txt'
     output:
-        beda = temp('regions/{chip}_uropa_allhits.bed'),
-        txta = temp('regions/{chip}_uropa_allhits.txt'),
-        bedf = temp('regions/{chip}_uropa_finalhits.bed'),
-        txtf = 'regions/{chip}_uropa_finalhits.txt',
-        json = temp('regions/{chip}_uropa.json'),
-        pdf = temp('regions/{chip}_uropa_summary.pdf')
+        beda = temp('regions/{mergedpeak}_uropa_allhits.bed'),
+        txta = temp('regions/{mergedpeak}_uropa_allhits.txt'),
+        bedf = temp('regions/{mergedpeak}_uropa_finalhits.bed'),
+        txtf = 'regions/{mergedpeak}_uropa_finalhits.txt',
+        json = temp('regions/{mergedpeak}_uropa.json'),
+        pdf = temp('regions/{mergedpeak}_uropa_summary.pdf')
     threads: 10
     shell:'''
     uropa -b {input.bed} -g {input.gtf} --summary \
       --feature gene --distance 100000 100000 \
-      --internals 1 -p {wildcards.chip}_uropa -o regions \
+      --internals 1 -p {wildcards.mergedpeak}_uropa -o regions \
       --show-attributes gene_id gene_name
     '''

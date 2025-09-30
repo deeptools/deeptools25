@@ -20,17 +20,26 @@ How to run:
 
 ## Example
 
-Example run for deepTools usage on multimodal data is available under the example directory.
-Note that this workflow requires downloading data from either zenodo or SRA (default is zenodo).
-If you prefer to start from SRA / raw fastq files, a working installation of snakePipes need to be available in a conda environment. The appropriate settings need to be filled out in `example/conf/smk_config.yaml`.
+To reproduce the example figures, [public data](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE183556) is sourced from [Sun et al.](https://doi.org/10.1038/s41586-023-06781-3).
+Included are different ChIP data (H3K27ac, H3K4me1, H3K4me3, H3K9me3, H3k27me3), ATAC data, bisulfite sequencing data (DNA methylation) and RNA-seq data, in wild type NPC cells, or MSL2-KO NPC cells.
 
-To regenerate the figures:
+### Set up
 
-via conda:
+There are two entry points to reproduce the figures:
+  - from the raw data  
+  - from CRAM files in zenodo  
 
-  > conda activate deeptools_benchmark
-  > snakemake -s example/example.smk --configfile example/conf/smk_config.yaml --cores 40 -d WORKDIR --use-conda
+Assumed is you have the `deeptools_benchmark` conda environment installed (see above).
+In case you want to start from the raw data, the workflow here assumes you have a working [snakePipes (>= 3.1.0)](https://github.com/maxplanck-ie/snakepipes) version installed and working, in a specific conda environment. The settings can be set in the `example/conf/smk_config.yaml` file. Note that both modes require compute node access to the internet. By default the mode is set to `zenodo`, and requires no additional parameters to be set.
 
-or with pixi:
+### Running
+With the `deeptools_benchmark` conda environment activated, you can reproduce the figures:
 
-  > pixi run snakemake -s example/example.smk --configfile example/conf/smk_config.yaml --cores 40 -d WORKDIR
+with conda environment (deeptools_benchmark) activated:
+
+  > snakemake -s example/example.smk --configfile example/conf/smk_config.yaml --cores 10 -d /path/to/working/directory
+
+Or with pixi:
+
+  > pixi run snakemake -s example/example.smk --configfile example/conf/smk_config.yaml --cores 10 -d /path/to/working/directory
+

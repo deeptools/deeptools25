@@ -6,13 +6,25 @@ repodir = Path(workflow.basedir)
 with open(repodir / 'conf' / 'example_sources.yaml') as f:
     sampleconfig = yaml.safe_load(f)
 config['chromsizes'] = str(repodir / 'conf' / 'genome.chrom.sizes')
+# samples
 SAMPLES = sampleconfig['samples'].keys()
 ATACSAMPLES = [sample for sample in SAMPLES if 'ATAC' in sample]
 RNASAMPLES = [sample for sample in SAMPLES if 'RNA' in sample]
 BSSAMPLES = [sample for sample in SAMPLES if 'BS' in sample]
+# ChIP samples, and types
 CHIPS = list(set([sample.split('_')[3] for sample in sampleconfig['chipdict'].keys()]))
+BROADMARKS = ['H3K27me3', 'H3K9me3']
+
+cmap = {
+  'H3K4me3': 'Greens',
+  'H3K27ac': 'Greens',
+  'H3K4me1': 'Greens',
+  'H3K9me3': 'Purples',
+  'H3K27me3': 'Purples'
+}
 
 include: 'rules/get_data.smk'
+include: 'rules/get_regions.smk'
 include: 'rules/deeptools.smk'
 
 rule all:
@@ -20,12 +32,28 @@ rule all:
     # Get data in bam format. Road to this rule depends on zenodo or raw source.
     expand("deeptools_input/{sample}.bam", sample=SAMPLES),
     expand("deeptools_input/{sample}.bam.bai", sample=SAMPLES),
-    expand("deeptools_input/{bssample}_CpG.bedGraph", bssample=BSSAMPLES),
-    # Deeptools rules
-    # ChIP
+    expand("deeptools_input/{bssample}_CpG.bw", bssample=BSSAMPLES),
+    'deeptools_input/mouse.fna',
+    'deeptools_input/mouse.gtf',
+    # Regions
+    expand(
+      'regions/{mergedpeak}_uropa_finalhits.txt',
+      mergedpeak = ['ATAC'] + CHIPS
+    ),
+
+    # # ChIP
     expand('deeptools_output/chip_{chip}.png', chip=CHIPS),
     'deeptools_output/atac.png',
     'deeptools_output/rna.png',
-    #expand('deeptools_output/chip/{chipsample}.bw', chipsample=sampleconfig['chipdict'].keys()),
-    #expand('deeptools_output/rna/{rnasample}.bw', rnasample=RNASAMPLES),
-    #expand('deeptools_output/atac/{atacsample}.bw', atacsample=ATACSAMPLES),
+    'deeptools_output/meth.png',
+    'deeptools_output/rna.png'
+    # 'regions/H3K4me1.bed',
+    # 'deeptools_input/downreg_tss.bed',
+    # 'deeptools_input/downreg_genes.gtf',
+    # 'deeptools_input/downreg_H3K27me3.bed',
+    # 'deeptools_input/downreg_H3K9me3.bed',
+
+    # Deeptools rules
+    # ChIP
+    # 
+    

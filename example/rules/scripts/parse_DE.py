@@ -35,7 +35,6 @@ def parse_chip(deg, ofs, uropdf, mbs, chip):
     ctrl_mask = np.array(matlabels) == 'ctrl'
     ko_mask = np.array(matlabels) == 'ko'
 
-    # Genes down
     for i in downg:
         tdf = df[df['gene_id'] == i]
         if len(tdf) == 0:
@@ -45,22 +44,22 @@ def parse_chip(deg, ofs, uropdf, mbs, chip):
             matrix = mat['matrix'][region_indices] + 1
             ctrlm = np.median(matrix[:, ctrl_mask], axis=1)
             kom = np.median(matrix[:, ko_mask], axis=1)
-            log2fc = np.log2(kom / ctrlm)
+            log2fc = np.log2(ctrlm / kom)
             if chip in ['H3K27me3', 'H3K9me3']:
-                ai = np.argmax(log2fc)
-                if log2fc[ai] > snakemake.params.l2fc:
+                ai = np.argmin(log2fc)
+                if log2fc[ai] <= -snakemake.params.l2fc:
                     ix = region_indices[ai]
                     downo.write(
                         f"{df['peak_chr'].iloc[ix]}\t{df['peak_start'].iloc[ix]}\t{df['peak_end'].iloc[ix]}\n"
                     )
             else:
-                ai = np.argmin(log2fc)
-                if log2fc[ai] < -snakemake.params.l2fc:
+                ai = np.argmax(log2fc)
+                if log2fc[ai] >= snakemake.params.l2fc:
                     ix = region_indices[ai]
                     downo.write(
                         f"{df['peak_chr'].iloc[ix]}\t{df['peak_start'].iloc[ix]}\t{df['peak_end'].iloc[ix]}\n"
                     )
-    # Genes up
+    
     for i in upg:
         tdf = df[df['gene_id'] == i]
         if len(tdf) == 0:
@@ -70,17 +69,17 @@ def parse_chip(deg, ofs, uropdf, mbs, chip):
             matrix = mat['matrix'][region_indices] + 1
             ctrlm = np.median(matrix[:, ctrl_mask], axis=1)
             kom = np.median(matrix[:, ko_mask], axis=1)
-            log2fc = np.log2(kom / ctrlm)
+            log2fc = np.log2(ctrlm / kom)
             if chip in ['H3K27me3', 'H3K9me3']:
-                ai = np.argmin(log2fc)
-                if log2fc[ai] < -snakemake.params.l2fc:
+                ai = np.argmax(log2fc)
+                if log2fc[ai] >= snakemake.params.l2fc:
                     ix = region_indices[ai]
                     upo.write(
                         f"{df['peak_chr'].iloc[ix]}\t{df['peak_start'].iloc[ix]}\t{df['peak_end'].iloc[ix]}\n"
                     )
             else:
-                ai = np.argmax(log2fc)
-                if log2fc[ai] > snakemake.params.l2fc:
+                ai = np.argmin(log2fc)
+                if log2fc[ai] <= -snakemake.params.l2fc:
                     ix = region_indices[ai]
                     upo.write(
                         f"{df['peak_chr'].iloc[ix]}\t{df['peak_start'].iloc[ix]}\t{df['peak_end'].iloc[ix]}\n"

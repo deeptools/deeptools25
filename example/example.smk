@@ -6,6 +6,7 @@ repodir = Path(workflow.basedir)
 with open(repodir / 'conf' / 'example_sources.yaml') as f:
     sampleconfig = yaml.safe_load(f)
 config['chromsizes'] = str(repodir / 'conf' / 'genome.chrom.sizes')
+config['rar'] = str(repodir / 'conf' / 'rar.bed')
 # samples
 SAMPLES = sampleconfig['samples'].keys()
 ATACSAMPLES = [sample for sample in SAMPLES if 'ATAC' in sample]

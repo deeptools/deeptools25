@@ -42,7 +42,7 @@ rule call_peaks:
         broad = lambda wildcards: '--broad' if any(mark in wildcards.peaksample for mark in BROADMARKS) else '',
         atacpar = lambda wildcards: '--nomodel --shift -75 --extsize 150' if 'ATAC' in wildcards.peaksample else '',
     shell:'''
-    macs3 callpeak {params.broad} -q 1e-2 -t {params.bam} {params.ctrl} \
+    macs3 callpeak {params.broad} -q 0.1 -t {params.bam} {params.ctrl} \
       --keep-dup all \
       --outdir regions \
       {params.atacpar} -n {wildcards.peaksample} -f BAMPE -g mm

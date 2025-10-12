@@ -11,8 +11,6 @@ From there, you can set up the conda environment
 
 Alternatively, if you have [pixi](https://pixi.sh/latest/) available, a pixi configuration file is provided too.
 
-
-
 ## Benchmark
 
 Code for the benchmark is organized under the benchmark directory.

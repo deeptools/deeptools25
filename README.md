@@ -27,7 +27,7 @@ There are two entry points to reproduce the figures:
   - from the raw data  
   - from CRAM files in zenodo  
 
-Assumed is you have the `deeptools_benchmark` conda environment installed (see above).
+Assumed is you have either the `deeptools_benchmark` conda environment installed (see above), or have pixi installed and available.
 In case you want to start from the raw data, the workflow here assumes you have a working [snakePipes (>= 3.1.0)](https://github.com/maxplanck-ie/snakepipes) version installed and working, in a specific conda environment. The settings can be set in the `example/conf/smk_config.yaml` file. Note that both modes require compute node access to the internet. By default the mode is set to `zenodo`, and requires no additional parameters to be set.
 
 ### Running

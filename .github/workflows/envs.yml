@@ -30,6 +30,12 @@ jobs:
         run: |
           conda activate test
           CFLAGS=-I/$CONDA_PREFIX/include LIBCLANG_PATH=$CONDA_PREFIX/lib pip install -r conf/requirements.txt
+          conda list
+      - name: R test
+        shell: bash -l {0}
+        run: |
+          conda activate test
+          Rscript -e "library(DESeq2)"
   pixi:
     needs: conda_pixi_in_sync
     runs-on: ubuntu-latest
@@ -42,3 +48,6 @@ jobs:
       - name: dryrun
         run: |
           pixi run snakemake -s example/example.smk --configfile example/conf/smk_config.yaml --cores 4 --dryrun
+      - name: R test
+        run: |
+          pixi run Rscript -e "library(DESeq2)"

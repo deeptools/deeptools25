@@ -1,4 +1,0 @@
-snakemake-storage-plugin-zenodo
-snakemake-executor-plugin-cluster-generic
-snakemake-executor-plugin-slurm
-git+https://github.com/deeptools/deepTools.git@benchmarking_4.0.0

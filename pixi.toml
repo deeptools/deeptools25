@@ -20,7 +20,7 @@ uropa = "*"
 pandas = "*"
 r-tidyr = "*"
 r-dplyr = "*"
-bioconductor-deseq2 = "*"
+bioconductor-edger = "*"
 subread = "*"
 pip = "*"
 macs3 = "*"
@@ -32,7 +32,7 @@ snakemake = "== 9.9"
 snakemake-storage-plugin-zenodo = "*"
 snakemake-executor-plugin-cluster-generic = "*"
 snakemake-executor-plugin-slurm = "*"
-deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "benchmarking_4.0.0" }
+deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "4.0.0_installation" }
 
 [activation.env]
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"

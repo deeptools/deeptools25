@@ -29,7 +29,7 @@ rule DE:
         padj = config['padj'],
         l2fc = config['l2fc']
     script:
-        'scripts/DESeq2.R'
+        'scripts/DE.R'
 
 rule call_peaks:
     input:

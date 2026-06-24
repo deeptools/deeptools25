@@ -2,6 +2,10 @@ suppressMessages(library('edgeR'))
 suppressMessages(library("tidyr"))
 suppressMessages(library("dplyr"))
 set.seed(123)
+
+padj_cutoff <- as.double(snakemake@params[['padj']])
+l2fc_cutoff <- as.double(snakemake@params[['l2fc']])
+
 counts <- read.delim(snakemake@input[['counts']], comment.char='#')
 rownames(counts) <- counts$Geneid
 
@@ -33,16 +37,16 @@ res <- topTags(qlf, n = Inf, adjust.method = "BH", sort.by = "none")$table
 
 # Split into down / up / non-DE  (FDR ≡ padj,  logFC ≡ log2FoldChange)
 down <- res %>%
-  filter(FDR  <  snakemake@params[['padj']]) %>%
-  filter(logFC < -snakemake@params[['l2fc']])
+  filter(FDR  <  padj_cutoff) %>%
+  filter(logFC < -l2fc_cutoff)
 
 up <- res %>%
-  filter(FDR  <  snakemake@params[['padj']]) %>%
-  filter(logFC >  snakemake@params[['l2fc']])
+  filter(FDR  <  padj_cutoff) %>%
+  filter(logFC >  l2fc_cutoff)
 
 none <- res %>%
-  filter(FDR > snakemake@params[['padj']]) %>%
-  filter(abs(logFC) < snakemake@params[['l2fc']]) %>%
+  filter(FDR > padj_cutoff) %>%
+  filter(abs(logFC) < l2fc_cutoff) %>%
   slice_sample(n = 1000)
 
 write.table(down, snakemake@output[['down']],   sep='\t', quote=F)

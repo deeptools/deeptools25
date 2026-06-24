@@ -1,7 +1,7 @@
 suppressMessages(library('edgeR'))
 suppressMessages(library("tidyr"))
 suppressMessages(library("dplyr"))
-
+set.seed(123)
 counts <- read.delim(snakemake@input[['counts']], comment.char='#')
 rownames(counts) <- counts$Geneid
 
@@ -13,6 +13,8 @@ dcounts <- counts %>% select(c(
 ))
 
 genotype <- factor(c("ctrl", "ctrl", "ko", "ko"))
+keep <- filterByExpr(dcounts, group = genotype)
+dcounts <- dcounts[keep, ]
 
 # Build DGEList and normalize (TMM)
 dge <- DGEList(counts = dcounts, group = genotype)
@@ -39,9 +41,9 @@ up <- res %>%
   filter(logFC >  snakemake@params[['l2fc']])
 
 none <- res %>%
-  filter(
-    FDR >= snakemake@params[['padj']] | abs(logFC) <= snakemake@params[['l2fc']]
-  )
+  filter(FDR > snakemake@params[['padj']]) %>%
+  filter(abs(logFC) < snakemake@params[['l2fc']]) %>%
+  slice_sample(n = 1000)
 
 write.table(down, snakemake@output[['down']],   sep='\t', quote=F)
 write.table(up,   snakemake@output[['up']],     sep='\t', quote=F)

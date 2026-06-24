@@ -3,11 +3,12 @@ rule multibamsummary:
         bed = 'regions/{mergedpeak}.bed',
         bamfiles = lambda wildcards: expand('deeptools_input/{sample}.bam', sample=[i for i in SAMPLES if wildcards.mergedpeak in i])
     output:
-        npz = 'regions/{mergedpeak}_mbs.npz'
+        npz = 'regions/{mergedpeak}_mbs.npz',
+        counts = 'regions/{mergedpeak}_mbs.counts'
     threads: 10
     shell:'''
     multiBamSummary BED-file -p {threads} -o {output.npz} \
-      --BED {input.bed} -b {input.bamfiles}
+      --BED {input.bed} -b {input.bamfiles} --outRawCounts {output.counts}
     '''
 
 rule de_to_region:

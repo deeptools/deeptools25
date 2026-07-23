@@ -1,6 +1,6 @@
 rule bamcoverage_dt4_human:
   input:
-    bam = lambda wildcards: f"zenodo/{bamCoverage_samples[wildcards.bamcoverage]}.bam"
+    bam = lambda wildcards: f"bamfiles/{bamCoverage_samples[wildcards.bamcoverage]}.bam"
   output:
     bw = temp("output/bamcoverage_{bamcoverage}.dt4.bw")
   benchmark: repeat("benchmarks/bamcoverage/{bamcoverage}_dt4.txt", 3)
@@ -14,7 +14,7 @@ rule bamcoverage_dt4_human:
 
 rule bamcoverage_dt3_human:
   input:
-    bam = lambda wildcards: f"zenodo/{bamCoverage_samples[wildcards.bamcoverage]}.bam"
+    bam = lambda wildcards: f"bamfiles/{bamCoverage_samples[wildcards.bamcoverage]}.bam"
   output:
     bw = temp("output/bamcoverage_{bamcoverage}.dt3.bw")
   benchmark: repeat("benchmarks/bamcoverage/{bamcoverage}_dt3.txt", 3)

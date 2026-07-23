@@ -1,7 +1,7 @@
 rule multibamsummary_dt4:
-  params:
+  input:
     bam_files = lambda wildcards: ' '.join(
-        [f"zenodo/{i}.bam" for i in multibamSummary_samples[wildcards.run]]
+        [f"bamfiles/{i}.bam" for i in multibamSummary_samples[wildcards.run]]
     )
   output:
     npz = temp("output/mbs_{run}.dt4.npz")
@@ -13,13 +13,13 @@ rule multibamsummary_dt4:
   shell:'''
   multiBamSummary bins -p {threads} \
     -o {output.npz} \
-    -b {params.bam_files}
+    -b {input.bam_files}
   '''
 
 rule multibamsummary_dt3:
-  params:
+  input:
     bam_files = lambda wildcards: ' '.join(
-        [f"zenodo/{i}.bam" for i in multibamSummary_samples[wildcards.run]]
+        [f"bamfiles/{i}.bam" for i in multibamSummary_samples[wildcards.run]]
     )
   output:
     npz = temp("output/mbs_{run}.dt3.npz")
@@ -31,5 +31,5 @@ rule multibamsummary_dt3:
   shell:'''
   multiBamSummary_old bins -p {threads} \
     -o {output.npz} \
-    -b {params.bam_files}
+    -b {input.bam_files}
   '''

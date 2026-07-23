@@ -1,0 +1,19 @@
+zenodo:
+  ID: 17174618
+md5sums:
+  human_chip_SRR28592124.bw: 'a5b4bd9e1b4fb5ba529d0058884fb8c8'
+  human_chip_SRR28592124.cram: '80ea57ab7abbf68401dd75dc805c2f8a'
+  human.fna: '5e41871a6ba71bd340a8f0bcd1943112'
+  human.gtf: '0fe9b2670938a740154f5260e7d3bf89'
+  human_rna_SRR28012902.bw: '49e81ce685332c4cd17fec677c6a7772'
+  human_rna_SRR28012902.cram: '4ba3c2f7f54c06b56ef94b4e1e977d15'
+  human_wgs_SRR15494527.bw: '0cb3d27a4e606007dcb1e1066ea6215f'
+  human_wgs_SRR15494527.cram: '2babae22eb69dc7fab6d858d7e127865'
+  triticum_chip_SRR1686799.bw: '5daab4d2fce983781b0ffc2bb8351d1f'
+  triticum_chip_SRR1686799.cram: 'd46e06e63ac9978fafa79af7ba7aff81'
+  triticum.fna: '671886857adf1fd7588ab601944ca5d3'
+  triticum.gtf: '28266ea3089d7b2a5420d1e0d09a7480'
+  triticum_rna_SRR27822150.bw: '84325402eadfff72147beee6ab2cc563'
+  triticum_rna_SRR27822150.cram: 'af96148af6fc42930428af93375016ad'
+  triticum_wgs_SRR27887047.bw: '40e0b097f1815c183ca0cf95488bdea0'
+  triticum_wgs_SRR27887047.cram: 'ef056ef3b1d887f19a867cce0ef1d442'

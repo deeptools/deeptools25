@@ -7,6 +7,9 @@ with open(repodir / 'conf' / 'example_sources.yaml') as f:
     sampleconfig = yaml.safe_load(f)
 config['chromsizes'] = str(repodir / 'conf' / 'genome.chrom.sizes')
 config['rar'] = str(repodir / 'conf' / 'rar.bed')
+with open(repodir / 'conf' / 'parameters.yaml') as f:
+    config.update(yaml.safe_load(f))
+
 # samples
 SAMPLES = sampleconfig['samples'].keys()
 ATACSAMPLES = [sample for sample in SAMPLES if 'ATAC' in sample]
@@ -30,31 +33,22 @@ include: 'rules/deeptools.smk'
 
 rule all:
   input:
-    # Get data in bam format. Road to this rule depends on zenodo or raw source.
+    # Download data
     expand("deeptools_input/{sample}.bam", sample=SAMPLES),
     expand("deeptools_input/{sample}.bam.bai", sample=SAMPLES),
     expand("deeptools_input/{bssample}_CpG.bw", bssample=BSSAMPLES),
     'deeptools_input/mouse.fna',
     'deeptools_input/mouse.gtf',
+
     # Regions
     expand(
       'regions/{mergedpeak}_uropa_finalhits.txt',
       mergedpeak = ['ATAC'] + CHIPS
     ),
 
-    # # ChIP
+    # ChIP
     expand('deeptools_output/chip_{chip}.png', chip=CHIPS),
     'deeptools_output/atac.png',
     'deeptools_output/rna.png',
     'deeptools_output/meth.png',
     'deeptools_output/rna.png'
-    # 'regions/H3K4me1.bed',
-    # 'deeptools_input/downreg_tss.bed',
-    # 'deeptools_input/downreg_genes.gtf',
-    # 'deeptools_input/downreg_H3K27me3.bed',
-    # 'deeptools_input/downreg_H3K9me3.bed',
-
-    # Deeptools rules
-    # ChIP
-    # 
-    

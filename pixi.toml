@@ -28,11 +28,11 @@ bedtools = "*"
 matplotlib = "*"
 
 [pypi-dependencies]
-snakemake = "== 9.9"
+snakemake = ">= 9.9"
 snakemake-storage-plugin-zenodo = "*"
 snakemake-executor-plugin-cluster-generic = "*"
 snakemake-executor-plugin-slurm = "*"
-deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "4.0.0_installation" }
+deeptools = { git = "https://github.com/deeptools/deepTools.git", branch = "4.0.0" }
 
 [activation.env]
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"

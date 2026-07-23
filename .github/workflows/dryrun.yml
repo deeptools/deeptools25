@@ -1,4 +1,4 @@
-name: benchmark
+name: dryruns
 on:
     push:
     pull_request:
@@ -12,6 +12,11 @@ jobs:
               uses: prefix-dev/setup-pixi@v0.9.6
               with:
                   cache: true
-            - name: dryrun
+            - name: dryrun-example
               run: |
-                  pixi run snakemake -s example/example.smk --configfile example/conf/smk_config.yaml --cores 4 --dryrun
+                  pixi run snakemake -s example/example.smk --cores 4 --dryrun
+            - name: dryrun-benchmark
+              run: |
+                  pixi run snakemake -s benchmark/benchmark.smk --cores 4 --dryrun
+
+

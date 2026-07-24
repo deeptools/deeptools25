@@ -26,7 +26,7 @@ CRAMFILES = [
 GENOMES = ["triticum", "human"]
 
 wildcard_constraints:
-    file = r".+\.(cram|fna\.gz|gtf\.gz|gtf)"
+    file = r".+\.(cram|fna\.gz|gtf\.gz|gtf|fna|bw)"
 
 ALLFILES = (
     expand("{f}.cram", f=CRAMFILES)

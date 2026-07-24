@@ -48,8 +48,8 @@ ALLFILES = [
     'NPC_9sca_ko_input1_rep2.cram',
     'NPC_9sca_ko_RNA_rep1.cram',
     'NPC_9sca_ko_RNA_rep2.cram',
-    'human.fna',
-    'human.gtf',
+    'human.fna.gz',
+    'human.gtf.gz',
     'mouse.fna.gz',
     'mouse.gtf.gz'
 ]

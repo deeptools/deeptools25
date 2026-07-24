@@ -48,7 +48,7 @@ ALLFILES = [
     'NPC_9sca_ko_input1_rep2.cram',
     'NPC_9sca_ko_RNA_rep1.cram',
     'NPC_9sca_ko_RNA_rep2.cram',
-    'human.fna.gz',
+    'human.fna',
     'human.gtf',
     'mouse.fna.gz',
     'mouse.gtf.gz'
@@ -69,6 +69,9 @@ cmap = {
   'H3K27me3': 'Purples'
 }
 
+wildcard_constraints:
+    sample = "|".join(SAMPLES),
+
 include: 'rules/get_data.smk'
 include: 'rules/get_regions.smk'
 include: 'rules/deeptools.smk'
@@ -76,6 +79,7 @@ include: 'rules/deeptools.smk'
 rule all:
   input:
     # Download data
+    expand("zenodo/{file}", file=ALLFILES),
     expand("deeptools_input/{sample}.bam", sample=SAMPLES),
     expand("deeptools_input/{sample}.bam.bai", sample=SAMPLES),
     expand("deeptools_input/{bssample}_CpG.bw", bssample=BSSAMPLES),

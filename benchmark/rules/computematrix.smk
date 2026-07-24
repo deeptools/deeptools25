@@ -1,8 +1,8 @@
 rule computeMatrix_dt4:
   input:
-    bw_files = lambda wildcards: ' '.join(
-        [f"zenodo/{i}.bw" for i in computeMatrix_samples[wildcards.run]]
-    ),
+    bw_files = lambda wildcards: [
+        f"zenodo/{i}.bw" for i in computeMatrix_samples[wildcards.run]
+    ],
     gtf = lambda wildcards: f"zenodo/{wildcards.run.split('_')[1]}.gtf"
   output:
     npz = temp("output/computeMatrix_{run}.dt4.npz")
@@ -20,9 +20,9 @@ rule computeMatrix_dt4:
 
 rule computeMatrix_dt3:
   input:
-    bw_files = lambda wildcards: ' '.join(
-        [f"zenodo/{i}.bw" for i in computeMatrix_samples[wildcards.run]]
-    ),
+    bw_files = lambda wildcards: [
+        f"zenodo/{i}.bw" for i in computeMatrix_samples[wildcards.run]
+    ],
     gtf = lambda wildcards: f"zenodo/{wildcards.run.split('_')[1]}.gtf"
   output:
     npz = temp("output/computeMatrix_{run}.dt3.npz")

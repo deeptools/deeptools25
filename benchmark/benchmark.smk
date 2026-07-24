@@ -26,8 +26,7 @@ CRAMFILES = [
 GENOMES = ["triticum", "human"]
 
 wildcard_constraints:
-    cramfile = "|".join(CRAMFILES),
-
+    file = r".+\.(cram|fna\.gz|gtf\.gz|gtf)"
 
 ALLFILES = (
     expand("{f}.cram", f=CRAMFILES)
@@ -108,18 +107,18 @@ rule all:
         expand("zenodo/{file}", file=ALLFILES),
         expand("bamfiles/{cramfile}.bam", cramfile=CRAMFILES),
 
-    # # bamCoverage
-    # expand("benchmarks/bamcoverage/{bamcoverage}_dt4.txt", bamcoverage=bamCoverage_samples.keys()),
-    # expand("benchmarks/bamcoverage/{bamcoverage}_dt3.txt", bamcoverage=bamCoverage_samples.keys()),
-    # # bamCompare
-    # expand("benchmarks/bamcompare/{bamcompare}_dt4.txt", bamcompare=bamCompare_samples.keys()),
-    # expand("benchmarks/bamcompare/{bamcompare}_dt3.txt", bamcompare=bamCompare_samples.keys()),
-    # # multiBamSummary
-    # expand("benchmarks/mbs/{run}_dt4.txt", run=multibamSummary_samples.keys()),
-    # expand("benchmarks/mbs/{run}_dt3.txt", run=multibamSummary_samples.keys()),
-    # # computeMatrix
-    # expand("benchmarks/computeMatrix/{run}_dt4.txt", run=computeMatrix_samples.keys()),
-    # expand("benchmarks/computeMatrix/{run}_dt3.txt", run=computeMatrix_samples.keys()),
-    # # performance
-    # 'results/performance.csv',
-    # 'results/performance.png'
+        # bamCoverage
+        expand("benchmarks/bamcoverage/{bamcoverage}_dt4.txt", bamcoverage=bamCoverage_samples.keys()),
+        expand("benchmarks/bamcoverage/{bamcoverage}_dt3.txt", bamcoverage=bamCoverage_samples.keys()),
+        # bamCompare
+        expand("benchmarks/bamcompare/{bamcompare}_dt4.txt", bamcompare=bamCompare_samples.keys()),
+        expand("benchmarks/bamcompare/{bamcompare}_dt3.txt", bamcompare=bamCompare_samples.keys()),
+        # multiBamSummary
+        expand("benchmarks/mbs/{run}_dt4.txt", run=multibamSummary_samples.keys()),
+        expand("benchmarks/mbs/{run}_dt3.txt", run=multibamSummary_samples.keys()),
+        # computeMatrix
+        expand("benchmarks/computeMatrix/{run}_dt4.txt", run=computeMatrix_samples.keys()),
+        expand("benchmarks/computeMatrix/{run}_dt3.txt", run=computeMatrix_samples.keys()),
+        # performance
+        'results/performance.csv',
+        'results/performance.png'

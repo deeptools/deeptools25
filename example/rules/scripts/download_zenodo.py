@@ -18,13 +18,13 @@ r = r.json()
 
 def download_file(r, targetfile):
     for f in r["files"]:
-        if f["key"].replace('.gz', '').replace('benchmark_', '') == Path(targetfile).name:
+        if f["key"].replace('.gz', '').replace('example_', 'NPC_') == Path(targetfile).name:
             key = f["key"]
             url = f["links"]["self"]
             checksum = f["checksum"]
 
             # download
-            of = odir / key.replace('benchmark_', '')
+            of = odir / key.replace('example_', 'NPC_')
             with requests.get(url, stream=True, timeout=60) as targetfile:
                 with open(of, "wb") as out:
                     for chunk in targetfile.iter_content(chunk_size=4096):
@@ -37,7 +37,7 @@ def download_file(r, targetfile):
                     hash_md5.update(chunk)
             got = hash_md5.hexdigest()
             assert got == checksum.replace('md5:', ''), f"MD5 mismatch for {key}: expected {checksum}, got {got}"
-            (Path(of).parent / (Path(of).name + '.valid')).touch()
+            (Path(of).parent / (Path(of).name.replace('.gz', '') + '.valid')).touch()
 
             if key.endswith(".gz"):
                 with gzip.open(of, 'rb') as f_in:

@@ -13,7 +13,7 @@ rule download_data:
 rule prep_deeptools_input:
     input:
         cramfile = 'zenodo/{sample}.cram',
-        valid = 'zenodo/{sample}.valid',
+        valid = 'zenodo/{sample}.cram.valid',
         fna = 'zenodo/mouse.fna'
     output:
         bam = 'deeptools_input/{sample}.bam',

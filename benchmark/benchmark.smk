@@ -12,11 +12,8 @@ if not config.get('os'):
 
 # Paths
 repodir = Path(workflow.basedir)
-with open(repodir / 'conf' / 'data_sources.yaml') as f:
+with open(repodir / 'conf' / 'sources.yaml') as f:
     sampleconfig = yaml.safe_load(f)
-
-print("Sample config - zenodo ID = ")
-print(sampleconfig["zenodo"]["ID"])
 
 CRAMFILES = [
     "human_chip_SRR28592124",
@@ -108,7 +105,7 @@ include: 'rules/download_data.smk'
 
 rule all:
     input:
-        expand("zenodo/{f}.valid", f=ALLFILES),
+        expand("zenodo/{file}", file=ALLFILES),
         expand("bamfiles/{cramfile}.bam.bai", cramfile=CRAMFILES),
     #expand("zenodo/bamfiles/{cramfile}.bam", cramfile=CRAMFILES),
 

@@ -48,10 +48,10 @@ ALLFILES = [
     'NPC_9sca_ko_input1_rep2.cram',
     'NPC_9sca_ko_RNA_rep1.cram',
     'NPC_9sca_ko_RNA_rep2.cram',
-    'human.fna.gz',
-    'human.gtf.gz',
-    'mouse.fna.gz',
-    'mouse.gtf.gz'
+    'human.fna',
+    'human.gtf',
+    'mouse.fna',
+    'mouse.gtf'
 ]
 SAMPLES = [sample.replace('.cram', '') for sample in ALLFILES if 'fna' not in sample and 'gtf' not in sample]
 ATACSAMPLES = [sample for sample in SAMPLES if 'ATAC' in sample]

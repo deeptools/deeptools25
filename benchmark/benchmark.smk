@@ -106,8 +106,7 @@ include: 'rules/download_data.smk'
 rule all:
     input:
         expand("zenodo/{file}", file=ALLFILES),
-        expand("bamfiles/{cramfile}.bam.bai", cramfile=CRAMFILES),
-    #expand("zenodo/bamfiles/{cramfile}.bam", cramfile=CRAMFILES),
+        expand("bamfiles/{cramfile}.bam", cramfile=CRAMFILES),
 
     # # bamCoverage
     # expand("benchmarks/bamcoverage/{bamcoverage}_dt4.txt", bamcoverage=bamCoverage_samples.keys()),

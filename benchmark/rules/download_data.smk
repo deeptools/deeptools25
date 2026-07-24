@@ -14,9 +14,11 @@ rule cram_to_bam:
         cram=lambda wc: "zenodo/{cramfile}.cram".format(cramfile=wc.cramfile),
         fna=lambda wc: f"zenodo/{'human' if 'human' in wc.cramfile else 'triticum'}.fna",
     output:
-        bam="bamfiles/{cramfile}.bam",
-        bai="bamfiles/{cramfile}.bam.bai",
+        bam="bamfiles/{cramfile}.bam"
+    params:
+        ix_param = lambda wc: '-c' if 'triticum' in wc.cramfile else ''
     threads: 10
-    shell:
-        "samtools view -@ {threads} -T {input.fna} -b -o {output.bam} {input.cram} && "
-        "samtools index -@ {threads} {output.bam}"
+    shell:"""
+    samtools view -@ {threads} -T {input.fna} -b -o {output.bam} {input.cram}
+    samtools index -@ {threads} {params.ix_param} {output.bam}
+    """

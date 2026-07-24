@@ -37,7 +37,7 @@ def download_file(r, targetfile):
                     hash_md5.update(chunk)
             got = hash_md5.hexdigest()
             assert got == checksum.replace('md5:', ''), f"MD5 mismatch for {key}: expected {checksum}, got {got}"
-            (Path(of).parent / (Path(of).name + '.valid')).touch()
+            (Path(of).parent / (Path(of).name.replace('.gz', '') + '.valid')).touch()
 
             if key.endswith(".gz"):
                 with gzip.open(of, 'rb') as f_in:

@@ -26,6 +26,7 @@ pip = "*"
 macs3 = "*"
 bedtools = "*"
 matplotlib = "*"
+seaborn = "*"
 
 [pypi-dependencies]
 snakemake = ">= 9.9"

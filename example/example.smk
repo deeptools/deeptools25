@@ -3,7 +3,7 @@ import yaml
 
 # Paths
 repodir = Path(workflow.basedir)
-with open(repodir / 'conf' / 'example_sources.yaml') as f:
+with open(repodir / 'conf' / 'sources.yaml') as f:
     sampleconfig = yaml.safe_load(f)
 config['chromsizes'] = str(repodir / 'conf' / 'genome.chrom.sizes')
 config['rar'] = str(repodir / 'conf' / 'rar.bed')
@@ -11,7 +11,49 @@ with open(repodir / 'conf' / 'parameters.yaml') as f:
     config.update(yaml.safe_load(f))
 
 # samples
-SAMPLES = sampleconfig['samples'].keys()
+ALLFILES = [
+    'NPC_9sca_ctrl_H3K27ac_rep1.cram',
+    'NPC_9sca_ctrl_H3K27ac_rep2.cram',
+    'NPC_9sca_ctrl_H3K27me3_rep1.cram',
+    'NPC_9sca_ctrl_H3K27me3_rep2.cram',
+    'NPC_9sca_ctrl_H3K4me1_rep1.cram',
+    'NPC_9sca_ctrl_H3K4me1_rep2.cram',
+    'NPC_9sca_ctrl_H3K4me3_rep1.cram',
+    'NPC_9sca_ctrl_H3K4me3_rep2.cram',
+    'NPC_9sca_ctrl_H3K9me3_rep1.cram',
+    'NPC_9sca_ctrl_H3K9me3_rep2.cram',
+    'NPC_9sca_ctrl_input_rep1.cram',
+    'NPC_9sca_ctrl_input_rep2.cram',
+    'NPC_9sca_ctrl_RNA_rep1.cram',
+    'NPC_9sca_ctrl_RNA_rep2.cram',
+    'NPC_9sca_ctrl_ATAC_rep1.cram',
+    'NPC_9sca_ctrl_ATAC_rep2.cram',
+    'NPC_9sca_ctrl_BS_rep1.cram',
+    'NPC_9sca_ctrl_BS_rep2.cram',
+    'NPC_9sca_ko_ATAC_rep1.cram',
+    'NPC_9sca_ko_ATAC_rep2.cram',
+    'NPC_9sca_ko_BS_rep1.cram',
+    'NPC_9sca_ko_BS_rep2.cram',
+    'NPC_9sca_ko_H3K27ac_rep1.cram',
+    'NPC_9sca_ko_H3K27ac_rep2.cram',
+    'NPC_9sca_ko_H3K27me3_rep1.cram',
+    'NPC_9sca_ko_H3K27me3_rep2.cram',
+    'NPC_9sca_ko_H3K4me1_rep1.cram',
+    'NPC_9sca_ko_H3K4me1_rep2.cram',
+    'NPC_9sca_ko_H3K4me3_rep1.cram',
+    'NPC_9sca_ko_H3K4me3_rep2.cram',
+    'NPC_9sca_ko_H3K9me3_rep1.cram',
+    'NPC_9sca_ko_H3K9me3_rep2.cram',
+    'NPC_9sca_ko_input1_rep1.cram',
+    'NPC_9sca_ko_input1_rep2.cram',
+    'NPC_9sca_ko_RNA_rep1.cram',
+    'NPC_9sca_ko_RNA_rep2.cram',
+    'human.fna.gz',
+    'human.gtf',
+    'mouse.fna.gz',
+    'mouse.gtf.gz'
+]
+SAMPLES = [sample.replace('.cram', '') for sample in ALLFILES if 'fna' not in sample and 'gtf' not in sample]
 ATACSAMPLES = [sample for sample in SAMPLES if 'ATAC' in sample]
 RNASAMPLES = [sample for sample in SAMPLES if 'RNA' in sample]
 BSSAMPLES = [sample for sample in SAMPLES if 'BS' in sample]

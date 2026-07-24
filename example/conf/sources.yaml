@@ -1,0 +1,23 @@
+chipdict:
+  NPC_9sca_ctrl_H3K27ac_rep1: NPC_9sca_ctrl_input_rep1
+  NPC_9sca_ctrl_H3K27ac_rep2: NPC_9sca_ctrl_input_rep2
+  NPC_9sca_ctrl_H3K27me3_rep1: NPC_9sca_ctrl_input_rep1
+  NPC_9sca_ctrl_H3K27me3_rep2: NPC_9sca_ctrl_input_rep2
+  NPC_9sca_ctrl_H3K4me1_rep1: NPC_9sca_ctrl_input_rep1
+  NPC_9sca_ctrl_H3K4me1_rep2: NPC_9sca_ctrl_input_rep2
+  NPC_9sca_ctrl_H3K4me3_rep1: NPC_9sca_ctrl_input_rep1
+  NPC_9sca_ctrl_H3K4me3_rep2: NPC_9sca_ctrl_input_rep2
+  NPC_9sca_ctrl_H3K9me3_rep1: NPC_9sca_ctrl_input_rep1
+  NPC_9sca_ctrl_H3K9me3_rep2: NPC_9sca_ctrl_input_rep2
+  NPC_9sca_ko_H3K27ac_rep1: NPC_9sca_ko_input1_rep1
+  NPC_9sca_ko_H3K27ac_rep2: NPC_9sca_ko_input1_rep2
+  NPC_9sca_ko_H3K27me3_rep1: NPC_9sca_ko_input1_rep1
+  NPC_9sca_ko_H3K27me3_rep2: NPC_9sca_ko_input1_rep2
+  NPC_9sca_ko_H3K4me1_rep1: NPC_9sca_ko_input1_rep1
+  NPC_9sca_ko_H3K4me1_rep2: NPC_9sca_ko_input1_rep2
+  NPC_9sca_ko_H3K4me3_rep1: NPC_9sca_ko_input1_rep1
+  NPC_9sca_ko_H3K4me3_rep2: NPC_9sca_ko_input1_rep2
+  NPC_9sca_ko_H3K9me3_rep1: NPC_9sca_ko_input1_rep1
+  NPC_9sca_ko_H3K9me3_rep2: NPC_9sca_ko_input1_rep2
+zenodo:
+  ID: 17174618

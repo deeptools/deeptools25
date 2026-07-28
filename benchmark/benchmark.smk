@@ -37,6 +37,7 @@ ALLFILES = (
     + expand("{g}.fna", g=GENOMES)
     + expand("{g}.gtf", g=GENOMES)
 )
+
 alignmentSieve_samples = {
     'alsieve_human_chip': 'human_chip_SRR28592124',
     'alsieve_human_rna': 'human_rna_SRR28012902',
@@ -114,12 +115,12 @@ include: 'rules/computematrix.smk'
 include: 'rules/plotter.smk'
 include: 'rules/download_data.smk'
 
-def function_runners(config['what']):
-    match config['what']:
+def function_runners(conf_what):
+    match conf_what:
         case 'alignmentSieve':
             return [
-                expand("benchmarks/alignmentSieve/{alsieve}_dt4.txt", alsieve=alignmentSieve_samples.keys()),
-                expand("benchmarks/alignmentSieve/{alsieve}_dt3.txt", alsieve=alignmentSieve_samples.keys()),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4.txt", alignmentsieve=alignmentSieve_samples.keys()),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3.txt", alignmentsieve=alignmentSieve_samples.keys()),
             ]
         case 'bamCoverage':
             return [
@@ -143,8 +144,8 @@ def function_runners(config['what']):
             ]
         case _:
             return [
-                expand("benchmarks/alignmentSieve/{alsieve}_dt4.txt", alsieve=alignmentSieve_samples.keys()),
-                expand("benchmarks/alignmentSieve/{alsieve}_dt3.txt", alsieve=alignmentSieve_samples.keys()),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4.txt", alignmentsieve=alignmentSieve_samples.keys()),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3.txt", alignmentsieve=alignmentSieve_samples.keys()),
                 expand("benchmarks/bamcoverage/{bamcoverage}_dt4.txt", bamcoverage=bamCoverage_samples.keys()),
                 expand("benchmarks/bamcoverage/{bamcoverage}_dt3.txt", bamcoverage=bamCoverage_samples.keys()),
                 expand("benchmarks/bamcompare/{bamcompare}_dt4.txt", bamcompare=bamCompare_samples.keys()),

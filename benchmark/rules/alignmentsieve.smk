@@ -8,7 +8,7 @@ rule alsieve_dt4:
   resources:
     mem_mb = 10000
   shell:'''
-  alignmentSieve -b {intput.bam} -o {output.bam} \
+  alignmentSieve -b {input.bam} -o {output.bam} \
     -p {threads} --ATACshift
   '''
 
@@ -22,6 +22,6 @@ rule alsieve_dt3:
   resources:
     mem_mb = 10000
   shell:'''
-  alignmentSieve_old -b {intput.bam} -o {output.bam} \
+  alignmentSieve_old -b {input.bam} -o {output.bam} \
     -p {threads} --ATACshift
   '''

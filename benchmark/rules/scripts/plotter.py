@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def read_benchmark(file):
     _version = file.split('/')[-1].split('.')[0].split('_')[-1]
     sample = file.split('/')[-1].split('.')[0].replace('_dt3', '').replace('_dt4', '')
-    a = pd.read_table(file, sep='\t')    
+    a = pd.read_table(file, sep='\t')
     a = a[['s', 'max_rss']]
     a['rep'] = a.index + 1
     a['version'] = _version
@@ -35,7 +35,7 @@ _axix = 0
 for mod in _mods:
     dt3 = a[(a['modality'] == mod) & (a['version'] == 'dt3')]
     dt4 = a[(a['modality'] == mod) & (a['version'] == 'dt4')]
-                
+
     ax[_axix, 0].plot(
         ['v3','v4'],
         [dt3['s'], dt4['s']]
@@ -53,7 +53,7 @@ for mod in _mods:
     )
     ax[_axix, 2].set_xlabel('speedup (time)')
     ax[_axix, 2].set_ylabel('memory dt3 / memory dt4')
-                                            
+
     ax[_axix, 0].set_title(f"{mod} - time")
     ax[_axix, 1].set_title(f"{mod} - memory")
     _axix += 1

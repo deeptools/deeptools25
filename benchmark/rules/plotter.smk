@@ -1,6 +1,8 @@
 rule plot_benchmarks:
   localrule: True
   input:
+    alsieve4 = expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4.txt", alignmentsieve=alignmentSieve_samples),
+    alsieve3 = expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3.txt", alignmentsieve=alignmentSieve_samples),
     bcov4 = expand("benchmarks/bamcoverage/{bamcoverage}_dt4.txt", bamcoverage=bamCoverage_samples),
     bcov3 = expand("benchmarks/bamcoverage/{bamcoverage}_dt3.txt", bamcoverage=bamCoverage_samples),
     bcom4 = expand("benchmarks/bamcompare/{bamcompare}_dt4.txt", bamcompare=bamCompare_samples.keys()),

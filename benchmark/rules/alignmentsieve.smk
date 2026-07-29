@@ -4,7 +4,7 @@ rule alsieve_dt4:
   output:
     bam = temp("output/alignmentsieve_{alignmentsieve}.dt4.bam")
   benchmark: repeat("benchmarks/alignmentsieve/{alignmentsieve}_dt4.txt", 3)
-  threads: 10
+  threads: 4
   resources:
     mem_mb = 10000
   shell:'''
@@ -18,7 +18,7 @@ rule alsieve_dt3:
   output:
     bam = temp("output/alignmentsieve_{alignmentsieve}.dt3.bam")
   benchmark: repeat("benchmarks/alignmentsieve/{alignmentsieve}_dt3.txt", 3)
-  threads: 10
+  threads: 4
   resources:
     mem_mb = 10000
   shell:'''

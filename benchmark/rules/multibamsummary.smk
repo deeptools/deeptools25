@@ -5,7 +5,7 @@ rule multibamsummary_dt4:
     ]
   output:
     npz = temp("output/mbs_{run}.dt4.npz")
-  benchmark: repeat("benchmarks/multibamsummary/{run}_dt4.txt", 3)
+  benchmark: repeat("benchmarks/multibamsummary/{run}_dt4.txt", config['repeats'])
   threads: 10
   resources:
     mem_mb = 20000,
@@ -23,7 +23,7 @@ rule multibamsummary_dt3:
     ]
   output:
     npz = temp("output/mbs_{run}.dt3.npz")
-  benchmark: repeat("benchmarks/multibamsummary/{run}_dt3.txt", 3)
+  benchmark: repeat("benchmarks/multibamsummary/{run}_dt3.txt", config['repeats'])
   threads: 10
   resources:
     mem_mb = 20000,

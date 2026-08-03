@@ -6,7 +6,7 @@ rule alsieve_dt4:
     bam = lambda wildcards: f"bamfiles/{alignmentSieve_samples[wildcards.alignmentsieve]}.bam"
   output:
     bam = temp("output/alignmentsieve_{alignmentsieve}.dt4.bam")
-  benchmark: repeat("benchmarks/alignmentsieve/{alignmentsieve}_dt4.txt", 3)
+  benchmark: repeat("benchmarks/alignmentsieve/{alignmentsieve}_dt4.txt", config['repeats'])
   threads: 4
   resources:
     mem_mb = 10000
@@ -20,7 +20,7 @@ rule alsieve_dt3:
     bam = lambda wildcards: f"bamfiles/{alignmentSieve_samples[wildcards.alignmentsieve]}.bam"
   output:
     bam = temp("output/alignmentsieve_{alignmentsieve}.dt3.bam")
-  benchmark: repeat("benchmarks/alignmentsieve/{alignmentsieve}_dt3.txt", 3)
+  benchmark: repeat("benchmarks/alignmentsieve/{alignmentsieve}_dt3.txt", config['repeats'])
   threads: 4
   resources:
     mem_mb = 10000

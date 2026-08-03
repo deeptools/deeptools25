@@ -1,0 +1,72 @@
+use-conda: True
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+jobs: 30
+cores: 72
+max-jobs-per-second: 1
+max-status-checks-per-second: 2
+restart-times: 2
+max-inventory-time: 600
+latency-wait: 1200
+executor: slurm
+default-resources:
+  slurm_partition: general
+  runtime: 24h
+  # we are aiming directly to reserve one of the bigger nodes just for us. this is wrong.
+  # but somewhat justified for a benchmark...
+  # raven nodes: 72 PHYSICAL cores, 144 logical via hyperthreading.
+  # sbatch --cpus-per-task counts physical cores here; 144 gets rejected
+  # ("Requested node configuration is not available"), confirmed via
+  # sbatch --test-only binary search. 72 + --exclusive allocates the
+  # whole node (both hyperthreads), same intended effect.
+  cpus_per_task: 72
+  slurm_extra: "'--exclusive'"
+  # node-local /tmp filled up on dt4 jobs (large temp bam/bigwig merges) ->
+  # "No space left on device" (StorageFull) on bamcoverage_dt4_human and
+  # bamcompare_dt4. Redirect to ptmp scratch (1.6PB free) instead.
+  tmpdir: "/raven/ptmp/asalatino/tmp"
+# We don't set per-rule `mem:` here. Each SLURM job already gets a whole
+# node exclusively (see cpus_per_task + --exclusive above), so there's no
+# other tenant to protect by capping memory, and no cluster efficiency to
+# gain by tightening it -- the node's memory is ours either way. A `mem:`
+# value only matters as a SLURM cgroup ceiling that can OOM-kill a job for
+# going over it, which is a risk with no offsetting benefit here. Left as
+# reference only: values below are 1.3x the peak max_rss actually observed
+# in results/performance.csv (2026-07-31 full-suite run), i.e. what we'd
+# set if we ever did want a real cap.
+#   alsieve_dt3:            ~1.2GB   (peak 0.93GB)
+#   alsieve_dt4:             ~0.1GB   (peak 0.06GB)
+#   bamcoverage_dt3_human:  ~3.3GB   (peak 2.52GB)
+#   bamcoverage_dt4_human: ~10.5GB   (peak 8.06GB)
+#   bamcompare_dt3:         ~3.4GB   (peak 2.61GB)
+#   bamcompare_dt4:        ~15.2GB   (peak 11.70GB)
+#   computeMatrix_dt3:      ~7.4GB   (peak 5.71GB)
+#   computeMatrix_dt4:     ~62.7GB   (peak 48.23GB)
+#   multibamsummary_dt3:    ~6.6GB   (peak 5.05GB)
+#   multibamsummary_dt4:    ~0.8GB   (peak 0.64GB)
+# set-resources:
+#   alsieve_dt3:
+#     mem: 2GB
+#   alsieve_dt4:
+#     mem: 1GB
+#   bamcoverage_dt3_human:
+#     mem: 4GB
+#   bamcoverage_dt4_human:
+#     mem: 12GB
+#   bamcompare_dt3:
+#     mem: 4GB
+#   bamcompare_dt4:
+#     mem: 16GB
+#   computeMatrix_dt3:
+#     mem: 8GB
+#   computeMatrix_dt4:
+#     mem: 64GB
+#   multibamsummary_dt3:
+#     mem: 8GB
+#   multibamsummary_dt4:
+#     mem: 1GB
+set-resources:
+  plot_benchmarks:
+    runtime: 30
+    # mem: 4GB  (see comment above -- not worth setting, node is ours regardless)

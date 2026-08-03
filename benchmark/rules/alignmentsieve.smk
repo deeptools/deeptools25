@@ -1,3 +1,6 @@
+# Both rules below raise the shell's fd limit to the environment's hard max
+# (`ulimit -n $(ulimit -Hn)`) before running alignmentSieve.
+
 rule alsieve_dt4:
   input:
     bam = lambda wildcards: f"bamfiles/{alignmentSieve_samples[wildcards.alignmentsieve]}.bam"
@@ -8,7 +11,7 @@ rule alsieve_dt4:
   resources:
     mem_mb = 10000
   shell:'''
-  alignmentSieve -b {input.bam} -o {output.bam} \
+  ulimit -n $(ulimit -Hn); alignmentSieve -b {input.bam} -o {output.bam} \
     -p {threads} --ATACshift
   '''
 
@@ -22,6 +25,6 @@ rule alsieve_dt3:
   resources:
     mem_mb = 10000
   shell:'''
-  alignmentSieve_old -b {input.bam} -o {output.bam} \
+  ulimit -n $(ulimit -Hn); alignmentSieve_old -b {input.bam} -o {output.bam} \
     -p {threads} --ATACshift
   '''

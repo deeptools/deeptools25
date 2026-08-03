@@ -11,3 +11,7 @@ memory_comparison/
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+# in case user runs this with `-d` set to repo root
+bamfiles/
+benchmarks/
+results/

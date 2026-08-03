@@ -1,6 +1,7 @@
 # deeptools 25 repo
 
 ## Setup
+
 You need to have [rust](https://rustup.rs/) installed on your system before continuing, additionally, you need [pixi](https://pixi.sh/latest/) and [conda](https://docs.conda.io/en/latest/) up and running too. Finally, your system needs internet access to download the required data.
 
 Run the benchmark:
@@ -18,3 +19,11 @@ What can take values 'alignmentSieve', 'bamCoverage', 'bamCompare', 'multibamSum
 Run the example:
 
   > pixi run snakemake -s example/example.smk --cores 20 -d /path/to/working/directory --use-conda
+
+## Running on SLURM
+
+Same as above, plus `--profile conf/slurm-profile`:
+
+  > pixi run snakemake -s benchmark/benchmark.smk -d /path/to/working/directory --profile conf/slurm-profile
+
+The rules' own `resources:` (e.g. `mem_mb`) stay as-is and still apply -- the profile only adds the SLURM executor, reserves a whole node per job (`--exclusive` + `cpus_per_task`), and doesn't cap memory further since the node isn't shared with anyone else.

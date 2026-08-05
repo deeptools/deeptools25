@@ -22,9 +22,9 @@ Run the example:
 
 ## Running on SLURM
 
-First, adjust `cpus_per_task` to the number of cores of the biggest node on the cluster (or partition, but that would require extra config.) Then, similar to above, plus `--profile conf/slurm-profile`:
+First, adjust `cpus_per_task` to the number of cores of the biggest node on the cluster (or partition, but that would require extra config.) Then, similar to above, plus `--profile benchmark/conf/slurm-profile`:
 
-  > pixi run snakemake -s benchmark/benchmark.smk -d /path/to/working/directory --profile conf/slurm-profile
+  > pixi run snakemake -s benchmark/benchmark.smk -d /path/to/working/directory --profile benchmark/conf/slurm-profile
 
 The profile adds the SLURM executor, and reserves a whole node per job (combining `--exclusive` + `cpus_per_task`), and doesn't cap memory further since the node isn't shared with anyone else. (The rules' own `resources:` -e.g. `mem_mb`- stay as-is and still apply.)
 

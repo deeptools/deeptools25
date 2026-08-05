@@ -9,7 +9,7 @@ rule multibamsummary_dt4:
   threads: 10
   resources:
     mem_mb = 20000,
-    runtime = 480
+    runtime = 1440
   shell:"""
   multiBamSummary bins -p {threads} \
     -o {output.npz} \
@@ -27,7 +27,7 @@ rule multibamsummary_dt3:
   threads: 10
   resources:
     mem_mb = 20000,
-    runtime = 480
+    runtime = 1440
   shell:"""
   multiBamSummary_old bins -p {threads} \
     -o {output.npz} \

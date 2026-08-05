@@ -10,7 +10,7 @@ rule computeMatrix_dt4:
   threads: 4
   resources:
     mem_mb = 120000,
-    runtime = 480
+    runtime = 1440
   shell:'''
   computeMatrix reference-point -p {threads} \
     -o {output.npz} \
@@ -30,7 +30,7 @@ rule computeMatrix_dt3:
   threads: 4
   resources:
     mem_mb = 120000,
-    runtime = 480
+    runtime = 1440
   shell:'''
   computeMatrix_old reference-point -p {threads} \
     -o {output.npz} \

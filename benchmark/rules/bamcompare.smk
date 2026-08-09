@@ -4,7 +4,7 @@ rule bamcompare_dt4:
     ctrlbam = lambda wildcards: f"bamfiles/{bamCompare_samples[wildcards.bamcompare][1]}.bam"
   output:
     bw = temp("output/bamcompare_{bamcompare}.dt4.bw")
-  benchmark: repeat("benchmarks/bamcompare/{bamcompare}_dt4.txt", 3)
+  benchmark: repeat("benchmarks/bamcompare/{bamcompare}_dt4.txt", config['repeats'])
   resources:
     mem_mb = 20000
   threads: 10
@@ -19,7 +19,7 @@ rule bamcompare_dt3:
     ctrlbam = lambda wildcards: f"bamfiles/{bamCompare_samples[wildcards.bamcompare][1]}.bam"
   output:
     bw = temp("output/bamcompare_{bamcompare}.dt3.bw")
-  benchmark: repeat("benchmarks/bamcompare/{bamcompare}_dt3.txt", 3)
+  benchmark: repeat("benchmarks/bamcompare/{bamcompare}_dt3.txt", config['repeats'])
   threads: 10
   resources:
     mem_mb = 20000

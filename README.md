@@ -22,8 +22,10 @@ Run the example:
 
 ## Running on SLURM
 
-Same as above, plus `--profile conf/slurm-profile`:
+First, adjust `cpus_per_task` to the number of cores of the biggest node on the cluster (or partition, but that would require extra config.) Then, similar to above, plus `--profile benchmark/conf/slurm-profile`:
 
-  > pixi run snakemake -s benchmark/benchmark.smk -d /path/to/working/directory --profile conf/slurm-profile
+  > pixi run snakemake -s benchmark/benchmark.smk -d /path/to/working/directory --profile benchmark/conf/slurm-profile
 
-The rules' own `resources:` (e.g. `mem_mb`) stay as-is and still apply -- the profile only adds the SLURM executor, reserves a whole node per job (`--exclusive` + `cpus_per_task`), and doesn't cap memory further since the node isn't shared with anyone else.
+The profile adds the SLURM executor, and reserves a whole node per job (combining `--exclusive` + `cpus_per_task`), and doesn't cap memory further since the node isn't shared with anyone else. (The rules' own `resources:` -e.g. `mem_mb`- stay as-is and still apply.)
+
+Repeats default to 3 (set in `benchmark/benchmark.smk`); the profile bumps that to 10 via `config: [repeats=10]`, since SLURM has the room and queue time to afford more replicates per tool/version/sample. Override on the command line with `--config repeats=N` if you want something else.

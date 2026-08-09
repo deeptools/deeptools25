@@ -17,6 +17,10 @@ if not config.get('os'):
 if not config.get('what'):
     config['what'] = 'all'
 
+if not config.get('repeats'):
+    config['repeats'] = 3
+config['repeats'] = int(config['repeats'])
+
 # Paths
 repodir = Path(workflow.basedir)
 with open(repodir / 'conf' / 'sources.yaml') as f:

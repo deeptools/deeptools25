@@ -9,10 +9,13 @@ max-status-checks-per-second: 2
 restart-times: 2
 max-inventory-time: 600
 latency-wait: 1200
+config:
+  - "repeats=10"
 executor: slurm
 default-resources:
   slurm_partition: general
   runtime: 24h
+
   # we are aiming directly to reserve one of the bigger nodes just for us. this is wrong.
   # but somewhat justified for a benchmark...
   # raven nodes: 72 PHYSICAL cores, 144 logical via hyperthreading.
@@ -22,10 +25,12 @@ default-resources:
   # whole node (both hyperthreads), same intended effect.
   cpus_per_task: 72
   slurm_extra: "'--exclusive'"
+
   # node-local /tmp filled up on dt4 jobs (large temp bam/bigwig merges) ->
   # "No space left on device" (StorageFull) on bamcoverage_dt4_human and
   # bamcompare_dt4. Redirect to ptmp scratch (1.6PB free) instead.
   tmpdir: "/raven/ptmp/asalatino/tmp"
+
 # We don't set per-rule `mem:` here. Each SLURM job already gets a whole
 # node exclusively (see cpus_per_task + --exclusive above), so there's no
 # other tenant to protect by capping memory, and no cluster efficiency to
@@ -66,6 +71,7 @@ default-resources:
 #     mem: 8GB
 #   multibamsummary_dt4:
 #     mem: 1GB
+
 set-resources:
   plot_benchmarks:
     runtime: 30

@@ -5,10 +5,14 @@ import platform
 import sys
 
 if not config.get('os'):
-    if platform.system() == "Linux":
-        config['os'] = platform.freedesktop_os_release().get("ID")
+    system_name = platform.system()
+    if system_name == "Linux":
+        release = platform.freedesktop_os_release()
+        config['os'] = release.get("ID", "linux") or "linux"
+    elif system_name == "Darwin":
+        config['os'] = "macos"
     else:
-        config['os'] = platform.system().lower()
+        config['os'] = system_name.lower()
 
 if not config.get('what'):
     config['what'] = 'all'

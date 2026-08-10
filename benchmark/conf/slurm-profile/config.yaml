@@ -72,6 +72,25 @@ default-resources:
 #   multibamsummary_dt4:
 #     mem: 1GB
 
+# cpus_per_task above reserves the whole 72-core node exclusively regardless
+# of a rule's `threads:` -- that only controls the SLURM allocation. Each
+# tool is still invoked with `-p {threads}`/`-@ {threads}`, so without this
+# override every rule keeps using whatever thread count is hardcoded in the
+# Snakefile (e.g. threads: 4), leaving most of the reserved node idle.
+set-threads:
+  alsieve_dt4: 72
+  alsieve_dt3: 72
+  bamcompare_dt4: 72
+  bamcompare_dt3: 72
+  bamcoverage_dt4_human: 72
+  bamcoverage_dt3_human: 72
+  computeMatrix_dt4: 72
+  computeMatrix_dt3: 72
+  multibamsummary_dt4: 72
+  multibamsummary_dt3: 72
+  cram_to_bam: 72
+  download_data: 72
+
 set-resources:
   plot_benchmarks:
     runtime: 30

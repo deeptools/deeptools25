@@ -98,10 +98,14 @@ set-resources:
 
   # 2026-08-10 MPCDF os=MPCDF run @ 72 threads: these rules OOM-killed against
   # the Snakefile's hardcoded mem_mb, which was sized for the old low-thread
-  # runs. -p 72 inflates per-thread buffer/chunk memory well beyond that, and
-  # SLURM enforces mem_mb as a hard per-job cgroup cap independent of the
-  # --exclusive whole-node reservation. Bumped conservatively (~2x observed
-  # kill point) rather than maxing out to the node's ~240GB ceiling.
+  # runs. SLURM enforces mem_mb as a hard per-job cgroup cap independent of
+  # the --exclusive whole-node reservation. Bumped conservatively (~2x
+  # observed kill point) rather than maxing out to the node's ~240GB ceiling.
+  #
+  # bamcompare_dt4 and multibamsummary_dt3 are genuinely thread-driven: -p 72
+  # inflates their per-thread buffer/chunk memory well beyond -p 24 (compared
+  # against the 2026-08-11 24-thread run, same inputs: ~1.1-2.9x more memory
+  # at 72 threads depending on sample).
   bamcompare_dt4:
     mem_mb: 40000   # was 20000 (Snakefile default); killed at ~19.9GB/20GB
   multibamsummary_dt3:
@@ -110,7 +114,11 @@ set-resources:
     # was 120000 (Snakefile default); killed at ~119.9GB/120GB on the 15-track
     # case. Bumped to 180000, still killed at ~179.9GB/180GB but ran 3.5x
     # longer first, i.e. still climbing, not misconfigured -- genuinely needs
-    # more for the 15-bigwig triticum matrix. ravc nodes have 240000MB total;
-    # 220000 leaves ~20GB headroom for the OS/cgroup overhead, close to the
-    # practical ceiling this rule can ever get on this node size.
+    # more for the 15-bigwig triticum matrix. Unlike the two rules above,
+    # this is NOT thread-driven: the 2026-08-11 24-thread run needed ~154GB
+    # for this same case too (vs. ~155GB at 72 threads, essentially flat) --
+    # the memory need comes from input size (15 tracks x whole-genome
+    # bigwigs), not from -p. ravc nodes have 240000MB total; 220000 leaves
+    # ~20GB headroom for the OS/cgroup overhead, close to the practical
+    # ceiling this rule can ever get on this node size regardless of threads.
     mem_mb: 220000

@@ -95,3 +95,22 @@ set-resources:
   plot_benchmarks:
     runtime: 30
     # mem: 4GB  (see comment above -- not worth setting, node is ours regardless)
+
+  # 2026-08-10 MPCDF os=MPCDF run @ 72 threads: these rules OOM-killed against
+  # the Snakefile's hardcoded mem_mb, which was sized for the old low-thread
+  # runs. -p 72 inflates per-thread buffer/chunk memory well beyond that, and
+  # SLURM enforces mem_mb as a hard per-job cgroup cap independent of the
+  # --exclusive whole-node reservation. Bumped conservatively (~2x observed
+  # kill point) rather than maxing out to the node's ~240GB ceiling.
+  bamcompare_dt4:
+    mem_mb: 40000   # was 20000 (Snakefile default); killed at ~19.9GB/20GB
+  multibamsummary_dt3:
+    mem_mb: 40000   # was 20000 (Snakefile default); killed at ~19.9GB/20GB
+  computeMatrix_dt4:
+    # was 120000 (Snakefile default); killed at ~119.9GB/120GB on the 15-track
+    # case. Bumped to 180000, still killed at ~179.9GB/180GB but ran 3.5x
+    # longer first, i.e. still climbing, not misconfigured -- genuinely needs
+    # more for the 15-bigwig triticum matrix. ravc nodes have 240000MB total;
+    # 220000 leaves ~20GB headroom for the OS/cgroup overhead, close to the
+    # practical ceiling this rule can ever get on this node size.
+    mem_mb: 220000

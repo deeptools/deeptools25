@@ -75,6 +75,7 @@ wildcard_constraints:
 include: 'rules/get_data.smk'
 include: 'rules/get_regions.smk'
 include: 'rules/deeptools.smk'
+include: 'rules/sample_stats.smk'
 
 rule all:
   input:
@@ -97,4 +98,5 @@ rule all:
     'deeptools_output/atac.png',
     'deeptools_output/rna.png',
     'deeptools_output/meth.png',
-    'deeptools_output/rna.png'
+    'deeptools_output/rna.png',
+    'results/sample_stats.tsv'

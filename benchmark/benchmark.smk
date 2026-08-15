@@ -122,6 +122,7 @@ include: 'rules/multibamsummary.smk'
 include: 'rules/computematrix.smk'
 include: 'rules/plotter.smk'
 include: 'rules/download_data.smk'
+include: 'rules/sample_stats.smk'
 
 def function_runners(conf_what):
     match conf_what:
@@ -169,3 +170,4 @@ rule all:
         expand("zenodo/{file}", file=ALLFILES),
         expand("bamfiles/{cramfile}.bam", cramfile=CRAMFILES),
         function_runners(config['what']),
+        'results/sample_stats.tsv',

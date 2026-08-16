@@ -122,7 +122,7 @@ include: 'rules/multibamsummary.smk'
 include: 'rules/computematrix.smk'
 include: 'rules/plotter.smk'
 include: 'rules/download_data.smk'
-include: 'rules/sample_stats.smk'
+include: '../.shared_rules/sample_stats.smk'
 
 def function_runners(conf_what):
     match conf_what:

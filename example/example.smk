@@ -75,7 +75,7 @@ wildcard_constraints:
 include: 'rules/get_data.smk'
 include: 'rules/get_regions.smk'
 include: 'rules/deeptools.smk'
-include: 'rules/sample_stats.smk'
+include: '../.shared_rules/sample_stats.smk'
 
 rule all:
   input:

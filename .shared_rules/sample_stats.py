@@ -3,18 +3,18 @@ import subprocess
 import pandas as pd
 
 bam = snakemake.input.bam
-sample = snakemake.wildcards.sample
+sample = snakemake.wildcards.cramfile
 
 def run(cmd):
     return subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True).stdout
 
-flagstat = run(f"samtools flagstat {bam}")
+flagstat = run(f"samtools flagstat -@ {snakemake.threads} {bam}")
 total = int(flagstat.splitlines()[0].split()[0])
 dup = int([l for l in flagstat.splitlines() if "duplicates" in l][0].split()[0])
 mapped_pct = float(flagstat.split("mapped (")[1].split("%")[0])
 paired_pct = float(flagstat.split("properly paired (")[1].split("%")[0])
 
-stats = run(f"samtools stats {bam}")
+stats = run(f"samtools stats -@ {snakemake.threads} {bam}")
 sn = {l.split("\t")[1].rstrip(":"): l.split("\t")[2] for l in stats.splitlines() if l.startswith("SN")}
 
 coverage = run(f"samtools coverage {bam}")

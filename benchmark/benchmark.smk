@@ -25,6 +25,7 @@ config['repeats'] = int(config['repeats'])
 repodir = Path(workflow.basedir)
 with open(repodir / 'conf' / 'sources.yaml') as f:
     sampleconfig = yaml.safe_load(f)
+BAMDIR = 'bamfiles'
 
 CRAMFILES = [
     "human_chip_SRR28592124",
@@ -34,6 +35,7 @@ CRAMFILES = [
     "triticum_rna_SRR27822150",
     "triticum_wgs_SRR27887047",
 ]
+CRAMFILESEXT = [f"{i}.bam" for i in CRAMFILES]
 GENOMES = ["triticum", "human"]
 
 wildcard_constraints:
@@ -122,6 +124,7 @@ include: 'rules/multibamsummary.smk'
 include: 'rules/computematrix.smk'
 include: 'rules/plotter.smk'
 include: 'rules/download_data.smk'
+include: '../.shared_rules/sample_stats.smk'
 
 def function_runners(conf_what):
     match conf_what:
@@ -169,3 +172,4 @@ rule all:
         expand("zenodo/{file}", file=ALLFILES),
         expand("bamfiles/{cramfile}.bam", cramfile=CRAMFILES),
         function_runners(config['what']),
+        'results/sample_stats.tsv',

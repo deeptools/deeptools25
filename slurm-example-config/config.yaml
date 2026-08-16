@@ -1,0 +1,18 @@
+use-conda: True
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+jobs: 30
+max-jobs-per-second: 1
+max-status-checks-per-second: 2
+restart-times: 2
+max-inventory-time: 600
+latency-wait: 1200
+config:
+  - "repeats=10"
+executor: slurm
+default-resources:
+  slurm_partition: general
+  runtime: 24h
+  cpus_per_task: 72
+  slurm_extra: "'--exclusive'"

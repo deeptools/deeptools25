@@ -9,6 +9,7 @@ config['chromsizes'] = str(repodir / 'conf' / 'genome.chrom.sizes')
 config['rar'] = str(repodir / 'conf' / 'rar.bed')
 with open(repodir / 'conf' / 'parameters.yaml') as f:
     config.update(yaml.safe_load(f))
+BAMDIR = 'deeptools_input'
 
 # samples
 ALLFILES = [
@@ -54,6 +55,7 @@ ALLFILES = [
     'mouse.gtf'
 ]
 SAMPLES = [sample.replace('.cram', '') for sample in ALLFILES if 'fna' not in sample and 'gtf' not in sample]
+CRAMFILESEXT = [sample.replace('.cram', '.bam') for sample in ALLFILES if 'fna' not in sample and 'gtf' not in sample]
 ATACSAMPLES = [sample for sample in SAMPLES if 'ATAC' in sample]
 RNASAMPLES = [sample for sample in SAMPLES if 'RNA' in sample]
 BSSAMPLES = [sample for sample in SAMPLES if 'BS' in sample]
@@ -75,6 +77,7 @@ wildcard_constraints:
 include: 'rules/get_data.smk'
 include: 'rules/get_regions.smk'
 include: 'rules/deeptools.smk'
+include: '../.shared_rules/sample_stats.smk'
 
 rule all:
   input:
@@ -97,4 +100,5 @@ rule all:
     'deeptools_output/atac.png',
     'deeptools_output/rna.png',
     'deeptools_output/meth.png',
-    'deeptools_output/rna.png'
+    'deeptools_output/rna.png',
+    'results/sample_stats.tsv'

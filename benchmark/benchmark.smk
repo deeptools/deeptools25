@@ -25,6 +25,7 @@ config['repeats'] = int(config['repeats'])
 repodir = Path(workflow.basedir)
 with open(repodir / 'conf' / 'sources.yaml') as f:
     sampleconfig = yaml.safe_load(f)
+BAMDIR = 'bamfiles'
 
 CRAMFILES = [
     "human_chip_SRR28592124",
@@ -34,6 +35,7 @@ CRAMFILES = [
     "triticum_rna_SRR27822150",
     "triticum_wgs_SRR27887047",
 ]
+CRAMFILESEXT = [f"{i}.bam" for i in CRAMFILES]
 GENOMES = ["triticum", "human"]
 
 wildcard_constraints:

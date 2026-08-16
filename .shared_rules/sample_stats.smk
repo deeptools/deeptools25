@@ -1,6 +1,6 @@
 rule bam_stats:
     input:
-        bam = 'bamfiles/{cramfile}.bam'
+        bam = BAMDIR + '/{cramfile}'
     output:
         tsv = 'stats/{cramfile}.tsv'
     conda: 'env/sample_stats.yml'
@@ -10,7 +10,7 @@ rule bam_stats:
 
 rule combine_stats:
     input:
-        expand('stats/{cramfile}.tsv', cramfile=CRAMFILES)
+        expand('stats/{cramfile}.tsv', cramfile=CRAMFILESEXT)
     output:
         tsv = 'results/sample_stats.tsv'
     conda: 'env/sample_stats.yml'

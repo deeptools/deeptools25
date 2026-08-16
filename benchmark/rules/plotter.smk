@@ -1,16 +1,16 @@
 rule plot_benchmarks:
   localrule: True
   input:
-    alsieve4 = expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4.txt", alignmentsieve=alignmentSieve_samples),
-    alsieve3 = expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3.txt", alignmentsieve=alignmentSieve_samples),
-    bcov4 = expand("benchmarks/bamcoverage/{bamcoverage}_dt4.txt", bamcoverage=bamCoverage_samples),
-    bcov3 = expand("benchmarks/bamcoverage/{bamcoverage}_dt3.txt", bamcoverage=bamCoverage_samples),
-    bcom4 = expand("benchmarks/bamcompare/{bamcompare}_dt4.txt", bamcompare=bamCompare_samples.keys()),
-    bcom3 = expand("benchmarks/bamcompare/{bamcompare}_dt3.txt", bamcompare=bamCompare_samples.keys()),
-    mbs4 = expand("benchmarks/multibamsummary/{run}_dt4.txt", run=multibamSummary_samples.keys()),
-    mbs3 = expand("benchmarks/multibamsummary/{run}_dt3.txt", run=multibamSummary_samples.keys()),
-    cm4 = expand("benchmarks/computeMatrix/{run}_dt4.txt", run=computeMatrix_samples.keys()),
-    cm3 = expand("benchmarks/computeMatrix/{run}_dt3.txt", run=computeMatrix_samples.keys())
+    alsieve4 = expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4_t{n}.txt", alignmentsieve=alignmentSieve_samples, n=thread_range(ALSIEVE_THREADS)),
+    alsieve3 = expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3_t{n}.txt", alignmentsieve=alignmentSieve_samples, n=thread_range(ALSIEVE_THREADS)),
+    bcov4 = expand("benchmarks/bamcoverage/{bamcoverage}_dt4_t{n}.txt", bamcoverage=bamCoverage_samples, n=thread_range(BAMCOVERAGE_THREADS)),
+    bcov3 = expand("benchmarks/bamcoverage/{bamcoverage}_dt3_t{n}.txt", bamcoverage=bamCoverage_samples, n=thread_range(BAMCOVERAGE_THREADS)),
+    bcom4 = expand("benchmarks/bamcompare/{bamcompare}_dt4_t{n}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS)),
+    bcom3 = expand("benchmarks/bamcompare/{bamcompare}_dt3_t{n}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS)),
+    mbs4 = expand("benchmarks/multibamsummary/{run}_dt4_t{n}.txt", run=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS)),
+    mbs3 = expand("benchmarks/multibamsummary/{run}_dt3_t{n}.txt", run=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS)),
+    cm4 = expand("benchmarks/computeMatrix/{run}_dt4_t{n}.txt", run=computeMatrix_samples.keys(), n=thread_range(COMPUTEMATRIX_THREADS)),
+    cm3 = expand("benchmarks/computeMatrix/{run}_dt3_t{n}.txt", run=computeMatrix_samples.keys(), n=thread_range(COMPUTEMATRIX_THREADS))
   output:
     csv = 'results/performance.csv',
     png = 'results/performance.png'

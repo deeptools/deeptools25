@@ -27,7 +27,7 @@ rule multibamsummary_dt3:
   threads: lambda wildcards: int(wildcards.n)
   resources:
     mem_mb = 20000,
-    runtime = 1440
+    runtime = lambda wildcards: 2880 if int(wildcards.n) < 4 else 1440
   shell:"""
   multiBamSummary_old bins -p {threads} \
     -o {output.npz} \

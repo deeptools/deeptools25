@@ -2,8 +2,8 @@ rule bamcoverage_dt4_human:
   input:
     bam = lambda wildcards: f"bamfiles/{bamCoverage_samples[wildcards.bamcoverage]}.bam"
   output:
-    bw = temp("output/bamcoverage_{bamcoverage}.dt4_t{n}.bw")
-  benchmark: repeat("benchmarks/bamcoverage/{bamcoverage}_dt4_t{n}.txt", config['repeats'])
+    bw = temp("output/bamcoverage_{bamcoverage}.dt4_t{n}_rep{rep}.bw")
+  benchmark: "benchmarks/bamcoverage/{bamcoverage}_dt4_t{n}_rep{rep}.txt"
   threads: lambda wildcards: int(wildcards.n)
   resources:
     mem_mb = 16000,
@@ -17,8 +17,8 @@ rule bamcoverage_dt3_human:
   input:
     bam = lambda wildcards: f"bamfiles/{bamCoverage_samples[wildcards.bamcoverage]}.bam"
   output:
-    bw = temp("output/bamcoverage_{bamcoverage}.dt3_t{n}.bw")
-  benchmark: repeat("benchmarks/bamcoverage/{bamcoverage}_dt3_t{n}.txt", config['repeats'])
+    bw = temp("output/bamcoverage_{bamcoverage}.dt3_t{n}_rep{rep}.bw")
+  benchmark: "benchmarks/bamcoverage/{bamcoverage}_dt3_t{n}_rep{rep}.txt"
   threads: lambda wildcards: int(wildcards.n)
   resources:
     mem_mb = 10000,

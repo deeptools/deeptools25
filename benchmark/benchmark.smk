@@ -40,9 +40,11 @@ GENOMES = ["triticum", "human"]
 
 wildcard_constraints:
     file = r".+\.(cram|fna\.gz|gtf\.gz|gtf|fna|bw)",
-    n = r"\d+"
+    n = r"\d+",
+    rep = r"\d+"
 
 EXHAUSTIVE = bool(config.get('exhaustive', False))
+REPS = list(range(1, config['repeats'] + 1))
 
 def thread_range(max_threads):
     return list(range(1, max_threads + 1)) if EXHAUSTIVE else [max_threads]
@@ -142,39 +144,39 @@ def function_runners(conf_what):
     match conf_what:
         case 'alignmentSieve':
             return [
-                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4_t{n}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS)),
-                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3_t{n}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS)),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4_t{n}_rep{rep}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS), rep=REPS),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3_t{n}_rep{rep}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS), rep=REPS),
             ]
         case 'bamCoverage':
             return [
-                expand("benchmarks/bamcoverage/{bamcoverage}_dt4_t{n}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS)),
-                expand("benchmarks/bamcoverage/{bamcoverage}_dt3_t{n}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS)),
+                expand("benchmarks/bamcoverage/{bamcoverage}_dt4_t{n}_rep{rep}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS), rep=REPS),
+                expand("benchmarks/bamcoverage/{bamcoverage}_dt3_t{n}_rep{rep}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS), rep=REPS),
             ]
         case 'bamCompare':
             return [
-                expand("benchmarks/bamcompare/{bamcompare}_dt4_t{n}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS)),
-                expand("benchmarks/bamcompare/{bamcompare}_dt3_t{n}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS)),
+                expand("benchmarks/bamcompare/{bamcompare}_dt4_t{n}_rep{rep}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS), rep=REPS),
+                expand("benchmarks/bamcompare/{bamcompare}_dt3_t{n}_rep{rep}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS), rep=REPS),
             ]
         case 'multibamSummary':
             return [
-                expand("benchmarks/multibamsummary/{multibamsummary}_dt4_t{n}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS)),
-                expand("benchmarks/multibamsummary/{multibamsummary}_dt3_t{n}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS)),
+                expand("benchmarks/multibamsummary/{multibamsummary}_dt4_t{n}_rep{rep}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS), rep=REPS),
+                expand("benchmarks/multibamsummary/{multibamsummary}_dt3_t{n}_rep{rep}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS), rep=REPS),
             ]
         case 'computeMatrix':
             return [
-                expand("benchmarks/computematrix/{computematrix}_dt4_t{n}.txt", computematrix=computeMatrix_samples.keys(), n=thread_range(COMPUTEMATRIX_THREADS)),
-                expand("benchmarks/computematrix/{computematrix}_dt3_t{n}.txt", computematrix=computeMatrix_samples.keys(), n=thread_range(COMPUTEMATRIX_THREADS)),
+                expand("benchmarks/computematrix/{computematrix}_dt4_t{n}_rep{rep}.txt", computematrix=computeMatrix_samples.keys(), n=thread_range(COMPUTEMATRIX_THREADS), rep=REPS),
+                expand("benchmarks/computematrix/{computematrix}_dt3_t{n}_rep{rep}.txt", computematrix=computeMatrix_samples.keys(), n=thread_range(COMPUTEMATRIX_THREADS), rep=REPS),
             ]
         case _:
             return [
-                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4_t{n}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS)),
-                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3_t{n}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS)),
-                expand("benchmarks/bamcoverage/{bamcoverage}_dt4_t{n}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS)),
-                expand("benchmarks/bamcoverage/{bamcoverage}_dt3_t{n}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS)),
-                expand("benchmarks/bamcompare/{bamcompare}_dt4_t{n}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS)),
-                expand("benchmarks/bamcompare/{bamcompare}_dt3_t{n}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS)),
-                expand("benchmarks/multibamsummary/{multibamsummary}_dt4_t{n}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS)),
-                expand("benchmarks/multibamsummary/{multibamsummary}_dt3_t{n}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS)),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4_t{n}_rep{rep}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS), rep=REPS),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3_t{n}_rep{rep}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS), rep=REPS),
+                expand("benchmarks/bamcoverage/{bamcoverage}_dt4_t{n}_rep{rep}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS), rep=REPS),
+                expand("benchmarks/bamcoverage/{bamcoverage}_dt3_t{n}_rep{rep}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS), rep=REPS),
+                expand("benchmarks/bamcompare/{bamcompare}_dt4_t{n}_rep{rep}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS), rep=REPS),
+                expand("benchmarks/bamcompare/{bamcompare}_dt3_t{n}_rep{rep}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS), rep=REPS),
+                expand("benchmarks/multibamsummary/{multibamsummary}_dt4_t{n}_rep{rep}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS), rep=REPS),
+                expand("benchmarks/multibamsummary/{multibamsummary}_dt3_t{n}_rep{rep}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS), rep=REPS),
                 'results/performance.csv',
                 'results/performance.png'
             ]

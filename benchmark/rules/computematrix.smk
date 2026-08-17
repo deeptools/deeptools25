@@ -5,9 +5,9 @@ rule computeMatrix_dt4:
     ],
     gtf = lambda wildcards: f"zenodo/{wildcards.run.split('_')[1]}.gtf"
   output:
-    npz = temp("output/computeMatrix_{run}.dt4.npz")
-  benchmark: repeat("benchmarks/computeMatrix/{run}_dt4.txt", config['repeats'])
-  threads: 4
+    npz = temp("output/computeMatrix_{run}.dt4_t{n}.npz")
+  benchmark: repeat("benchmarks/computeMatrix/{run}_dt4_t{n}.txt", config['repeats'])
+  threads: lambda wildcards: int(wildcards.n)
   resources:
     mem_mb = 120000,
     runtime = 1440
@@ -25,9 +25,9 @@ rule computeMatrix_dt3:
     ],
     gtf = lambda wildcards: f"zenodo/{wildcards.run.split('_')[1]}.gtf"
   output:
-    npz = temp("output/computeMatrix_{run}.dt3.npz")
-  benchmark: repeat("benchmarks/computeMatrix/{run}_dt3.txt", config['repeats'])
-  threads: 4
+    npz = temp("output/computeMatrix_{run}.dt3_t{n}.npz")
+  benchmark: repeat("benchmarks/computeMatrix/{run}_dt3_t{n}.txt", config['repeats'])
+  threads: lambda wildcards: int(wildcards.n)
   resources:
     mem_mb = 120000,
     runtime = 1440

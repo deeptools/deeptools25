@@ -39,7 +39,13 @@ CRAMFILESEXT = [f"{i}.bam" for i in CRAMFILES]
 GENOMES = ["triticum", "human"]
 
 wildcard_constraints:
-    file = r".+\.(cram|fna\.gz|gtf\.gz|gtf|fna|bw)"
+    file = r".+\.(cram|fna\.gz|gtf\.gz|gtf|fna|bw)",
+    n = r"\d+"
+
+EXHAUSTIVE = bool(config.get('exhaustive', False))
+
+def thread_range(max_threads):
+    return list(range(1, max_threads + 1)) if EXHAUSTIVE else [max_threads]
 
 ALLFILES = (
     expand("{f}.cram", f=CRAMFILES)
@@ -117,6 +123,12 @@ computeMatrix_samples = {
   ] * 5
 }
 
+ALSIEVE_THREADS = 4
+BAMCOVERAGE_THREADS = 10
+BAMCOMPARE_THREADS = 10
+MULTIBAMSUMMARY_THREADS = 10
+COMPUTEMATRIX_THREADS = 4
+
 include: 'rules/alignmentsieve.smk'
 include: 'rules/bamcoverage.smk'
 include: 'rules/bamcompare.smk'
@@ -130,39 +142,39 @@ def function_runners(conf_what):
     match conf_what:
         case 'alignmentSieve':
             return [
-                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4.txt", alignmentsieve=alignmentSieve_samples.keys()),
-                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3.txt", alignmentsieve=alignmentSieve_samples.keys()),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4_t{n}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS)),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3_t{n}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS)),
             ]
         case 'bamCoverage':
             return [
-                expand("benchmarks/bamcoverage/{bamcoverage}_dt4.txt", bamcoverage=bamCoverage_samples.keys()),
-                expand("benchmarks/bamcoverage/{bamcoverage}_dt3.txt", bamcoverage=bamCoverage_samples.keys()),
+                expand("benchmarks/bamcoverage/{bamcoverage}_dt4_t{n}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS)),
+                expand("benchmarks/bamcoverage/{bamcoverage}_dt3_t{n}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS)),
             ]
         case 'bamCompare':
             return [
-                expand("benchmarks/bamcompare/{bamcompare}_dt4.txt", bamcompare=bamCompare_samples.keys()),
-                expand("benchmarks/bamcompare/{bamcompare}_dt3.txt", bamcompare=bamCompare_samples.keys()),
+                expand("benchmarks/bamcompare/{bamcompare}_dt4_t{n}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS)),
+                expand("benchmarks/bamcompare/{bamcompare}_dt3_t{n}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS)),
             ]
         case 'multibamSummary':
             return [
-                expand("benchmarks/multibamsummary/{multibamsummary}_dt4.txt", multibamsummary=multibamSummary_samples.keys()),
-                expand("benchmarks/multibamsummary/{multibamsummary}_dt3.txt", multibamsummary=multibamSummary_samples.keys()),
+                expand("benchmarks/multibamsummary/{multibamsummary}_dt4_t{n}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS)),
+                expand("benchmarks/multibamsummary/{multibamsummary}_dt3_t{n}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS)),
             ]
         case 'computeMatrix':
             return [
-                expand("benchmarks/computematrix/{computematrix}_dt4.txt", computematrix=computeMatrix_samples.keys()),
-                expand("benchmarks/computematrix/{computematrix}_dt3.txt", computematrix=computeMatrix_samples.keys()),
+                expand("benchmarks/computematrix/{computematrix}_dt4_t{n}.txt", computematrix=computeMatrix_samples.keys(), n=thread_range(COMPUTEMATRIX_THREADS)),
+                expand("benchmarks/computematrix/{computematrix}_dt3_t{n}.txt", computematrix=computeMatrix_samples.keys(), n=thread_range(COMPUTEMATRIX_THREADS)),
             ]
         case _:
             return [
-                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4.txt", alignmentsieve=alignmentSieve_samples.keys()),
-                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3.txt", alignmentsieve=alignmentSieve_samples.keys()),
-                expand("benchmarks/bamcoverage/{bamcoverage}_dt4.txt", bamcoverage=bamCoverage_samples.keys()),
-                expand("benchmarks/bamcoverage/{bamcoverage}_dt3.txt", bamcoverage=bamCoverage_samples.keys()),
-                expand("benchmarks/bamcompare/{bamcompare}_dt4.txt", bamcompare=bamCompare_samples.keys()),
-                expand("benchmarks/bamcompare/{bamcompare}_dt3.txt", bamcompare=bamCompare_samples.keys()),
-                expand("benchmarks/multibamsummary/{multibamsummary}_dt4.txt", multibamsummary=multibamSummary_samples.keys()),
-                expand("benchmarks/multibamsummary/{multibamsummary}_dt3.txt", multibamsummary=multibamSummary_samples.keys()),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt4_t{n}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS)),
+                expand("benchmarks/alignmentsieve/{alignmentsieve}_dt3_t{n}.txt", alignmentsieve=alignmentSieve_samples.keys(), n=thread_range(ALSIEVE_THREADS)),
+                expand("benchmarks/bamcoverage/{bamcoverage}_dt4_t{n}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS)),
+                expand("benchmarks/bamcoverage/{bamcoverage}_dt3_t{n}.txt", bamcoverage=bamCoverage_samples.keys(), n=thread_range(BAMCOVERAGE_THREADS)),
+                expand("benchmarks/bamcompare/{bamcompare}_dt4_t{n}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS)),
+                expand("benchmarks/bamcompare/{bamcompare}_dt3_t{n}.txt", bamcompare=bamCompare_samples.keys(), n=thread_range(BAMCOMPARE_THREADS)),
+                expand("benchmarks/multibamsummary/{multibamsummary}_dt4_t{n}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS)),
+                expand("benchmarks/multibamsummary/{multibamsummary}_dt3_t{n}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS)),
                 'results/performance.csv',
                 'results/performance.png'
             ]

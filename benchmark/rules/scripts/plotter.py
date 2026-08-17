@@ -1,15 +1,19 @@
+import re
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+_stem_re = re.compile(r'_(dt[34])_t(\d+)$')
+
 def read_benchmark(file):
-    _version = file.split('/')[-1].split('.')[0].split('_')[-1]
-    sample = file.split('/')[-1].split('.')[0].replace('_dt3', '').replace('_dt4', '')
+    stem = file.split('/')[-1].split('.')[0]
+    m = _stem_re.search(stem)
     a = pd.read_table(file, sep='\t')
     a = a[['s', 'max_rss']]
     a['rep'] = a.index + 1
-    a['version'] = _version
-    a['sample'] = sample
+    a['version'] = m.group(1)
+    a['threads'] = int(m.group(2))
+    a['sample'] = stem[:m.start()]
     a['os'] = snakemake.params.os
     a['modality'] = file.split('/')[-2]
     return a
@@ -23,9 +27,11 @@ a = pd.concat(_dfs, ignore_index=True)
 a.to_csv(snakemake.output.csv, sep='\t', index=False)
 
 
-# Plot figure
-_mods = a['modality'].unique()
-ap = a.pivot(index=['rep', 'sample', 'os', 'modality'], columns='version', values=['s', 'max_rss']).reset_index()
+# Plot figure (max threads per modality, i.e. non-exhaustive comparison)
+b = a[a['threads'] == a.groupby('modality')['threads'].transform('max')]
+
+_mods = b['modality'].unique()
+ap = b.pivot(index=['rep', 'sample', 'os', 'modality'], columns='version', values=['s', 'max_rss']).reset_index()
 ap['speedup'] = ap['s']['dt3']/ap['s']['dt4']
 ap['memory'] = ap['max_rss']['dt3']/ap['max_rss']['dt4']
 
@@ -33,8 +39,8 @@ fig, ax = plt.subplots(nrows=len(_mods), ncols=3, figsize=(24,16))
 
 _axix = 0
 for mod in _mods:
-    dt3 = a[(a['modality'] == mod) & (a['version'] == 'dt3')]
-    dt4 = a[(a['modality'] == mod) & (a['version'] == 'dt4')]
+    dt3 = b[(b['modality'] == mod) & (b['version'] == 'dt3')]
+    dt4 = b[(b['modality'] == mod) & (b['version'] == 'dt4')]
 
     ax[_axix, 0].plot(
         ['v3','v4'],

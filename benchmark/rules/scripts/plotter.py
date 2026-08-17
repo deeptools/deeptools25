@@ -3,14 +3,14 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-_stem_re = re.compile(r'_(dt[34])_t(\d+)$')
+_stem_re = re.compile(r'_(dt[34])_t(\d+)_rep(\d+)$')
 
 def read_benchmark(file):
     stem = file.split('/')[-1].split('.')[0]
     m = _stem_re.search(stem)
     a = pd.read_table(file, sep='\t')
     a = a[['s', 'max_rss']]
-    a['rep'] = a.index + 1
+    a['rep'] = int(m.group(3))
     a['version'] = m.group(1)
     a['threads'] = int(m.group(2))
     a['sample'] = stem[:m.start()]

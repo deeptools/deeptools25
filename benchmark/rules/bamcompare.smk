@@ -3,8 +3,8 @@ rule bamcompare_dt4:
     bam = lambda wildcards: f"bamfiles/{bamCompare_samples[wildcards.bamcompare][0]}.bam",
     ctrlbam = lambda wildcards: f"bamfiles/{bamCompare_samples[wildcards.bamcompare][1]}.bam"
   output:
-    bw = temp("output/bamcompare_{bamcompare}.dt4_t{n}.bw")
-  benchmark: repeat("benchmarks/bamcompare/{bamcompare}_dt4_t{n}.txt", config['repeats'])
+    bw = temp("output/bamcompare_{bamcompare}.dt4_t{n}_rep{rep}.bw")
+  benchmark: "benchmarks/bamcompare/{bamcompare}_dt4_t{n}_rep{rep}.txt"
   resources:
     mem_mb = 20000,
     runtime = 1440
@@ -19,8 +19,8 @@ rule bamcompare_dt3:
     bam = lambda wildcards: f"bamfiles/{bamCompare_samples[wildcards.bamcompare][0]}.bam",
     ctrlbam = lambda wildcards: f"bamfiles/{bamCompare_samples[wildcards.bamcompare][1]}.bam"
   output:
-    bw = temp("output/bamcompare_{bamcompare}.dt3_t{n}.bw")
-  benchmark: repeat("benchmarks/bamcompare/{bamcompare}_dt3_t{n}.txt", config['repeats'])
+    bw = temp("output/bamcompare_{bamcompare}.dt3_t{n}_rep{rep}.bw")
+  benchmark: "benchmarks/bamcompare/{bamcompare}_dt3_t{n}_rep{rep}.txt"
   threads: lambda wildcards: int(wildcards.n)
   resources:
     mem_mb = 20000,

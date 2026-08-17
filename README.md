@@ -4,6 +4,8 @@
 
 You need to have [rust](https://rustup.rs/) installed on your system before continuing, additionally, you need [pixi](https://pixi.sh/latest/) and [conda](https://docs.conda.io/en/latest/) up and running too. Finally, your system needs internet access to download the required data.
 
+### Benchmark
+
 Run the benchmark:
 
   > pixi run snakemake -s benchmark/benchmark.smk --cores 20 -d /path/to/working/directory --use-conda
@@ -16,7 +18,12 @@ What can take values 'alignmentSieve', 'bamCoverage', 'bamCompare', 'multibamSum
 
   > pixi run snakemake -s benchmark/benchmark.smk --cores 20 -d /path/to/working/directory --use-conda --config what=bamCoverage os=my_fast_computer
 
-Run the example:
+An exhaustive run can be performed by setting `exhaustive` to true in the config:
+
+  > pixi run snakemake -s benchmark/benchmark.smk --cores 20 -d /path/to/working/directory --use-conda --config exhaustive=true
+
+
+### Example
 
   > pixi run snakemake -s example/example.smk --cores 20 -d /path/to/working/directory --use-conda
 

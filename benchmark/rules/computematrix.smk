@@ -9,7 +9,7 @@ rule computeMatrix_dt4:
   benchmark: repeat("benchmarks/computeMatrix/{run}_dt4_t{n}.txt", config['repeats'])
   threads: lambda wildcards: int(wildcards.n)
   resources:
-    mem_mb = 120000,
+    mem_mb = 20000,
     runtime = 1440
   shell:'''
   computeMatrix reference-point -p {threads} \
@@ -29,8 +29,8 @@ rule computeMatrix_dt3:
   benchmark: repeat("benchmarks/computeMatrix/{run}_dt3_t{n}.txt", config['repeats'])
   threads: lambda wildcards: int(wildcards.n)
   resources:
-    mem_mb = 120000,
-    runtime = 1440
+    mem_mb = 20000,
+    runtime = lambda wildcards: 2880 if int(wildcards.n) < 4 else 1440
   shell:'''
   computeMatrix_old reference-point -p {threads} \
     -o {output.npz} \

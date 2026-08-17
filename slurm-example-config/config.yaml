@@ -9,5 +9,3 @@ restart-times: 2
 max-inventory-time: 600
 latency-wait: 1200
 executor: slurm
-default-resources:
-  runtime: 24h

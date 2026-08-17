@@ -6,7 +6,8 @@ rule alsieve_dt4:
   benchmark: repeat("benchmarks/alignmentsieve/{alignmentsieve}_dt4_t{n}.txt", config['repeats'])
   threads: lambda wildcards: int(wildcards.n)
   resources:
-    mem_mb = 10000
+    mem_mb = 10000,
+    runtime = 1440
   shell:'''
   alignmentSieve -b {input.bam} -o {output.bam} \
     -p {threads} --ATACshift
@@ -20,7 +21,8 @@ rule alsieve_dt3:
   benchmark: repeat("benchmarks/alignmentsieve/{alignmentsieve}_dt3_t{n}.txt", config['repeats'])
   threads: lambda wildcards: int(wildcards.n)
   resources:
-    mem_mb = 10000
+    mem_mb = 10000,
+    runtime = 1440
   shell:'''
   alignmentSieve_old -b {input.bam} -o {output.bam} \
     -p {threads} --ATACshift

@@ -6,7 +6,8 @@ rule bamcompare_dt4:
     bw = temp("output/bamcompare_{bamcompare}.dt4_t{n}.bw")
   benchmark: repeat("benchmarks/bamcompare/{bamcompare}_dt4_t{n}.txt", config['repeats'])
   resources:
-    mem_mb = 20000
+    mem_mb = 20000,
+    runtime = 1440
   threads: lambda wildcards: int(wildcards.n)
   shell:'''
   bamCompare -b1 {input.bam} -b2 {input.ctrlbam} -o {output.bw} \
@@ -22,7 +23,8 @@ rule bamcompare_dt3:
   benchmark: repeat("benchmarks/bamcompare/{bamcompare}_dt3_t{n}.txt", config['repeats'])
   threads: lambda wildcards: int(wildcards.n)
   resources:
-    mem_mb = 20000
+    mem_mb = 20000,
+    runtime = 1440
   shell:'''
   bamCompare_old -b1 {input.bam} -b2 {input.ctrlbam} -o {output.bw} \
     --binSize 10 -p {threads}

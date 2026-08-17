@@ -6,7 +6,8 @@ rule bamcoverage_dt4_human:
   benchmark: repeat("benchmarks/bamcoverage/{bamcoverage}_dt4_t{n}.txt", config['repeats'])
   threads: lambda wildcards: int(wildcards.n)
   resources:
-    mem_mb = 16000
+    mem_mb = 16000,
+    runtime = 1440
   shell:'''
   bamCoverage -b {input.bam} -o {output.bw} \
     --binSize 10 --normalizeUsing RPKM -p {threads}
@@ -20,7 +21,8 @@ rule bamcoverage_dt3_human:
   benchmark: repeat("benchmarks/bamcoverage/{bamcoverage}_dt3_t{n}.txt", config['repeats'])
   threads: lambda wildcards: int(wildcards.n)
   resources:
-    mem_mb = 10000
+    mem_mb = 10000,
+    runtime = 1440
   shell:'''
   bamCoverage_old -b {input.bam} -o {output.bw} \
     --binSize 10 --normalizeUsing RPKM -p {threads}

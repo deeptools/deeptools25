@@ -17,6 +17,6 @@ rule plot_benchmarks:
   params:
     os = config['os']
   conda: 'env/plotter.yaml'
-  threads: 1
+  threads: 2
   script:
     'scripts/plotter.py'

@@ -109,7 +109,7 @@ rule computeMatrix_chip:
         bws = lambda wildcards, input: ' '.join([i for i in input.bw if wildcards.chip in i]),
         labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw if wildcards.chip in i] ),
         mattype = lambda wildcards: 'scale-regions -a 2000 -b 2000 -m 4000' if wildcards.chip in BROADMARKS else 'reference-point -a 3000 -b 3000 --referencePoint center',
-        binsize = 10
+        binsize = 25
     threads: 10
     resources:
         mem_mb = 16000,
@@ -139,6 +139,7 @@ rule plotHeatmap_chip:
       --startLabel "\\-3kb" --endLabel "\\+3kb" --colorMap {params.cmap} \
       --xAxisLabel "" \
       --legendLocation none \
+      --interpolationMethod bilinear \
       --regionsLabel up down non-de
     '''
 
@@ -160,7 +161,7 @@ rule computeMatrix_atac:
       -a 3000 -b 3000 \
       -o {output.mat} \
       --referencePoint center \
-      -bs 10 \
+      -bs 25 \
       --missingDataAsZero \
       -R {input.regions} \
       --samplesLabel {params.labels}
@@ -180,6 +181,7 @@ rule plotHeatmap_atac:
       --colorMap Reds \
       --refPointLabel "TSS" \
       --xAxisLabel "" \
+      --interpolationMethod bilinear \
       --regionsLabel up down non-de
     '''
 
@@ -217,7 +219,8 @@ rule plotHeatmap_meth:
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "TSS" --endLabel "TES" --colorMap Greys --zMin 0 \
+      --startLabel "TSS" --endLabel "TES" --colorMap RdYlBu_r --zMin 0 --zMax 100 \
+      --interpolationMethod bilinear \
       --regionsLabel up down non-de \
       --sortRegions descend
     '''

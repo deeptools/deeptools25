@@ -99,24 +99,6 @@ rule bamCoverage_atac:
     wigToBigWig {output.wig} {params.chromsizes} {output.bw}
     '''
 
-rule bamCoverage_RNA:
-    input:
-        bam = 'deeptools_input/{rnasample}.bam'
-    output:
-        bw = 'deeptools_output/rna/{rnasample}.bw',
-    params:
-        chromsizes = config['chromsizes'],
-        rar = config['rar']
-    threads: 10
-    resources:
-        mem_mb = 8000,
-        runtime = 1440
-    shell:'''
-    bamCoverage -b {input.bam} -o {output.bw} \
-      --normalizeUsing BPM -bs 10 -p {threads} \
-      --blackListFileName {params.rar}
-    '''
-
 rule computeMatrix_chip:
     input:
         bw = expand('deeptools_output/chip/{chipsample}.bw', chipsample=sampleconfig['chipdict'].keys()),
@@ -199,46 +181,6 @@ rule plotHeatmap_atac:
       --refPointLabel "TSS" \
       --xAxisLabel "" \
       --regionsLabel up down non-de
-    '''
-
-rule computeMatrix_rna:
-    input:
-        bw = expand('deeptools_output/rna/{rnasample}.bw', rnasample=RNASAMPLES),
-        regions = ["deeptools_input/upreg_genes.gtf", "deeptools_input/downreg_genes.gtf", "deeptools_input/nonreg_genes.gtf"]
-    output:
-        mat = 'deeptools_output/rna.npz'
-    params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
-    threads: 10
-    resources:
-        mem_mb = 16000,
-        runtime = 1440
-    shell:'''
-    computeMatrix scale-regions -p {threads} \
-      -S {input.bw} \
-      -a 200 -b 200 \
-      -o {output.mat} \
-      -bs 10 \
-      --missingDataAsZero \
-      -R {input.regions} \
-      --samplesLabel {params.labels} \
-      --metagene
-    '''
-
-rule plotHeatmap_rna:
-    input:
-        mat = 'deeptools_output/rna.npz'
-    output:
-        png = 'deeptools_output/rna.png'
-    resources:
-        mem_mb = 4000,
-        runtime = 1440
-    shell:'''
-    plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "TSS" --endLabel "TES" \
-      --colorMap Blues \
-      --regionsLabel up down non-de \
-      --zMax 2
     '''
 
 rule computeMatrix_meth:

@@ -27,7 +27,8 @@ rule DE:
     output:
         down = 'regions/de_down.tsv',
         up = 'regions/de_up.tsv',
-        nonde = 'regions/nonde.tsv'
+        nonde = 'regions/nonde.tsv',
+        res = 'regions/edgeR_results.tsv'
     params:
         padj = config['padj'],
         l2fc = config['l2fc']

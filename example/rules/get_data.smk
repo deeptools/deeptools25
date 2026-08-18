@@ -6,6 +6,9 @@ rule download_data:
         odir="zenodo",
         zenodo_id=sampleconfig["zenodo"]["ID"],
     threads: 2
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
     script:
         "scripts/download_zenodo.py"
 
@@ -19,6 +22,9 @@ rule prep_deeptools_input:
         bam = 'deeptools_input/{sample}.bam',
         bai = 'deeptools_input/{sample}.bam.bai'
     threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
     run:
         shell('samtools view -f 0x2 -@ {threads} -T {input.fna} -b -o {output.bam} {input.cramfile}')
         shell('samtools index -@ {threads} {output.bam}')
@@ -35,6 +41,9 @@ rule generate_bs_bedgraph_zenodo:
     params:
         chromsizes = config['chromsizes']
     threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
     shell:'''
     MethylDackel extract -@ {threads} {input.fna} {input.bam}
     cut -f1,2,3,4 {output.bg} > {output.bgs}
@@ -48,6 +57,9 @@ rule ship_zen_fna_gtf:
     output:
         fna = 'deeptools_input/mouse.fna',
         gtf = 'deeptools_input/mouse.gtf'
+    resources:
+        mem_mb = 2000,
+        runtime = 1440
     run:
         import shutil
         shutil.copy2(input.fna, output.fna)

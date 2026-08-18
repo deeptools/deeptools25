@@ -13,6 +13,9 @@ rule get_counts:
     output:
         counts = 'regions/counts.txt'
     threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
     shell:'''
     featureCounts -T {threads} -p -o {output.counts} \
       -a {input.gtf} {input.bams}
@@ -28,6 +31,9 @@ rule DE:
     params:
         padj = config['padj'],
         l2fc = config['l2fc']
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
     script:
         'scripts/DE.R'
 
@@ -38,9 +44,12 @@ rule call_peaks:
         xls = temp('regions/{peaksample}_peaks.xls'),
     params:
         bam = lambda wildcards: f'deeptools_input/{wildcards.peaksample}.bam',
-        ctrl = lambda wildcards: f'-c deeptools_input/{sampleconfig['chipdict'][wildcards.peaksample]}.bam' if wildcards.peaksample in sampleconfig['chipdict'] else '',
+        ctrl = lambda wildcards: f"-c deeptools_input/{sampleconfig['chipdict'][wildcards.peaksample]}.bam" if wildcards.peaksample in sampleconfig['chipdict'] else '',
         broad = lambda wildcards: '--broad' if any(mark in wildcards.peaksample for mark in BROADMARKS) else '',
         atacpar = lambda wildcards: '--nomodel --shift -75 --extsize 150' if 'ATAC' in wildcards.peaksample else '',
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
     shell:'''
     macs3 callpeak {params.broad} -q 0.1 -t {params.bam} {params.ctrl} \
       --keep-dup all \
@@ -55,6 +64,9 @@ rule merge_peaks:
         bed = 'regions/{mergedpeak}.bed',
     params:
         peaks = lambda wildcards: return_peakfiles(wildcards.mergedpeak, SAMPLES, BROADMARKS)
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
     shell:'''
     cat {params.peaks} | sort -k1,1 -k2,2n | bedtools merge > {output.bed}
     '''
@@ -64,6 +76,9 @@ rule cleanup_peakfiles:
         expand('regions/{mergedpeak}.bed', mergedpeak = ['ATAC'] + CHIPS)
     output:
         temp(touch('regions/peaks_cleaned.txt'))
+    resources:
+        mem_mb = 2000,
+        runtime = 1440
     shell:'''
     rm -f regions/*_summits.bed
     rm -f regions/*.gappedPeak
@@ -84,6 +99,9 @@ rule annotate_peaks:
         json = temp('regions/{mergedpeak}_uropa.json'),
         pdf = temp('regions/{mergedpeak}_uropa_summary.pdf')
     threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
     shell:'''
     uropa -b {input.bed} -g {input.gtf} --summary \
       --feature gene --distance 100000 100000 \

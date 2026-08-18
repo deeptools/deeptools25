@@ -5,6 +5,9 @@ rule bam_stats:
         tsv = 'stats/{cramfile}.tsv'
     conda: 'env/sample_stats.yml'
     threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
     script:
         'sample_stats.py'
 

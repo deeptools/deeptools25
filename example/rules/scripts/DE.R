@@ -52,3 +52,4 @@ none <- res %>%
 write.table(down, snakemake@output[['down']],   sep='\t', quote=F)
 write.table(up,   snakemake@output[['up']],     sep='\t', quote=F)
 write.table(none, snakemake@output[['nonde']],  sep='\t', quote=F)
+write.table(res,  snakemake@output[['res']],    sep='\t', quote=F)

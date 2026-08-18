@@ -98,7 +98,5 @@ rule all:
     # ChIP
     expand('deeptools_output/chip_{chip}.png', chip=CHIPS),
     'deeptools_output/atac.png',
-    'deeptools_output/rna.png',
     'deeptools_output/meth.png',
-    'deeptools_output/rna.png',
     'results/sample_stats.tsv'

@@ -6,6 +6,9 @@ rule multibamsummary:
         npz = 'regions/{mergedpeak}_mbs.npz',
         counts = 'regions/{mergedpeak}_mbs.counts'
     threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
     shell:'''
     multiBamSummary BED-file -p {threads} -o {output.npz} \
       --BED {input.bed} -b {input.bamfiles} --outRawCounts {output.counts}
@@ -26,6 +29,9 @@ rule de_to_region:
         nongtf = 'deeptools_input/nonreg_genes.gtf',
     params:
         l2fc = config['l2fc']
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
     script:
         'scripts/de_to_region.py'
 
@@ -44,6 +50,9 @@ rule parse_de:
     params:
         chip = lambda wildcards: wildcards.mergedpeak,
         l2fc = config['l2fc']
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
     script:
         'scripts/parse_DE.py'
 
@@ -55,10 +64,13 @@ rule bamcompare_chip:
         bw = 'deeptools_output/chip/{chipsample}.bw'
     threads: 10
     params:
-        input = lambda wildcards: f'deeptools_input/{sampleconfig['chipdict'][wildcards.chipsample]}.bam',
+        input = lambda wildcards: f"deeptools_input/{sampleconfig['chipdict'][wildcards.chipsample]}.bam",
         operation = lambda wildcards: 'subtract' if any(mark in wildcards.chipsample for mark in BROADMARKS) else 'log2',
         rar = config['rar'],
         binsize = 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
     shell:'''
     bamCompare --operation {params.operation} -b1 {input.bam} -b2 {params.input} \
       -bs {params.binsize} -p {threads} -o {output.bw} --extendReads --centerReads \
@@ -76,27 +88,15 @@ rule bamCoverage_atac:
         chromsizes = config['chromsizes'],
         rar = config['rar']
     threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
     shell:'''
     bamCoverage -b {input.bam} -o {output.bw_raw} \
       --normalizeUsing RPKM -bs 10 -p {threads} \
       --blackListFileName {params.rar}
     wiggletools log 10 {output.bw_raw} > {output.wig}
     wigToBigWig {output.wig} {params.chromsizes} {output.bw}
-    '''
-
-rule bamCoverage_RNA:
-    input:
-        bam = 'deeptools_input/{rnasample}.bam'
-    output:
-        bw = 'deeptools_output/rna/{rnasample}.bw',
-    params:
-        chromsizes = config['chromsizes'],
-        rar = config['rar']
-    threads: 10
-    shell:'''
-    bamCoverage -b {input.bam} -o {output.bw} \
-      --normalizeUsing BPM -bs 10 -p {threads} \
-      --blackListFileName {params.rar}
     '''
 
 rule computeMatrix_chip:
@@ -111,6 +111,9 @@ rule computeMatrix_chip:
         mattype = lambda wildcards: 'scale-regions -a 2000 -b 2000 -m 4000' if wildcards.chip in BROADMARKS else 'reference-point -a 3000 -b 3000 --referencePoint center',
         binsize = 10
     threads: 10
+    resources:
+        mem_mb = 16000,
+        runtime = 1440
     shell:'''
     computeMatrix {params.mattype} -p {threads} \
       -S {params.bws} \
@@ -128,6 +131,9 @@ rule plotHeatmap_chip:
         png = 'deeptools_output/chip_{chip}.png'
     params:
         cmap = lambda wildcards: cmap[wildcards.chip]
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
       --startLabel "\\-3kb" --endLabel "\\+3kb" --colorMap {params.cmap} \
@@ -145,6 +151,9 @@ rule computeMatrix_atac:
     params:
         labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
     threads: 10
+    resources:
+        mem_mb = 16000,
+        runtime = 1440
     shell:'''
     computeMatrix reference-point -p {threads} \
       -S {input.bw} \
@@ -162,6 +171,9 @@ rule plotHeatmap_atac:
         mat = 'deeptools_output/atac.npz'
     output:
         png = 'deeptools_output/atac.png'
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
       --startLabel r"-3kb" --endLabel r"+3kb" \
@@ -169,40 +181,6 @@ rule plotHeatmap_atac:
       --refPointLabel "TSS" \
       --xAxisLabel "" \
       --regionsLabel up down non-de
-    '''
-
-rule computeMatrix_rna:
-    input:
-        bw = expand('deeptools_output/rna/{rnasample}.bw', rnasample=RNASAMPLES),
-        regions = ["deeptools_input/upreg_genes.gtf", "deeptools_input/downreg_genes.gtf", "deeptools_input/nonreg_genes.gtf"]
-    output:
-        mat = 'deeptools_output/rna.npz'
-    params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
-    threads: 10
-    shell:'''
-    computeMatrix scale-regions -p {threads} \
-      -S {input.bw} \
-      -a 200 -b 200 \
-      -o {output.mat} \
-      -bs 10 \
-      --missingDataAsZero \
-      -R {input.regions} \
-      --samplesLabel {params.labels} \
-      --metagene
-    '''
-
-rule plotHeatmap_rna:
-    input:
-        mat = 'deeptools_output/rna.npz'
-    output:
-        png = 'deeptools_output/rna.png'
-    shell:'''
-    plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "TSS" --endLabel "TES" \
-      --colorMap Blues \
-      --regionsLabel up down non-de \
-      --zMax 2
     '''
 
 rule computeMatrix_meth:
@@ -214,6 +192,9 @@ rule computeMatrix_meth:
     params:
         labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
     threads: 10
+    resources:
+        mem_mb = 16000,
+        runtime = 1440
     shell:'''
     computeMatrix reference-point -p {threads} \
       -S {input.bw} \
@@ -231,6 +212,9 @@ rule plotHeatmap_meth:
         mat = 'deeptools_output/meth.npz'
     output:
         png = 'deeptools_output/meth.png'
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
       --startLabel "TSS" --endLabel "TES" --colorMap Greys --zMin 0 \

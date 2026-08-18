@@ -6,6 +6,9 @@ rule download_data:
         odir="zenodo",
         zenodo_id=sampleconfig["zenodo"]["ID"],
     threads: 2
+    resources:
+      mem_mb = 10000,
+      runtime = 1440
     script:
         "scripts/download_zenodo.py"
 
@@ -18,6 +21,9 @@ rule cram_to_bam:
     params:
         ix_param = lambda wc: '-c' if 'triticum' in wc.cramfile else ''
     threads: 10
+    resources:
+      mem_mb = 10000,
+      runtime = 1440
     shell:"""
     samtools view -@ {threads} -T {input.fna} -b -o {output.bam} {input.cram}
     samtools index -@ {threads} {params.ix_param} {output.bam}

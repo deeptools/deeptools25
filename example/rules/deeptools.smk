@@ -73,7 +73,7 @@ rule bamcompare_chip:
         runtime = 1440
     shell:'''
     bamCompare --operation {params.operation} -b1 {input.bam} -b2 {params.input} \
-      -bs {params.binsize} -p {threads} -o {output.bw} --extendReads --centerReads \
+      -bs {params.binsize} --smoothLength 30 -p {threads} -o {output.bw} --extendReads --centerReads \
       --blackListFileName {params.rar}
     '''
 
@@ -93,7 +93,7 @@ rule bamCoverage_atac:
         runtime = 1440
     shell:'''
     bamCoverage -b {input.bam} -o {output.bw_raw} \
-      --normalizeUsing RPKM -bs 10 -p {threads} \
+      --normalizeUsing RPKM -bs 10 --smoothLength 30 -p {threads} \
       --blackListFileName {params.rar}
     wiggletools log 10 {output.bw_raw} > {output.wig}
     wigToBigWig {output.wig} {params.chromsizes} {output.bw}
@@ -109,7 +109,7 @@ rule computeMatrix_chip:
         bws = lambda wildcards, input: ' '.join([i for i in input.bw if wildcards.chip in i]),
         labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw if wildcards.chip in i] ),
         mattype = lambda wildcards: 'scale-regions -a 2000 -b 2000 -m 4000' if wildcards.chip in BROADMARKS else 'reference-point -a 3000 -b 3000 --referencePoint center',
-        binsize = 25
+        binsize = 10
     threads: 10
     resources:
         mem_mb = 16000,
@@ -161,7 +161,7 @@ rule computeMatrix_atac:
       -a 3000 -b 3000 \
       -o {output.mat} \
       --referencePoint center \
-      -bs 25 \
+      -bs 10 \
       --missingDataAsZero \
       -R {input.regions} \
       --samplesLabel {params.labels}
@@ -185,10 +185,129 @@ rule plotHeatmap_atac:
       --regionsLabel up down non-de
     '''
 
+rule bamCoverage_RNA:
+    input:
+        bam = 'deeptools_input/{rnasample}.bam'
+    output:
+        bw = 'deeptools_output/rna/{rnasample}.bw',
+    params:
+        chromsizes = config['chromsizes'],
+        rar = config['rar']
+    threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
+    shell:'''
+    bamCoverage -b {input.bam} -o {output.bw} \
+      --normalizeUsing BPM -bs 10 --smoothLength 30 -p {threads} \
+      --blackListFileName {params.rar}
+    '''
+
+rule computeMatrix_rna:
+    input:
+        bw = expand('deeptools_output/rna/{rnasample}.bw', rnasample=RNASAMPLES),
+        regions = ["deeptools_input/upreg_genes.gtf", "deeptools_input/downreg_genes.gtf", "deeptools_input/nonreg_genes.gtf"]
+    output:
+        mat = 'deeptools_output/rna.npz'
+    params:
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
+    threads: 10
+    resources:
+        mem_mb = 16000,
+        runtime = 1440
+    shell:'''
+    computeMatrix scale-regions -p {threads} \
+      -S {input.bw} \
+      -a 200 -b 200 \
+      -o {output.mat} \
+      -bs 10 \
+      --missingDataAsZero \
+      -R {input.regions} \
+      --samplesLabel {params.labels} \
+      --metagene
+    '''
+
+rule plotHeatmap_rna:
+    input:
+        mat = 'deeptools_output/rna.npz'
+    output:
+        png = 'deeptools_output/rna.png'
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
+    shell:'''
+    plotHeatmap -m {input.mat} -out {output.png} \
+      --startLabel "TSS" --endLabel "TES" \
+      --colorMap Blues \
+      --regionsLabel up down non-de \
+      --zMax 2
+    '''
+
+def meth_zmax(range_file):
+    with open(range_file) as fh:
+        rows = [l.rstrip('\n').split('\t') for l in fh if l.strip()]
+    header, vals = rows[0], rows[1:]
+    idx = next((i for i, h in enumerate(header) if h.strip().lower() == 'max'), None)
+    if idx is None:
+        idx = next((i for i, h in enumerate(header) if '90' in h), len(header) - 1)
+    return round(max(float(row[idx]) for row in vals) * 1.1, 3)
+
+rule meth_bins:
+    input:
+        down = 'regions/de_down.tsv',
+        up = 'regions/de_up.tsv',
+        nonde = 'regions/nonde.tsv',
+        gtf = 'deeptools_input/mouse.gtf'
+    output:
+        bed = 'deeptools_input/meth_bins.bed'
+    params:
+        binsize = 50,
+        flank = 3000
+    resources:
+        mem_mb = 2000,
+        runtime = 1440
+    script:
+        'scripts/make_meth_bins.py'
+
+rule meth_bigwigsummary:
+    input:
+        bed = 'deeptools_input/meth_bins.bed',
+        bw = expand('deeptools_input/{bssample}_CpG.bw', bssample=BSSAMPLES)
+    output:
+        npz = 'regions/meth_bins.npz',
+        counts = 'regions/meth_bins.counts'
+    threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
+    shell:'''
+    multiBigwigSummary BED-file -p {threads} -o {output.npz} \
+      --BED {input.bed} -b {input.bw} --smartLabels --outRawCounts {output.counts}
+    '''
+
+rule parse_meth:
+    input:
+        down = 'regions/de_down.tsv',
+        up = 'regions/de_up.tsv',
+        nonde = 'regions/nonde.tsv',
+        bins = 'deeptools_input/meth_bins.bed',
+        counts = 'regions/meth_bins.counts'
+    output:
+        down = 'deeptools_input/downreg_meth.bed',
+        up = 'deeptools_input/upreg_meth.bed',
+        nonde = 'deeptools_input/nonreg_meth.bed'
+    params:
+        mdiff = config['mdiff']
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
+    script:
+        'scripts/parse_meth.py'
+
 rule computeMatrix_meth:
     input:
         bw = expand('deeptools_input/{bssample}_CpG.bw', bssample=BSSAMPLES),
-        regions = ["deeptools_input/upreg_tss.bed", "deeptools_input/downreg_tss.bed", "deeptools_input/nonreg_tss.bed"]
+        regions = ["deeptools_input/upreg_meth.bed", "deeptools_input/downreg_meth.bed", "deeptools_input/nonreg_meth.bed"]
     output:
         mat = 'deeptools_output/meth.npz'
     params:
@@ -209,17 +328,32 @@ rule computeMatrix_meth:
       --samplesLabel {params.labels}
     '''
 
-rule plotHeatmap_meth:
+rule meth_datarange:
     input:
         mat = 'deeptools_output/meth.npz'
     output:
+        txt = 'deeptools_output/meth_datarange.txt'
+    resources:
+        mem_mb = 2000,
+        runtime = 1440
+    shell:'''
+    computeMatrixOperations dataRange -m {input.mat} > {output.txt}
+    '''
+
+rule plotHeatmap_meth:
+    input:
+        mat = 'deeptools_output/meth.npz',
+        range = 'deeptools_output/meth_datarange.txt'
+    output:
         png = 'deeptools_output/meth.png'
+    params:
+        zmax = lambda wildcards, input: meth_zmax(input.range)
     resources:
         mem_mb = 4000,
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "TSS" --endLabel "TES" --colorMap RdYlBu_r --zMin 0 --zMax 100 \
+      --startLabel "TSS" --endLabel "TES" --colorMap YlOrRd --zMin 0 --zMax {params.zmax} \
       --interpolationMethod bilinear \
       --regionsLabel up down non-de \
       --sortRegions descend

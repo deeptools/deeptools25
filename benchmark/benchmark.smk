@@ -125,11 +125,11 @@ computeMatrix_samples = {
   ] * 5
 }
 
-ALSIEVE_THREADS = 4
+ALSIEVE_THREADS = 10
 BAMCOVERAGE_THREADS = 10
 BAMCOMPARE_THREADS = 10
 MULTIBAMSUMMARY_THREADS = 10
-COMPUTEMATRIX_THREADS = 4
+COMPUTEMATRIX_THREADS = 10
 
 include: 'rules/alignmentsieve.smk'
 include: 'rules/bamcoverage.smk'

@@ -20,7 +20,7 @@ mdiff = snakemake.params.mdiff
 def strongest_bin(genes, want_extreme):
     rows = []
     for g in genes:
-        sub = bins[bins['gene_id'] == g]
+        sub = bins[(bins['gene_id'] == g) & bins['diff'].notna()]
         if sub.empty:
             continue
         ix = sub['diff'].abs().idxmax() if want_extreme else sub['diff'].abs().idxmin()

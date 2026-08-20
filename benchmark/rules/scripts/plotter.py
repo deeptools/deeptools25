@@ -1,4 +1,5 @@
 import re
+import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -126,6 +127,6 @@ mem_ax.legend(fontsize=8, title=None, loc='upper left')
 for j in range(len(modalities) + 1, len(axes)):
     axes[j].axis('off')
 
-fig.savefig('benchmark.png', dpi=300)
-fig.savefig('benchmark.pdf', dpi=300)
-fig.savefig('benchmark.tiff', dpi=300)
+fig.savefig(snakemake.output.png, dpi=300)
+fig.savefig(snakemake.output.pdf, dpi=300)
+fig.savefig(snakemake.output.tiff, dpi=300)

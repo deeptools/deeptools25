@@ -97,6 +97,10 @@ rule all:
     'regions/meth_up.bed',
     'regions/meth_nonde.bed',
 
+    # plots
     expand('deeptools_output/chip_{chip}.png', chip=CHIPS),
     'deeptools_output/atac.png',
+    'deeptools_output/meth.png',
+
+    # Sample information
     'results/sample_stats.tsv'

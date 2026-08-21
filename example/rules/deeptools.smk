@@ -185,141 +185,42 @@ rule plotHeatmap_atac:
       --regionsLabel up down non-de
     '''
 
-rule bamCoverage_RNA:
+rule computeMatrix_meth:
     input:
-        bam = 'deeptools_input/{rnasample}.bam'
+        bw = expand('deeptools_input/{bssample}_CpG.bw', bssample=BSSAMPLES),
+        regions = ["regions/meth_up.bed", "regions/meth_down.bed", "regions/meth_nonreg.bed"]
     output:
-        bw = 'deeptools_output/rna/{rnasample}.bw',
-    params:
-        chromsizes = config['chromsizes'],
-        rar = config['rar']
+        mat = 'deeptools_output/meth.npz'
     threads: 10
     resources:
-        mem_mb = 8000,
+        mem_mb = 16000,
         runtime = 1440
-    shell:'''
-    bamCoverage -b {input.bam} -o {output.bw} \
-      --normalizeUsing BPM -bs 10 --smoothLength 30 -p {threads} \
-      --blackListFileName {params.rar}
-    '''
-
-rule computeMatrix_rna:
-    input:
-        bw = expand('deeptools_output/rna/{rnasample}.bw', rnasample=RNASAMPLES),
-        regions = ["deeptools_input/upreg_genes.gtf", "deeptools_input/downreg_genes.gtf", "deeptools_input/nonreg_genes.gtf"]
-    output:
-        mat = 'deeptools_output/rna.npz'
     params:
         labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
-    threads: 10
-    resources:
-        mem_mb = 16000,
-        runtime = 1440
-    shell:'''
-    computeMatrix scale-regions -p {threads} \
-      -S {input.bw} \
-      -a 200 -b 200 \
-      -o {output.mat} \
-      -bs 10 \
-      --missingDataAsZero \
-      -R {input.regions} \
-      --samplesLabel {params.labels} \
-      --metagene
-    '''
-
-wildcard_constraints:
-    condition = 'ctrl|ko'
-
-rule bigwigAverage_meth:
-    input:
-        bw = lambda wildcards: expand(
-            'deeptools_input/{bssample}_CpG.bw',
-            bssample=[s for s in BSSAMPLES if f'_{wildcards.condition}_' in s]
-        )
-    output:
-        bw = 'deeptools_output/meth_{condition}_avg.bw'
-    threads: 4
-    resources:
-        mem_mb = 8000,
-        runtime = 1440
-    shell:'''
-    bigwigAverage -b {input.bw} -p {threads} -o {output.bw}
-    '''
-
-rule meth_diff:
-    input:
-        ko = 'deeptools_output/meth_ko_avg.bw',
-        ctrl = 'deeptools_output/meth_ctrl_avg.bw'
-    output:
-        bw = 'deeptools_output/meth_diff.bw'
-    resources:
-        mem_mb = 4000,
-        runtime = 1440
-    shell:'''
-    bigwigCompare -b1 {input.ko} -b2 {input.ctrl} --operation subtract -bs 50 -o {output.bw}
-    '''
-
-rule computeMatrix_meth_diff:
-    input:
-        bw = 'deeptools_output/meth_diff.bw',
-        regions = ["deeptools_input/upreg_meth.bed", "deeptools_input/downreg_meth.bed", "deeptools_input/nonreg_meth.bed"]
-    output:
-        mat = 'deeptools_output/meth_diff.npz'
-    threads: 10
-    resources:
-        mem_mb = 16000,
-        runtime = 1440
     shell:'''
     computeMatrix reference-point -p {threads} \
       -S {input.bw} \
       -a 3000 -b 3000 \
       -o {output.mat} \
       --referencePoint center \
-      -bs 50 \
+      -bs 1 \
       -R {input.regions} \
-      --samplesLabel "ko - ctrl"
+      --samplesLabel {params.labels}
     '''
 
-rule meth_diff_datarange:
+rule plotHeatmap_meth:
     input:
-        mat = 'deeptools_output/meth_diff.npz'
+        mat = 'deeptools_output/meth.npz'
     output:
-        txt = 'deeptools_output/meth_diff_datarange.txt'
-    resources:
-        mem_mb = 2000,
-        runtime = 1440
-    shell:'''
-    computeMatrixOperations dataRange -m {input.mat} > {output.txt}
-    '''
-
-def meth_diff_zmax(range_file):
-    # zMax is bounded by the 10th/90th percentile (not the raw max) so a
-    # handful of outlier bins can't blow out the whole color scale.
-    with open(range_file) as fh:
-        rows = [l.rstrip('\n').split('\t') for l in fh if l.strip()]
-    header, vals = rows[0], rows[1:]
-    idx10 = next(i for i, h in enumerate(header) if '10' in h)
-    idx90 = next(i for i, h in enumerate(header) if '90' in h)
-    bound = max(max(abs(float(row[idx10])), abs(float(row[idx90]))) for row in vals)
-    return round(max(bound, 1e-6) * 1.1, 3)
-
-rule plotHeatmap_meth_diff:
-    input:
-        mat = 'deeptools_output/meth_diff.npz',
-        range = 'deeptools_output/meth_diff_datarange.txt'
-    output:
-        png = 'deeptools_output/meth_diff.png'
-    params:
-        zmax = lambda wildcards, input: meth_diff_zmax(input.range)
+        png = 'deeptools_output/meth.png'
     resources:
         mem_mb = 4000,
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
       --startLabel "\\-3kb" --endLabel "\\+3kb" \
-      --colorMap RdBu_r --zMin=-{params.zmax} --zMax={params.zmax} \
+      --colorMap RdBu_r \
       --interpolationMethod bilinear \
       --regionsLabel up down non-de \
-      --sortUsing max \
       --legendLocation upper-left
     '''

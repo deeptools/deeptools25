@@ -13,7 +13,9 @@ rule plot_benchmarks:
     cm3 = expand("benchmarks/computeMatrix/{run}_dt3_t{n}_rep{rep}.txt", run=computeMatrix_samples.keys(), n=thread_range(COMPUTEMATRIX_THREADS), rep=REPS)
   output:
     csv = 'results/performance.csv',
-    png = 'results/performance.png'
+    png = 'results/performance.png',
+    tiff = 'results/performance.tiff',
+    pdf = 'results/performance.pdf'
   params:
     os = config['os']
   conda: 'env/plotter.yaml'

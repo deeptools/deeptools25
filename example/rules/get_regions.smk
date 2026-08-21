@@ -109,3 +109,17 @@ rule annotate_peaks:
       --internals 1 -p {wildcards.mergedpeak}_uropa -o regions \
       --show-attributes gene_id gene_name
     '''
+
+rule meth_regions:
+    input:
+        gtf = 'deeptools_input/mouse.gtf',
+        down = 'regions/de_down.tsv',
+        up = 'regions/de_up.tsv',
+        nonde = 'regions/nonde.tsv',
+        bgs = expand("deeptools_input/{bssample}_CpG_subset.bedGraph", bssample=BSSAMPLES),
+    output:
+        down = 'regions/meth_down.bed',
+        up = 'regions/meth_up.bed',
+        nonde = 'regions/meth_nonde.bed',
+    script:
+        'scripts/prep_meth_regions.py'

@@ -20,22 +20,20 @@ genotype <- factor(c("ctrl", "ctrl", "ko", "ko"))
 keep <- filterByExpr(dcounts, group = genotype)
 dcounts <- dcounts[keep, ]
 
-# Build DGEList and normalize (TMM)
 dge <- DGEList(counts = dcounts, group = genotype)
 dge <- calcNormFactors(dge)
 
-# Design matrix — "ctrl" is reference level (alphabetical)
 design <- model.matrix(~ genotype)
-
-# Estimate dispersion and fit quasi-likelihood model
 dge    <- estimateDisp(dge, design)
 fit    <- glmQLFit(dge, design)
 qlf    <- glmQLFTest(fit)
 
-# Retrieve all genes; FDR via Benjamini-Hochberg (matches DESeq2's default)
 res <- topTags(qlf, n = Inf, adjust.method = "BH", sort.by = "none")$table
 
-# Split into down / up / non-DE  (FDR ≡ padj,  logFC ≡ log2FoldChange)
+coef_name <- colnames(design)[2]
+shrunk <- predFC(dge, design, prior.count = 5, dispersion = dge$trended.dispersion)
+res$logFC <- shrunk[rownames(res), coef_name]
+
 down <- res %>%
   filter(FDR  <  padj_cutoff) %>%
   filter(logFC < -l2fc_cutoff)

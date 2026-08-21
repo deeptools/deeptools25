@@ -35,8 +35,8 @@ rule generate_bs_bedgraph_zenodo:
         bai = 'deeptools_input/{bssample}.bam.bai',
         fna = 'zenodo/mouse.fna'
     output:
-        bg = temp('deeptools_input/{bssample}_CpG.bedGraph'),
-        bgs = temp('deeptools_input/{bssample}_CpG_subset.bedGraph'),
+        bg = 'deeptools_input/{bssample}_CpG.bedGraph',
+        bgs = 'deeptools_input/{bssample}_CpG_subset.bedGraph',
         bw = 'deeptools_input/{bssample}_CpG.bw'
     params:
         chromsizes = config['chromsizes']

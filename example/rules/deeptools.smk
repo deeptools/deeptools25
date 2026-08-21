@@ -73,7 +73,7 @@ rule bamcompare_chip:
         runtime = 1440
     shell:'''
     bamCompare --operation {params.operation} -b1 {input.bam} -b2 {params.input} \
-      -bs {params.binsize} -p {threads} -o {output.bw} --extendReads --centerReads \
+      -bs {params.binsize} --smoothLength 30 -p {threads} -o {output.bw} --extendReads --centerReads \
       --blackListFileName {params.rar}
     '''
 
@@ -93,7 +93,7 @@ rule bamCoverage_atac:
         runtime = 1440
     shell:'''
     bamCoverage -b {input.bam} -o {output.bw_raw} \
-      --normalizeUsing RPKM -bs 10 -p {threads} \
+      --normalizeUsing RPKM -bs 10 --smoothLength 30 -p {threads} \
       --blackListFileName {params.rar}
     wiggletools log 10 {output.bw_raw} > {output.wig}
     wigToBigWig {output.wig} {params.chromsizes} {output.bw}
@@ -139,6 +139,7 @@ rule plotHeatmap_chip:
       --startLabel "\\-3kb" --endLabel "\\+3kb" --colorMap {params.cmap} \
       --xAxisLabel "" \
       --legendLocation none \
+      --interpolationMethod bilinear \
       --regionsLabel up down non-de
     '''
 
@@ -180,29 +181,29 @@ rule plotHeatmap_atac:
       --colorMap Reds \
       --refPointLabel "TSS" \
       --xAxisLabel "" \
+      --interpolationMethod bilinear \
       --regionsLabel up down non-de
     '''
 
 rule computeMatrix_meth:
     input:
         bw = expand('deeptools_input/{bssample}_CpG.bw', bssample=BSSAMPLES),
-        regions = ["deeptools_input/upreg_tss.bed", "deeptools_input/downreg_tss.bed", "deeptools_input/nonreg_tss.bed"]
+        regions = ["regions/meth_up.bed", "regions/meth_down.bed", "regions/meth_nonreg.bed"]
     output:
         mat = 'deeptools_output/meth.npz'
-    params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
     threads: 10
     resources:
         mem_mb = 16000,
         runtime = 1440
+    params:
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
     shell:'''
     computeMatrix reference-point -p {threads} \
       -S {input.bw} \
       -a 3000 -b 3000 \
       -o {output.mat} \
       --referencePoint center \
-      -bs 50 \
-      --missingDataAsZero \
+      -bs 1 \
       -R {input.regions} \
       --samplesLabel {params.labels}
     '''
@@ -217,7 +218,9 @@ rule plotHeatmap_meth:
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "TSS" --endLabel "TES" --colorMap Greys --zMin 0 \
+      --startLabel "\\-3kb" --endLabel "\\+3kb" \
+      --colorMap RdBu_r \
+      --interpolationMethod bilinear \
       --regionsLabel up down non-de \
-      --sortRegions descend
+      --legendLocation upper-left
     '''

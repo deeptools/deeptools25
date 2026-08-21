@@ -85,7 +85,6 @@ rule all:
     expand("zenodo/{file}", file=ALLFILES),
     expand("deeptools_input/{sample}.bam", sample=SAMPLES),
     expand("deeptools_input/{sample}.bam.bai", sample=SAMPLES),
-    expand("deeptools_input/{bssample}_CpG.bw", bssample=BSSAMPLES),
     'deeptools_input/mouse.fna',
     'deeptools_input/mouse.gtf',
 
@@ -94,9 +93,14 @@ rule all:
       'regions/{mergedpeak}_uropa_finalhits.txt',
       mergedpeak = ['ATAC'] + CHIPS
     ),
+    'regions/meth_down.bed',
+    'regions/meth_up.bed',
+    'regions/meth_nonde.bed',
 
-    # ChIP
+    # plots
     expand('deeptools_output/chip_{chip}.png', chip=CHIPS),
     'deeptools_output/atac.png',
     'deeptools_output/meth.png',
+
+    # Sample information
     'results/sample_stats.tsv'

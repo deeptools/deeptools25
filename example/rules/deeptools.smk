@@ -200,7 +200,7 @@ rule computeMatrix_meth:
     shell:'''
     computeMatrix reference-point -p {threads} \
       -S {input.bw} \
-      -a 3000 -b 3000 \
+      -a 500 -b 500 \
       -o {output.mat} \
       --referencePoint center \
       -bs 1 \
@@ -218,8 +218,8 @@ rule plotHeatmap_meth:
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "\\-3kb" --endLabel "\\+3kb" \
-      --colorMap RdBu_r \
+      --startLabel "\\-0.5kb" --endLabel "\\+0.5kb" \
+      --colorMap Grays_r \
       --interpolationMethod bilinear \
       --regionsLabel up down non-de \
       --legendLocation upper-left

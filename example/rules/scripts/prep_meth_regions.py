@@ -121,5 +121,5 @@ for of, grp in zip([snakemake.output.up, snakemake.output.down, snakemake.output
     sub = selected[selected['group'] == grp].sort_values(['chrom', 'start'])
     bed = sub[['chrom', 'start', 'gene_id']].copy()
     bed['end'] = sub['start'] + 1
-    bed = bed[['chrom', 'start', 'end', 'gene_id']]
+    bed = bed[['chrom', 'start', 'end']]
     bed.to_csv(of, sep='\t', header=False, index=False)

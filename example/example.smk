@@ -73,6 +73,7 @@ cmap = {
 
 wildcard_constraints:
     sample = "|".join(SAMPLES),
+    mergedpeak = "|".join(['ATAC'] + CHIPS),
 
 include: 'rules/get_data.smk'
 include: 'rules/get_regions.smk'

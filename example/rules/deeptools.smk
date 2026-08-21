@@ -188,7 +188,7 @@ rule plotHeatmap_atac:
 rule computeMatrix_meth:
     input:
         bw = expand('deeptools_input/{bssample}_CpG.bw', bssample=BSSAMPLES),
-        regions = ["regions/meth_up.bed", "regions/meth_down.bed", "regions/meth_nonreg.bed"]
+        regions = ["regions/meth_up.bed", "regions/meth_down.bed", "regions/meth_nonde.bed"]
     output:
         mat = 'deeptools_output/meth.npz'
     threads: 10

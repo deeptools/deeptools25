@@ -227,91 +227,44 @@ rule computeMatrix_rna:
       --metagene
     '''
 
-rule plotHeatmap_rna:
-    input:
-        mat = 'deeptools_output/rna.npz'
-    output:
-        png = 'deeptools_output/rna.png'
-    resources:
-        mem_mb = 4000,
-        runtime = 1440
-    shell:'''
-    plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "TSS" --endLabel "TES" \
-      --colorMap Blues \
-      --regionsLabel up down non-de \
-      --zMax 2
-    '''
+wildcard_constraints:
+    condition = 'ctrl|ko'
 
-def meth_zmax(range_file):
-    with open(range_file) as fh:
-        rows = [l.rstrip('\n').split('\t') for l in fh if l.strip()]
-    header, vals = rows[0], rows[1:]
-    idx = next((i for i, h in enumerate(header) if h.strip().lower() == 'max'), None)
-    if idx is None:
-        idx = next((i for i, h in enumerate(header) if '90' in h), len(header) - 1)
-    return round(max(float(row[idx]) for row in vals) * 1.1, 3)
-
-rule meth_bins:
+rule bigwigAverage_meth:
     input:
-        down = 'regions/de_down.tsv',
-        up = 'regions/de_up.tsv',
-        nonde = 'regions/nonde.tsv',
-        gtf = 'deeptools_input/mouse.gtf'
+        bw = lambda wildcards: expand(
+            'deeptools_input/{bssample}_CpG.bw',
+            bssample=[s for s in BSSAMPLES if f'_{wildcards.condition}_' in s]
+        )
     output:
-        bed = 'deeptools_input/meth_bins.bed'
-    params:
-        binsize = 50,
-        flank = 3000
-    resources:
-        mem_mb = 2000,
-        runtime = 1440
-    script:
-        'scripts/make_meth_bins.py'
-
-rule meth_bigwigsummary:
-    input:
-        bed = 'deeptools_input/meth_bins.bed',
-        bw = expand('deeptools_input/{bssample}_CpG.bw', bssample=BSSAMPLES)
-    output:
-        npz = 'regions/meth_bins.npz',
-        counts = 'regions/meth_bins.counts'
-    threads: 10
+        bw = 'deeptools_output/meth_{condition}_avg.bw'
+    threads: 4
     resources:
         mem_mb = 8000,
         runtime = 1440
     shell:'''
-    multiBigwigSummary BED-file -p {threads} -o {output.npz} \
-      --BED {input.bed} -b {input.bw} --smartLabels --outRawCounts {output.counts}
+    bigwigAverage -b {input.bw} -p {threads} -o {output.bw}
     '''
 
-rule parse_meth:
+rule meth_diff:
     input:
-        down = 'regions/de_down.tsv',
-        up = 'regions/de_up.tsv',
-        nonde = 'regions/nonde.tsv',
-        bins = 'deeptools_input/meth_bins.bed',
-        counts = 'regions/meth_bins.counts'
+        ko = 'deeptools_output/meth_ko_avg.bw',
+        ctrl = 'deeptools_output/meth_ctrl_avg.bw'
     output:
-        down = 'deeptools_input/downreg_meth.bed',
-        up = 'deeptools_input/upreg_meth.bed',
-        nonde = 'deeptools_input/nonreg_meth.bed'
-    params:
-        mdiff = config['mdiff']
+        bw = 'deeptools_output/meth_diff.bw'
     resources:
         mem_mb = 4000,
         runtime = 1440
-    script:
-        'scripts/parse_meth.py'
+    shell:'''
+    bigwigCompare -b1 {input.ko} -b2 {input.ctrl} --operation subtract -bs 50 -o {output.bw}
+    '''
 
-rule computeMatrix_meth:
+rule computeMatrix_meth_diff:
     input:
-        bw = expand('deeptools_input/{bssample}_CpG.bw', bssample=BSSAMPLES),
+        bw = 'deeptools_output/meth_diff.bw',
         regions = ["deeptools_input/upreg_meth.bed", "deeptools_input/downreg_meth.bed", "deeptools_input/nonreg_meth.bed"]
     output:
-        mat = 'deeptools_output/meth.npz'
-    params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
+        mat = 'deeptools_output/meth_diff.npz'
     threads: 10
     resources:
         mem_mb = 16000,
@@ -323,16 +276,15 @@ rule computeMatrix_meth:
       -o {output.mat} \
       --referencePoint center \
       -bs 50 \
-      --missingDataAsZero \
       -R {input.regions} \
-      --samplesLabel {params.labels}
+      --samplesLabel "ko - ctrl"
     '''
 
-rule meth_datarange:
+rule meth_diff_datarange:
     input:
-        mat = 'deeptools_output/meth.npz'
+        mat = 'deeptools_output/meth_diff.npz'
     output:
-        txt = 'deeptools_output/meth_datarange.txt'
+        txt = 'deeptools_output/meth_diff_datarange.txt'
     resources:
         mem_mb = 2000,
         runtime = 1440
@@ -340,21 +292,34 @@ rule meth_datarange:
     computeMatrixOperations dataRange -m {input.mat} > {output.txt}
     '''
 
-rule plotHeatmap_meth:
+def meth_diff_zmax(range_file):
+    # zMax is bounded by the 10th/90th percentile (not the raw max) so a
+    # handful of outlier bins can't blow out the whole color scale.
+    with open(range_file) as fh:
+        rows = [l.rstrip('\n').split('\t') for l in fh if l.strip()]
+    header, vals = rows[0], rows[1:]
+    idx10 = next(i for i, h in enumerate(header) if '10' in h)
+    idx90 = next(i for i, h in enumerate(header) if '90' in h)
+    bound = max(max(abs(float(row[idx10])), abs(float(row[idx90]))) for row in vals)
+    return round(max(bound, 1e-6) * 1.1, 3)
+
+rule plotHeatmap_meth_diff:
     input:
-        mat = 'deeptools_output/meth.npz',
-        range = 'deeptools_output/meth_datarange.txt'
+        mat = 'deeptools_output/meth_diff.npz',
+        range = 'deeptools_output/meth_diff_datarange.txt'
     output:
-        png = 'deeptools_output/meth.png'
+        png = 'deeptools_output/meth_diff.png'
     params:
-        zmax = lambda wildcards, input: meth_zmax(input.range)
+        zmax = lambda wildcards, input: meth_diff_zmax(input.range)
     resources:
         mem_mb = 4000,
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "TSS" --endLabel "TES" --colorMap YlOrRd --zMin 0 --zMax {params.zmax} \
+      --startLabel "\\-3kb" --endLabel "\\+3kb" \
+      --colorMap RdBu_r --zMin=-{params.zmax} --zMax={params.zmax} \
       --interpolationMethod bilinear \
       --regionsLabel up down non-de \
-      --sortRegions descend
+      --sortUsing max \
+      --legendLocation upper-left
     '''

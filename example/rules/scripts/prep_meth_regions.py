@@ -97,10 +97,19 @@ sites['ctrl_mean'] = sites[ctrl_cols].mean(axis=1)
 sites['ko_mean'] = sites[ko_cols].mean(axis=1)
 sites['diff'] = sites['ko_mean'] - sites['ctrl_mean']
 
-def top_site_diff(df):
-    idx = df.groupby('gene_id')['diff'].apply(lambda s: s.abs().idxmax())
+def top_site_demeth_ko(df):
+    # 'up' = higher expression in ko (DE.R: logFC is ko relative to ctrl) ->
+    # expect the ko sample specifically demethylated at this gene.
+    idx = df.groupby('gene_id')['diff'].idxmin()
     out = df.loc[idx]
-    return out[out['diff'].abs() >= MDIFF]
+    return out[out['diff'] <= -MDIFF]
+
+def top_site_demeth_ctrl(df):
+    # 'down' = higher expression in ctrl -> expect the ctrl sample
+    # specifically demethylated at this gene.
+    idx = df.groupby('gene_id')['diff'].idxmax()
+    out = df.loc[idx]
+    return out[out['diff'] >= MDIFF]
 
 def top_site_unmeth(df):
     low = df[(df['ctrl_mean'] <= LOW_METH) & (df['ko_mean'] <= LOW_METH)]
@@ -109,8 +118,8 @@ def top_site_unmeth(df):
     return low.loc[idx]
 
 selected = pd.concat([
-    top_site_diff(sites[sites['group'] == 'up']),
-    top_site_diff(sites[sites['group'] == 'down']),
+    top_site_demeth_ko(sites[sites['group'] == 'up']),
+    top_site_demeth_ctrl(sites[sites['group'] == 'down']),
     top_site_unmeth(sites[sites['group'] == 'nonde']),
 ], ignore_index=True)
 
@@ -121,5 +130,5 @@ for of, grp in zip([snakemake.output.up, snakemake.output.down, snakemake.output
     sub = selected[selected['group'] == grp].sort_values(['chrom', 'start'])
     bed = sub[['chrom', 'start', 'gene_id']].copy()
     bed['end'] = sub['start'] + 1
-    bed = bed[['chrom', 'start', 'end', 'gene_id']]
+    bed = bed[['chrom', 'start', 'end']]
     bed.to_csv(of, sep='\t', header=False, index=False)

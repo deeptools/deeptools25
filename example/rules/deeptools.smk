@@ -61,7 +61,7 @@ rule bamcompare_chip:
     input:
         bam = 'deeptools_input/{chipsample}.bam'
     output:
-        bw = 'deeptools_output/chip/{chipsample}.bw'
+        bw = 'results/chip/{chipsample}.bw'
     threads: 10
     params:
         input = lambda wildcards: f"deeptools_input/{sampleconfig['chipdict'][wildcards.chipsample]}.bam",
@@ -81,9 +81,9 @@ rule bamCoverage_atac:
     input:
         bam = 'deeptools_input/{atacsample}.bam'
     output:
-        bw = 'deeptools_output/atac/{atacsample}.bw',
-        bw_raw = temp('deeptools_output/atac/{atacsample}_raw.bw'),
-        wig = temp('deeptools_output/atac/{atacsample}.wig'),
+        bw = 'results/atac/{atacsample}.bw',
+        bw_raw = temp('results/atac/{atacsample}_raw.bw'),
+        wig = temp('results/atac/{atacsample}.wig'),
     params:
         chromsizes = config['chromsizes'],
         rar = config['rar']
@@ -101,10 +101,10 @@ rule bamCoverage_atac:
 
 rule computeMatrix_chip:
     input:
-        bw = expand('deeptools_output/chip/{chipsample}.bw', chipsample=sampleconfig['chipdict'].keys()),
+        bw = expand('results/chip/{chipsample}.bw', chipsample=sampleconfig['chipdict'].keys()),
         regions = ["deeptools_input/upreg_{chip}.bed", "deeptools_input/downreg_{chip}.bed", "deeptools_input/nonreg_{chip}.bed"]
     output:
-        mat = 'deeptools_output/chip_{chip}.npz'
+        mat = 'results/chip_{chip}.npz'
     params:
         bws = lambda wildcards, input: ' '.join([i for i in input.bw if wildcards.chip in i]),
         labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw if wildcards.chip in i] ),
@@ -126,9 +126,9 @@ rule computeMatrix_chip:
 
 rule plotHeatmap_chip:
     input:
-        mat = 'deeptools_output/chip_{chip}.npz'
+        mat = 'results/chip_{chip}.npz'
     output:
-        png = 'deeptools_output/chip_{chip}.png'
+        png = 'results/chip_{chip}.png'
     params:
         cmap = lambda wildcards: cmap[wildcards.chip]
     resources:
@@ -145,10 +145,10 @@ rule plotHeatmap_chip:
 
 rule computeMatrix_atac:
     input:
-        bw = expand('deeptools_output/atac/{atacsample}.bw', atacsample=ATACSAMPLES),
+        bw = expand('results/atac/{atacsample}.bw', atacsample=ATACSAMPLES),
         regions = ["deeptools_input/upreg_ATAC.bed", "deeptools_input/downreg_ATAC.bed", "deeptools_input/nonreg_ATAC.bed"]
     output:
-        mat = 'deeptools_output/atac.npz'
+        mat = 'results/atac.npz'
     params:
         labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
     threads: 10
@@ -169,9 +169,9 @@ rule computeMatrix_atac:
 
 rule plotHeatmap_atac:
     input:
-        mat = 'deeptools_output/atac.npz'
+        mat = 'results/atac.npz'
     output:
-        png = 'deeptools_output/atac.png'
+        png = 'results/atac.png'
     resources:
         mem_mb = 4000,
         runtime = 1440
@@ -190,7 +190,7 @@ rule computeMatrix_meth:
         bw = expand('deeptools_input/{bssample}_CpG.bw', bssample=BSSAMPLES),
         regions = ["regions/meth_up.bed", "regions/meth_down.bed", "regions/meth_nonde.bed"]
     output:
-        mat = 'deeptools_output/meth.npz'
+        mat = 'results/meth.npz'
     threads: 10
     resources:
         mem_mb = 16000,
@@ -210,9 +210,9 @@ rule computeMatrix_meth:
 
 rule plotHeatmap_meth:
     input:
-        mat = 'deeptools_output/meth.npz'
+        mat = 'results/meth.npz'
     output:
-        png = 'deeptools_output/meth.png'
+        png = 'results/meth.png'
     resources:
         mem_mb = 4000,
         runtime = 1440
@@ -224,3 +224,20 @@ rule plotHeatmap_meth:
       --regionsLabel up down non-de \
       --legendLocation upper-left
     '''
+
+rule combine_figure:
+    input:
+        rna = 'results/rna_de.png',
+        chips = expand('results/chip_{chip}.png', chip=CHIPS),
+        atac = 'results/atac.png',
+        meth = 'results/meth.png'
+    output:
+        pdf = 'results/figure_combined.pdf',
+        png = 'results/figure_combined.png'
+    params:
+        chips = CHIPS
+    resources:
+        mem_mb = 4000,
+        runtime = 60
+    script:
+        'scripts/combine_figure.py'

@@ -99,11 +99,11 @@ rule all:
     'regions/meth_nonde.bed',
 
     # plots
-    'results/rna_de.png',
     expand('results/chip_{chip}.png', chip=CHIPS),
     'results/atac.png',
     'results/meth.png',
     'results/figure_combined.pdf',
-
+    'results/figure_combined.png',
+    'results/figure_combined.tiff',
     # Sample information
     'results/sample_stats.tsv'

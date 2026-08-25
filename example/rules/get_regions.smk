@@ -38,20 +38,6 @@ rule DE:
     script:
         'scripts/DE.R'
 
-rule plot_rna_de:
-    input:
-        res = 'regions/edgeR_results.tsv',
-        up = 'regions/de_up.tsv',
-        down = 'regions/de_down.tsv',
-        nonde = 'regions/nonde.tsv'
-    output:
-        png = 'results/rna_de.png'
-    resources:
-        mem_mb = 2000,
-        runtime = 1440
-    script:
-        'scripts/plot_rna_de.py'
-
 rule call_peaks:
     input:
         bam = expand('deeptools_input/{sample}.bam', sample=SAMPLES),

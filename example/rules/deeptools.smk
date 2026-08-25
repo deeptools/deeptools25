@@ -73,7 +73,7 @@ rule bamcompare_chip:
         runtime = 1440
     shell:'''
     bamCompare --operation {params.operation} -b1 {input.bam} -b2 {params.input} \
-      -bs {params.binsize} --smoothLength 30 -p {threads} -o {output.bw} --extendReads --centerReads \
+      -bs {params.binsize} --smoothLength 20 -p {threads} -o {output.bw} --extendReads 150 --centerReads \
       --blackListFileName {params.rar}
     '''
 
@@ -93,8 +93,8 @@ rule bamCoverage_atac:
         runtime = 1440
     shell:'''
     bamCoverage -b {input.bam} -o {output.bw_raw} \
-      --normalizeUsing RPKM -bs 10 --smoothLength 30 -p {threads} \
-      --blackListFileName {params.rar}
+      --normalizeUsing RPKM -bs 10 --smoothLength 20 -p {threads} \
+      --blackListFileName {params.rar} --extendReads 150 --centerReads
     wiggletools log 10 {output.bw_raw} > {output.wig}
     wigToBigWig {output.wig} {params.chromsizes} {output.bw}
     '''
@@ -107,8 +107,8 @@ rule computeMatrix_chip:
         mat = 'results/chip_{chip}.npz'
     params:
         bws = lambda wildcards, input: ' '.join([i for i in input.bw if wildcards.chip in i]),
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw if wildcards.chip in i] ),
-        mattype = lambda wildcards: 'scale-regions -a 2000 -b 2000 -m 4000' if wildcards.chip in BROADMARKS else 'reference-point -a 3000 -b 3000 --referencePoint center',
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[2] + '-' + i.split('_')[4] for i in input.bw if wildcards.chip in i] ),
+        mattype = lambda wildcards: 'scale-regions -a 5000 -b 5000 -m 5000' if wildcards.chip in BROADMARKS else 'reference-point -a 5000 -b 5000 --referencePoint center',
         binsize = 10
     threads: 10
     resources:
@@ -136,11 +136,12 @@ rule plotHeatmap_chip:
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "\\-3kb" --endLabel "\\+3kb" --colorMap {params.cmap} \
+      --startLabel "\\-5kb" --endLabel "\\+5kb" --colorMap {params.cmap} \
       --xAxisLabel "" \
       --legendLocation none \
       --interpolationMethod bilinear \
-      --regionsLabel up down non-de
+      --regionsLabel up down non-de \
+      --whatToShow "heatmap and colorbar"
     '''
 
 rule computeMatrix_atac:
@@ -150,7 +151,7 @@ rule computeMatrix_atac:
     output:
         mat = 'results/atac.npz'
     params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[2] + '-' + i.split('_')[4] for i in input.bw] )
     threads: 10
     resources:
         mem_mb = 16000,
@@ -158,7 +159,7 @@ rule computeMatrix_atac:
     shell:'''
     computeMatrix reference-point -p {threads} \
       -S {input.bw} \
-      -a 3000 -b 3000 \
+      -a 5000 -b 5000 \
       -o {output.mat} \
       --referencePoint center \
       -bs 10 \
@@ -177,12 +178,11 @@ rule plotHeatmap_atac:
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel r"-3kb" --endLabel r"+3kb" \
-      --colorMap Reds \
-      --refPointLabel "TSS" \
+    --startLabel "\\-5kb" --endLabel "\\+5kb" --colorMap Reds \
       --xAxisLabel "" \
       --interpolationMethod bilinear \
-      --regionsLabel up down non-de
+      --regionsLabel up down non-de \
+      --whatToShow "heatmap and colorbar"
     '''
 
 rule computeMatrix_meth:
@@ -196,14 +196,14 @@ rule computeMatrix_meth:
         mem_mb = 16000,
         runtime = 1440
     params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[5] for i in input.bw] )
     shell:'''
     computeMatrix reference-point -p {threads} \
       -S {input.bw} \
-      -a 500 -b 500 \
+      -a 250 -b 250 \
       -o {output.mat} \
       --referencePoint center \
-      -bs 1 \
+      -bs 10 \
       -R {input.regions} \
       --samplesLabel {params.labels}
     '''
@@ -222,22 +222,28 @@ rule plotHeatmap_meth:
       --colorMap Grays_r \
       --interpolationMethod bilinear \
       --regionsLabel up down non-de \
-      --legendLocation upper-left
+      --legendLocation upper-left \
+      --whatToShow "heatmap and colorbar"
     '''
 
 rule combine_figure:
     input:
-        rna = 'results/rna_de.png',
-        chips = expand('results/chip_{chip}.png', chip=CHIPS),
-        atac = 'results/atac.png',
-        meth = 'results/meth.png'
+        rna_res = 'regions/edgeR_results.tsv',
+        rna_up = 'regions/de_up.tsv',
+        rna_down = 'regions/de_down.tsv',
+        rna_nonde = 'regions/nonde.tsv',
+        chips = expand('results/chip_{chip}.npz', chip=CHIPS),
+        atac = 'results/atac.npz',
+        meth = 'results/meth.npz'
     output:
         pdf = 'results/figure_combined.pdf',
-        png = 'results/figure_combined.png'
+        png = 'results/figure_combined.png',
+        tiff = 'results/figure_combined.tiff'
     params:
-        chips = CHIPS
+        chips = CHIPS,
+        cmap = cmap
     resources:
         mem_mb = 4000,
         runtime = 60
     script:
-        'scripts/combine_figure.py'
+        'scripts/combined_figure.py'

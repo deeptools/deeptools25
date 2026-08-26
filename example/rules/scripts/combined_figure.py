@@ -325,7 +325,6 @@ fig = plt.figure(figsize=(12, 8), tight_layout=True)
 gs = fig.add_gridspec(2, 1, height_ratios=[0.8, 1])
 gs_top = gs[0].subgridspec(1, 3, wspace=0.25, width_ratios=[1, 1.25, 1])
 gs_bottom = gs[1].subgridspec(1, n_cols, wspace=0.15)
-labels = iter(string.ascii_uppercase)
 
 # MAPLOT ######################################################################################################
 ax_rna = fig.add_subplot(gs_top[0, 0])
@@ -337,25 +336,20 @@ plot_rna_de(
     snakemake.input.rna_nonde,
 )
 ax_rna.set_title('RNA-seq DE', fontsize=10)
-ax_rna.text(-0.2, 1.06, next(labels), transform=ax_rna.transAxes,
-            fontsize=13, fontweight='bold', va='bottom', ha='left')
 
 # SCHEME ######################################################################################################
-ax = fig.add_subplot(gs_top[0, 1])
-ax.text(-0.05, 1.06, next(labels), transform=ax.transAxes,
-        fontsize=13, fontweight='bold', va='bottom', ha='left')
-
+ax_scheme = fig.add_subplot(gs_top[0, 1])
 gene_names = ['gene A', 'gene B', 'gene C']
 n_diffs = [1, 1, 1]
 for y, color, name, nd in zip([2, 1, 0], GENE_COLORS, gene_names, n_diffs):
-    draw_gene(ax, y, color, name)
-    draw_regions(ax, y, color, seed=list(GENE_COLORS).index(color), n_diff=nd)
+    draw_gene(ax_scheme, y, color, name)
+    draw_regions(ax_scheme, y, color, seed=list(GENE_COLORS).index(color), n_diff=nd)
 
-ax.set_xlim(-1150, 1100)
-ax.set_ylim(-0.7, 2.7)
-ax.set_xticks([])
-ax.set_yticks([])
-for spine in ax.spines.values():
+ax_scheme.set_xlim(-1150, 1100)
+ax_scheme.set_ylim(-0.7, 2.7)
+ax_scheme.set_xticks([])
+ax_scheme.set_yticks([])
+for spine in ax_scheme.spines.values():
     spine.set_visible(False)
 
 
@@ -368,11 +362,9 @@ marks = [
 
 gs_profiles_outer = gs_top[0, 2].subgridspec(2, 1, height_ratios=[0.08, 1], hspace=0.05)
 
-ax_title = fig.add_subplot(gs_profiles_outer[0, 0])
-ax_title.axis('off')
-ax_title.set_title('Mark signals per group', fontsize=10)
-ax_title.text(-0.05, 1.06, next(labels), transform=ax_title.transAxes,
-              fontsize=13, fontweight='bold', va='bottom', ha='left')
+ax_profiles_title = fig.add_subplot(gs_profiles_outer[0, 0])
+ax_profiles_title.axis('off')
+ax_profiles_title.set_title('Aggregate signal per group', fontsize=10)
 
 gs_profiles = gs_profiles_outer[1, 0].subgridspec(1, 2, wspace=0.05)
 ax_wt = fig.add_subplot(gs_profiles[0, 0])
@@ -383,12 +375,22 @@ ax_ko.set_ylim(ax_wt.get_ylim())
 
 # HEATMAPS ######################################################################################################
 
-add_heatmap_panel(fig, gs_bottom[0, 0], snakemake.input.atac, 'ATAC', panel_label=next(labels), cmap='Reds')
+add_heatmap_panel(fig, gs_bottom[0, 0], snakemake.input.atac, 'ATAC', cmap='Reds')
 add_heatmap_panel(fig, gs_bottom[0, 1], snakemake.input.meth, 'CpG Meth.', cmap='Greys', missing_color='#ffffff')
 
 for col, chip in enumerate(snakemake.input.chips, start=2):
     chipname = chip.split('/')[-1].replace('.npz', '').replace('chip_', '')
     add_heatmap_panel(fig, gs_bottom[0, col], chip, chipname, cmap=CMAP[chipname])
+
+fig.canvas.draw()
+
+y_top = max(ax_rna.get_position().y1, ax_scheme.get_position().y1, ax_profiles_title.get_position().y1) + 0.015
+x_left = ax_rna.get_position().x0
+
+fig.text(x_left - 0.02, y_top, 'A', fontsize=13, fontweight='bold', va='bottom', ha='left')
+fig.text(ax_scheme.get_position().x0 - 0.02, y_top, 'B', fontsize=13, fontweight='bold', va='bottom', ha='left')
+fig.text(ax_profiles_title.get_position().x0 - 0.02, y_top, 'C', fontsize=13, fontweight='bold', va='bottom', ha='left')
+fig.text(x_left - 0.02, gs[1].get_position(fig).y1 + 0.01, 'D', fontsize=13, fontweight='bold', va='bottom', ha='left')
 
 fig.savefig(snakemake.output.pdf)
 fig.savefig(snakemake.output.png, dpi=300)

@@ -14,28 +14,6 @@ rule multibamsummary:
       --BED {input.bed} -b {input.bamfiles} --outRawCounts {output.counts}
     '''
 
-rule de_to_region:
-    input:
-        down = 'regions/de_down.tsv',
-        up = 'regions/de_up.tsv',
-        nonde = 'regions/nonde.tsv',
-        gtf = 'deeptools_input/mouse.gtf',
-    output:
-        downbed = 'deeptools_input/downreg_tss.bed',
-        upbed = 'deeptools_input/upreg_tss.bed',
-        nonbed = 'deeptools_input/nonreg_tss.bed',
-        downgtf = 'deeptools_input/downreg_genes.gtf',
-        upgtf = 'deeptools_input/upreg_genes.gtf',
-        nongtf = 'deeptools_input/nonreg_genes.gtf',
-    params:
-        l2fc = config['l2fc']
-    resources:
-        mem_mb = 4000,
-        runtime = 1440
-    script:
-        'scripts/de_to_region.py'
-
-
 rule parse_de:
     input:
         down = 'regions/de_down.tsv',
@@ -61,7 +39,7 @@ rule bamcompare_chip:
     input:
         bam = 'deeptools_input/{chipsample}.bam'
     output:
-        bw = 'deeptools_output/chip/{chipsample}.bw'
+        bw = 'results/chip/{chipsample}.bw'
     threads: 10
     params:
         input = lambda wildcards: f"deeptools_input/{sampleconfig['chipdict'][wildcards.chipsample]}.bam",
@@ -73,7 +51,7 @@ rule bamcompare_chip:
         runtime = 1440
     shell:'''
     bamCompare --operation {params.operation} -b1 {input.bam} -b2 {params.input} \
-      -bs {params.binsize} --smoothLength 30 -p {threads} -o {output.bw} --extendReads --centerReads \
+      -bs {params.binsize} --smoothLength 20 -p {threads} -o {output.bw} --extendReads 150 --centerReads \
       --blackListFileName {params.rar}
     '''
 
@@ -81,9 +59,9 @@ rule bamCoverage_atac:
     input:
         bam = 'deeptools_input/{atacsample}.bam'
     output:
-        bw = 'deeptools_output/atac/{atacsample}.bw',
-        bw_raw = temp('deeptools_output/atac/{atacsample}_raw.bw'),
-        wig = temp('deeptools_output/atac/{atacsample}.wig'),
+        bw = 'results/atac/{atacsample}.bw',
+        bw_raw = temp('results/atac/{atacsample}_raw.bw'),
+        wig = temp('results/atac/{atacsample}.wig'),
     params:
         chromsizes = config['chromsizes'],
         rar = config['rar']
@@ -93,22 +71,22 @@ rule bamCoverage_atac:
         runtime = 1440
     shell:'''
     bamCoverage -b {input.bam} -o {output.bw_raw} \
-      --normalizeUsing RPKM -bs 10 --smoothLength 30 -p {threads} \
-      --blackListFileName {params.rar}
+      --normalizeUsing RPKM -bs 10 --smoothLength 20 -p {threads} \
+      --blackListFileName {params.rar} --extendReads 150 --centerReads
     wiggletools log 10 {output.bw_raw} > {output.wig}
     wigToBigWig {output.wig} {params.chromsizes} {output.bw}
     '''
 
 rule computeMatrix_chip:
     input:
-        bw = expand('deeptools_output/chip/{chipsample}.bw', chipsample=sampleconfig['chipdict'].keys()),
+        bw = expand('results/chip/{chipsample}.bw', chipsample=sampleconfig['chipdict'].keys()),
         regions = ["deeptools_input/upreg_{chip}.bed", "deeptools_input/downreg_{chip}.bed", "deeptools_input/nonreg_{chip}.bed"]
     output:
-        mat = 'deeptools_output/chip_{chip}.npz'
+        mat = 'results/chip_{chip}.npz'
     params:
         bws = lambda wildcards, input: ' '.join([i for i in input.bw if wildcards.chip in i]),
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw if wildcards.chip in i] ),
-        mattype = lambda wildcards: 'scale-regions -a 2000 -b 2000 -m 4000' if wildcards.chip in BROADMARKS else 'reference-point -a 3000 -b 3000 --referencePoint center',
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[2] + '-' + i.split('_')[4] for i in input.bw if wildcards.chip in i] ),
+        mattype = lambda wildcards: 'scale-regions -a 5000 -b 5000 -m 5000' if wildcards.chip in BROADMARKS else 'reference-point -a 5000 -b 5000 --referencePoint center',
         binsize = 10
     threads: 10
     resources:
@@ -126,9 +104,9 @@ rule computeMatrix_chip:
 
 rule plotHeatmap_chip:
     input:
-        mat = 'deeptools_output/chip_{chip}.npz'
+        mat = 'results/chip_{chip}.npz'
     output:
-        png = 'deeptools_output/chip_{chip}.png'
+        png = 'results/chip_{chip}.png'
     params:
         cmap = lambda wildcards: cmap[wildcards.chip]
     resources:
@@ -136,21 +114,22 @@ rule plotHeatmap_chip:
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel "\\-3kb" --endLabel "\\+3kb" --colorMap {params.cmap} \
+      --startLabel "\\-5kb" --endLabel "\\+5kb" --colorMap {params.cmap} \
       --xAxisLabel "" \
       --legendLocation none \
       --interpolationMethod bilinear \
-      --regionsLabel up down non-de
+      --regionsLabel up down non-de \
+      --whatToShow "heatmap and colorbar"
     '''
 
 rule computeMatrix_atac:
     input:
-        bw = expand('deeptools_output/atac/{atacsample}.bw', atacsample=ATACSAMPLES),
+        bw = expand('results/atac/{atacsample}.bw', atacsample=ATACSAMPLES),
         regions = ["deeptools_input/upreg_ATAC.bed", "deeptools_input/downreg_ATAC.bed", "deeptools_input/nonreg_ATAC.bed"]
     output:
-        mat = 'deeptools_output/atac.npz'
+        mat = 'results/atac.npz'
     params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[2] + '-' + i.split('_')[4] for i in input.bw] )
     threads: 10
     resources:
         mem_mb = 16000,
@@ -158,7 +137,7 @@ rule computeMatrix_atac:
     shell:'''
     computeMatrix reference-point -p {threads} \
       -S {input.bw} \
-      -a 3000 -b 3000 \
+      -a 5000 -b 5000 \
       -o {output.mat} \
       --referencePoint center \
       -bs 10 \
@@ -169,20 +148,19 @@ rule computeMatrix_atac:
 
 rule plotHeatmap_atac:
     input:
-        mat = 'deeptools_output/atac.npz'
+        mat = 'results/atac.npz'
     output:
-        png = 'deeptools_output/atac.png'
+        png = 'results/atac.png'
     resources:
         mem_mb = 4000,
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-      --startLabel r"-3kb" --endLabel r"+3kb" \
-      --colorMap Reds \
-      --refPointLabel "TSS" \
+    --startLabel "\\-5kb" --endLabel "\\+5kb" --colorMap Reds \
       --xAxisLabel "" \
       --interpolationMethod bilinear \
-      --regionsLabel up down non-de
+      --regionsLabel up down non-de \
+      --whatToShow "heatmap and colorbar"
     '''
 
 rule computeMatrix_meth:
@@ -190,29 +168,29 @@ rule computeMatrix_meth:
         bw = expand('deeptools_input/{bssample}_CpG.bw', bssample=BSSAMPLES),
         regions = ["regions/meth_up.bed", "regions/meth_down.bed", "regions/meth_nonde.bed"]
     output:
-        mat = 'deeptools_output/meth.npz'
+        mat = 'results/meth.npz'
     threads: 10
     resources:
         mem_mb = 16000,
         runtime = 1440
     params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[4] for i in input.bw] )
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[5] for i in input.bw] )
     shell:'''
     computeMatrix reference-point -p {threads} \
       -S {input.bw} \
-      -a 500 -b 500 \
+      -a 250 -b 250 \
       -o {output.mat} \
       --referencePoint center \
-      -bs 1 \
+      -bs 10 \
       -R {input.regions} \
       --samplesLabel {params.labels}
     '''
 
 rule plotHeatmap_meth:
     input:
-        mat = 'deeptools_output/meth.npz'
+        mat = 'results/meth.npz'
     output:
-        png = 'deeptools_output/meth.png'
+        png = 'results/meth.png'
     resources:
         mem_mb = 4000,
         runtime = 1440
@@ -222,5 +200,28 @@ rule plotHeatmap_meth:
       --colorMap Grays_r \
       --interpolationMethod bilinear \
       --regionsLabel up down non-de \
-      --legendLocation upper-left
+      --legendLocation upper-left \
+      --whatToShow "heatmap and colorbar"
     '''
+
+rule combine_figure:
+    input:
+        rna_res = 'regions/edgeR_results.tsv',
+        rna_up = 'regions/de_up.tsv',
+        rna_down = 'regions/de_down.tsv',
+        rna_nonde = 'regions/nonde.tsv',
+        chips = expand('results/chip_{chip}.npz', chip=CHIPS),
+        atac = 'results/atac.npz',
+        meth = 'results/meth.npz'
+    output:
+        pdf = 'results/figure_combined.pdf',
+        png = 'results/figure_combined.png',
+        tiff = 'results/figure_combined.tiff'
+    params:
+        chips = CHIPS,
+        cmap = cmap
+    resources:
+        mem_mb = 4000,
+        runtime = 60
+    script:
+        'scripts/combined_figure.py'

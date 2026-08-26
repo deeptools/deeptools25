@@ -14,28 +14,6 @@ rule multibamsummary:
       --BED {input.bed} -b {input.bamfiles} --outRawCounts {output.counts}
     '''
 
-rule de_to_region:
-    input:
-        down = 'regions/de_down.tsv',
-        up = 'regions/de_up.tsv',
-        nonde = 'regions/nonde.tsv',
-        gtf = 'deeptools_input/mouse.gtf',
-    output:
-        downbed = 'deeptools_input/downreg_tss.bed',
-        upbed = 'deeptools_input/upreg_tss.bed',
-        nonbed = 'deeptools_input/nonreg_tss.bed',
-        downgtf = 'deeptools_input/downreg_genes.gtf',
-        upgtf = 'deeptools_input/upreg_genes.gtf',
-        nongtf = 'deeptools_input/nonreg_genes.gtf',
-    params:
-        l2fc = config['l2fc']
-    resources:
-        mem_mb = 4000,
-        runtime = 1440
-    script:
-        'scripts/de_to_region.py'
-
-
 rule parse_de:
     input:
         down = 'regions/de_down.tsv',

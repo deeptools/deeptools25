@@ -1,4 +1,3 @@
-import string
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -123,7 +122,7 @@ def plot_mark_profiles_ridgeline(ax, marks, condition, height=0.85, show_ylabels
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
 
-def add_heatmap_panel(fig, outer_spec, matrix_path, mark_title, panel_label=None, cmap='YlOrRd',
+def add_heatmap_panel(fig, outer_spec, matrix_path, mark_title, cmap='YlOrRd',
                        zmin=None, zmax=None, pct=(5, 95), gamma=0.6,
                        missing_color='lightgrey', sample_titles=True,
                        sample_wspace=0, group_hspace=0.025, annot_width_ratio=0.12,
@@ -157,9 +156,6 @@ def add_heatmap_panel(fig, outer_spec, matrix_path, mark_title, panel_label=None
     ax_title = fig.add_subplot(inner[0, 1:])
     ax_title.axis('off')
     ax_title.set_title(mark_title)
-    if panel_label:
-        ax_title.text(-0.05, 1.06, panel_label, transform=ax_title.transAxes,
-                       fontsize=13, fontweight='bold', va='bottom', ha='left')
 
     axes = []
     for g in range(n_groups):
@@ -218,14 +214,6 @@ def draw_track(ax, x0, x1, y_base, height, color, n=100, wiggle=0.3, seed=0, exo
     y = np.clip(height * mask + noise, 0.0, None)
     y = np.convolve(y, np.ones(5) / 5, mode='same')
     ax.fill_between(x, y_base, y_base + direction * y, color=color, alpha=0.7, lw=0)
-
-
-def draw_wt_ko_tracks(ax, x0, x1, y, color, height=0.25, exon_regions=None, seed=0, labels=False):
-    if labels:
-        ax.text(x0 - 15, y + 0.16, 'WT', ha='right', va='bottom', fontsize=6, color='#555555')
-        ax.text(x0 - 15, y - 0.16, 'KO', ha='right', va='top', fontsize=6, color='#555555')
-    draw_track(ax, x0, x1, y + 0.15, height, color, exon_regions=exon_regions, seed=seed, direction=1)
-    draw_track(ax, x0, x1, y - 0.15, height, color, exon_regions=exon_regions, seed=seed + 1, direction=-1)
 
 
 def draw_gene(ax, y, color, name):

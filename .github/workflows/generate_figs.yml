@@ -14,6 +14,4 @@ jobs:
                   cache: true
             - name: dryrun-example
               run: |
-                  pixi run python figures/figure1/fig1_subfigs.py
-                  pixi run typst compile -f png figures/figure1/fig1.typ --ppi 300
-                  pixi run typst compile -f pdf figures/figure1/fig1.typ --ppi 300
+                  pixi run bash figures/collate_figures.sh

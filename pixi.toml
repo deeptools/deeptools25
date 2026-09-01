@@ -27,9 +27,10 @@ macs3 = "*"
 bedtools = "*"
 matplotlib = "*"
 seaborn = "*"
+typst = "*"
+snakemake = ">=9.9"
 
 [pypi-dependencies]
-snakemake = ">= 9.9"
 snakemake-storage-plugin-zenodo = "*"
 snakemake-executor-plugin-cluster-generic = "*"
 snakemake-executor-plugin-slurm = "*"

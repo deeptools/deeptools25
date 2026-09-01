@@ -16,3 +16,4 @@ bamfiles/
 benchmarks/
 results/
 __pycache__
+figures/figure1/subfigs*

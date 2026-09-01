@@ -30,3 +30,9 @@ An exhaustive run can be performed by setting `exhaustive` to true in the config
 ## SLURM submission
 
 In case you want to run either the benchmark of the example via slurm, an example profile is included in this repository. Appending `--profile slurm-example-config` results in jobs being submitted via SLURM rather than being executed locally. Make sure that the settings (`queue`, `mem_mb`, `runtime`, ...) in `slurm-example-config/config.yaml` are appropriate for your cluster.
+
+## Collate figures
+
+The results generated from both workflows (benchmark and example workflow), as well as the code to generate figure 1 are included in this repository. To collate/generate the figures in the `figures` directory, simply run:
+
+  > pixi run bash figures/collate_figures.sh

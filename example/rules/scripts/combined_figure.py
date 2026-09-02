@@ -323,7 +323,7 @@ plot_rna_de(
     snakemake.input.rna_down,
     snakemake.input.rna_nonde,
 )
-ax_rna.set_title('RNA-seq DE', fontsize=10)
+ax_rna.set_title('MSL2KO mNPC vs WT mNPC', fontsize=10)
 
 # SCHEME ######################################################################################################
 ax_scheme = fig.add_subplot(gs_top[0, 1])

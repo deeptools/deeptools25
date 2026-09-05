@@ -398,7 +398,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.7.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wheel-0.48.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/yte-1.9.4-pyhd8ed1ab_0.conda
-      - pypi: git+https://github.com/deeptools/deepTools.git?rev=0f07abf3cf4b1f9f74a31e6db0fb3448c1a3eac6#0f07abf3cf4b1f9f74a31e6db0fb3448c1a3eac6
+      - pypi: git+https://github.com/deeptools/deepTools.git?rev=fd19d2ec84f00392282787d925eb1c8317121b5b#fd19d2ec84f00392282787d925eb1c8317121b5b
       - pypi: https://files.pythonhosted.org/packages/24/e8/b542fffa7e6faa009a1a825fbbaecfd6d5fdce89dd4dd1e20d18941a1cca/snakemake_storage_plugin_zenodo-0.1.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/40/85/c6f70395037964e1d3b5334dde546cebc4bb0d05bd4c96399b03b6c4beab/snakemake_executor_plugin_slurm_jobstep-0.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/55/0f/e7f1ff3a1cabc6c4486a7ee1b0506aedf2f5f8329760ac1f4e8032feef2b/pysam-0.24.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
@@ -6353,13 +6353,13 @@ packages:
   run_exports: {}
   size: 16215
   timestamp: 1764250734338
-- pypi: git+https://github.com/deeptools/deepTools.git?rev=0f07abf3cf4b1f9f74a31e6db0fb3448c1a3eac6#0f07abf3cf4b1f9f74a31e6db0fb3448c1a3eac6
+- pypi: git+https://github.com/deeptools/deepTools.git?rev=fd19d2ec84f00392282787d925eb1c8317121b5b#fd19d2ec84f00392282787d925eb1c8317121b5b
   name: deeptools
   version: 4.0.0
   requires_dist:
   - numpy>=2.0
   - scipy>=1.13
-  - matplotlib>=3.9
+  - matplotlib>=3.10
   - pysam>=0.23
   - pybigwig>=0.3
   - py2bit>=0.3
@@ -6370,7 +6370,10 @@ packages:
   - twine ; extra == 'actions'
   - build ; extra == 'actions'
   - planemo ; extra == 'actions'
-  - matplotlib>=3.10.5,<3.12 ; extra == 'actions'
+  - sphinx>=7.2.6 ; extra == 'docs'
+  - mock>=5.1.0 ; extra == 'docs'
+  - sphinx-rtd-theme>=2.0.0 ; extra == 'docs'
+  - sphinx-argparse>=0.4.0 ; extra == 'docs'
   requires_python: '>=3.12'
 - pypi: https://files.pythonhosted.org/packages/24/e8/b542fffa7e6faa009a1a825fbbaecfd6d5fdce89dd4dd1e20d18941a1cca/snakemake_storage_plugin_zenodo-0.1.5-py3-none-any.whl
   name: snakemake-storage-plugin-zenodo

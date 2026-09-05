@@ -1,6 +1,6 @@
 [![DOI:10.5281/zenodo.21529137](https://img.shields.io/badge/DOI-10.5281/zenodo.21529137-yellow.svg)](https://doi.org/10.5281/zenodo.21529137)
 
-# deeptools 25 repo
+# Benchmarking and running deepTools4
 
 ## Setup
 

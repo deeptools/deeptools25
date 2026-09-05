@@ -34,7 +34,7 @@ snakemake = ">=9.9"
 snakemake-storage-plugin-zenodo = "*"
 snakemake-executor-plugin-cluster-generic = "*"
 snakemake-executor-plugin-slurm = "*"
-deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "0f07abf3cf4b1f9f74a31e6db0fb3448c1a3eac6" }
+deeptools = { git = "https://github.com/deeptools/deepTools.git", rev = "fd19d2ec84f00392282787d925eb1c8317121b5b" }
 
 [activation.env]
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"

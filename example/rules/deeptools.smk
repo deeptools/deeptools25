@@ -95,6 +95,7 @@ rule computeMatrix_chip:
     shell:'''
     computeMatrix {params.mattype} -p {threads} \
       -S {params.bws} \
+    'results/supplemental_figure_combined.pdf',
       -o {output.mat} \
       -bs {params.binsize} \
       --missingDataAsZero \
@@ -156,12 +157,96 @@ rule plotHeatmap_atac:
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-    --startLabel "\\-5kb" --endLabel "\\+5kb" --colorMap Reds \
+      --startLabel "\\-5kb" \
+      --endLabel "\\+5kb" \
+      --colorMap Reds \
       --xAxisLabel "" \
       --interpolationMethod bilinear \
       --regionsLabel up down non-de \
       --whatToShow "heatmap and colorbar"
     '''
+
+rule multiBigwigSummary_ATAC:
+    input:
+        bw = expand('results/atac/{atacsample}.bw', atacsample=ATACSAMPLES)
+    output:
+        npz = 'results/atac_summ.npz'
+    threads: 10
+    params:
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[2] + '-' + i.split('_')[4] for i in input.bw] )
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
+    shell:'''
+    multiBigwigSummary bins \
+      -p {threads} \
+      -o {output.npz} \
+      -b {input.bw} \
+      --labels {params.labels} 
+    '''
+
+rule plotPCA_ATAC:
+    input:
+        mat = 'results/atac_summ.npz'
+    output:
+        png = 'results/atac_pca.png'
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
+    shell:'''
+    plotPCA \
+      -in {input.mat} \
+      -o {output.png} \
+      --colors blue blue red red \
+      --plotWidth 6 \
+      --plotHeight 10 \
+      --addLabels 
+    '''
+
+rule plotCorrelation_ATAC:
+    input:
+        mat = 'results/atac_summ.npz'
+    output:
+        png = 'results/atac_correlation.png'
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
+    shell:'''
+    plotCorrelation \
+      -in {input.mat} \
+      -o {output.png} \
+      --corMethod pearson \
+      --whatToPlot heatmap \
+      --colorMap RdYlBu \
+      --plotNumbers \
+      --skipZeros \
+      --plotWidth 6 \
+      --plotHeight 6
+    '''
+
+rule plotEnrichment_ATAC:
+    input:
+        bams = expand('deeptools_input/{atacsample}.bam', atacsample=ATACSAMPLES),
+        bed = 'deeptools_input/upreg_ATAC.bed'
+    output:
+        png = 'results/atac_enrichment.png'
+    params:
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[2] + '-' + i.split('_')[4] for i in input.bams] )
+    threads: 10
+    resources:
+        mem_mb = 4000,
+        runtime = 1440
+    shell:'''
+    plotEnrichment \
+      -p {threads} \
+      -b {input.bams} \
+      -o {output.png} \
+      --BED {input.bed} \
+      --labels {params.labels}  \
+      --colors blue blue red red \
+      --plotWidth 6 \
+      --plotHeight 6
+    '''    
 
 rule computeMatrix_meth:
     input:
@@ -225,3 +310,18 @@ rule combine_figure:
         runtime = 60
     script:
         'scripts/combined_figure.py'
+
+rule combine_supplemental_figure:
+    input:
+        atac_pca = 'results/atac_pca.png',
+        atac_corr = 'results/atac_correlation.png',
+        atac_enrich = 'results/atac_enrichment.png'
+    output:
+        pdf = 'results/supplemental_figure_combined.pdf',
+        png = 'results/supplemental_figure_combined.png',
+        tiff = 'results/supplemental_figure_combined.tiff'
+    resources:
+        mem_mb = 4000,
+        runtime = 60
+    script:
+        'scripts/combined_supplemental_figure.py'

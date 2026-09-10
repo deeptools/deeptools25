@@ -17,3 +17,7 @@ cp "$SCRIPT_DIR/../benchmark/results/performance.pdf" "$SCRIPT_DIR/figure2.pdf"
 ## Figure 4 - example (generated before, results committed to repo)cp
 cp "$SCRIPT_DIR/../example/results/figure_combined.png" "$SCRIPT_DIR/figure4.png"
 cp "$SCRIPT_DIR/../example/results/figure_combined.pdf" "$SCRIPT_DIR/figure4.pdf"
+
+## Supp. Figure - supplemental figure (generated before, results committed to repo)
+cp "$SCRIPT_DIR/../example/results/supplemental_figure_combined.png" "$SCRIPT_DIR/supp_figure1.png"
+cp "$SCRIPT_DIR/../example/results/supplemental_figure_combined.pdf" "$SCRIPT_DIR/supp_figure1.pdf"

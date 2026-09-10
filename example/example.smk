@@ -105,5 +105,8 @@ rule all:
     'results/figure_combined.pdf',
     'results/figure_combined.png',
     'results/figure_combined.tiff',
+    'results/supplemental_figure_combined.pdf',
+    'results/supplemental_figure_combined.png',
+    'results/supplemental_figure_combined.tiff',
     # Sample information
     'results/sample_stats.tsv'

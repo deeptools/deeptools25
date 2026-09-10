@@ -199,7 +199,7 @@ rule plotPCA_ATAC:
       -o {output.png} \
       --colors blue blue red red \
       --plotWidth 6 \
-      --plotHeight 10 \
+      --plotHeight 12 \
       --addLabels 
     '''
 
@@ -245,7 +245,8 @@ rule plotEnrichment_ATAC:
       --labels {params.labels}  \
       --colors blue blue red red \
       --plotWidth 6 \
-      --plotHeight 6
+      --plotHeight 6 \
+      --variableScales
     '''    
 
 rule computeMatrix_meth:

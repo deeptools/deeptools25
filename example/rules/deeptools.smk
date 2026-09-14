@@ -14,6 +14,21 @@ rule multibamsummary:
       --BED {input.bed} -b {input.bamfiles} --outRawCounts {output.counts}
     '''
 
+rule multibamsummary_bins:
+    input:
+        bamfiles = lambda wildcards: sorted(expand('deeptools_input/{sample}.bam', sample=[i for i in SAMPLES if 'H3' in i])),
+    output:
+        npz = 'regions/ChIPs.npz',
+    threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
+    params:
+        rar = config['rar']
+    shell:'''
+        multiBamSummary bins -p {threads} -o {output.npz} -b {input.bamfiles} -bs 10000 --extendReads 150 --centerReads --blackListFileName {params.rar}
+    '''
+
 rule parse_de:
     input:
         down = 'regions/de_down.tsv',
@@ -165,91 +180,6 @@ rule plotHeatmap_atac:
       --whatToShow "heatmap and colorbar"
     '''
 
-rule multiBigwigSummary_chip:
-    input:
-        bw = expand('results/chip/{chipsample}.bw', chipsample=sampleconfig['chipdict'].keys()) 
-    output:
-        npz = 'results/chip_summ.npz'
-    threads: 10
-    params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[2] + '-' + i.split('_')[4].split('.')[0] for i in input.bw] )
-    resources:
-        mem_mb = 8000,
-        runtime = 1440
-    shell:'''
-    multiBigwigSummary bins \
-      -p {threads} \
-      -o {output.npz} \
-      -b {input.bw} \
-      --labels {params.labels} 
-    '''
-
-rule plotPCA_chip:
-    input:
-        mat = 'results/chip_summ.npz'
-    output:
-        png = 'results/chip_pca.png'
-    resources:
-        mem_mb = 4000,
-        runtime = 1440
-    shell:'''
-    plotPCA \
-      -in {input.mat} \
-      -o {output.png} \
-      --colors green green blue blue orange orange red red purple purple \
-               green green blue blue orange orange red red purple purple \
-      --plotWidth 8 \
-      --plotHeight 16 \
-      --addLabels \
-      --markers o:10 s:10
-    '''
-
-rule plotCorrelation_chip:
-    input:
-        mat = 'results/chip_summ.npz'
-    output:
-        png = 'results/chip_correlation.png'
-    resources:
-        mem_mb = 4000,
-        runtime = 1440
-    shell:'''
-    plotCorrelation \
-      -in {input.mat} \
-      -o {output.png} \
-      --corMethod pearson \
-      --whatToPlot heatmap \
-      --colorMap RdYlBu \
-      --skipZeros \
-      --plotWidth 8 \
-      --plotHeight 8
-    '''
-
-rule plotEnrichment_ATAC:
-    input:
-        bams = expand('deeptools_input/{atacsample}.bam', atacsample=ATACSAMPLES),
-        bed = ['deeptools_input/upreg_ATAC.bed', 'deeptools_input/downreg_ATAC.bed']
-    output:
-        png = 'results/atac_enrichment.png'
-    params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[5].split('.')[0] for i in input.bams] )
-    threads: 10
-    resources:
-        mem_mb = 4000,
-        runtime = 1440
-    shell:'''
-    plotEnrichment \
-      -p {threads} \
-      -b {input.bams} \
-      -o {output.png} \
-      --BED {input.bed} \
-      --labels {params.labels}  \
-      --colors blue blue orange orange \
-      --plotWidth 8 \
-      --plotHeight 8 \
-      --variableScales \
-      --regionLabels "up regulated" "down regulated" 
-    '''    
-
 rule computeMatrix_meth:
     input:
         bw = expand('deeptools_input/{bssample}_CpG.bw', bssample=BSSAMPLES),
@@ -315,15 +245,14 @@ rule combine_figure:
 
 rule combine_supplemental_figure:
     input:
-        pca = 'results/chip_pca.png',
-        corr = 'results/chip_correlation.png',
-        enrich = 'results/atac_enrichment.png'
+        bams = lambda wildcards: sorted(expand('deeptools_input/{sample}.bam', sample=[i for i in SAMPLES if 'H3' in i])),
+        npz = 'regions/ChIPs.npz'
     output:
-        pdf = 'results/supplemental_figure_combined.pdf',
-        png = 'results/supplemental_figure_combined.png',
-        tiff = 'results/supplemental_figure_combined.tiff'
+        pdf = 'results/supplemental_figure1.pdf',
+        png = 'results/supplemental_figure1.png',
+        tiff = 'results/supplemental_figure1.tiff',
     resources:
         mem_mb = 4000,
         runtime = 60
     script:
-        'scripts/combined_supplemental_figure.py'
+        'scripts/combined_supfig1.py'

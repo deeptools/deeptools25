@@ -14,6 +14,21 @@ rule multibamsummary:
       --BED {input.bed} -b {input.bamfiles} --outRawCounts {output.counts}
     '''
 
+rule multibamsummary_bins:
+    input:
+        bamfiles = lambda wildcards: sorted(expand('deeptools_input/{sample}.bam', sample=[i for i in SAMPLES if 'H3' in i])),
+    output:
+        npz = 'regions/ChIPs.npz',
+    threads: 10
+    resources:
+        mem_mb = 8000,
+        runtime = 1440
+    params:
+        rar = config['rar']
+    shell:'''
+        multiBamSummary bins -p {threads} -o {output.npz} -b {input.bamfiles} -bs 10000 --extendReads 150 --centerReads --blackListFileName {params.rar}
+    '''
+
 rule parse_de:
     input:
         down = 'regions/de_down.tsv',
@@ -156,7 +171,9 @@ rule plotHeatmap_atac:
         runtime = 1440
     shell:'''
     plotHeatmap -m {input.mat} -out {output.png} \
-    --startLabel "\\-5kb" --endLabel "\\+5kb" --colorMap Reds \
+      --startLabel "\\-5kb" \
+      --endLabel "\\+5kb" \
+      --colorMap Reds \
       --xAxisLabel "" \
       --interpolationMethod bilinear \
       --regionsLabel up down non-de \
@@ -225,3 +242,17 @@ rule combine_figure:
         runtime = 60
     script:
         'scripts/combined_figure.py'
+
+rule combine_supplemental_figure:
+    input:
+        bams = lambda wildcards: sorted(expand('deeptools_input/{sample}.bam', sample=[i for i in SAMPLES if 'H3' in i])),
+        npz = 'regions/ChIPs.npz'
+    output:
+        pdf = 'results/supplemental_figure1.pdf',
+        png = 'results/supplemental_figure1.png',
+        tiff = 'results/supplemental_figure1.tiff',
+    resources:
+        mem_mb = 4000,
+        runtime = 60
+    script:
+        'scripts/combined_supfig1.py'

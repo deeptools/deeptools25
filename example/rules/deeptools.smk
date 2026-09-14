@@ -95,7 +95,6 @@ rule computeMatrix_chip:
     shell:'''
     computeMatrix {params.mattype} -p {threads} \
       -S {params.bws} \
-    'results/supplemental_figure_combined.pdf',
       -o {output.mat} \
       -bs {params.binsize} \
       --missingDataAsZero \
@@ -166,14 +165,14 @@ rule plotHeatmap_atac:
       --whatToShow "heatmap and colorbar"
     '''
 
-rule multiBigwigSummary_ATAC:
+rule multiBigwigSummary_chip:
     input:
-        bw = expand('results/atac/{atacsample}.bw', atacsample=ATACSAMPLES)
+        bw = expand('results/chip/{chipsample}.bw', chipsample=sampleconfig['chipdict'].keys()) 
     output:
-        npz = 'results/atac_summ.npz'
+        npz = 'results/chip_summ.npz'
     threads: 10
     params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[2] + '-' + i.split('_')[4] for i in input.bw] )
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[2] + '-' + i.split('_')[4].split('.')[0] for i in input.bw] )
     resources:
         mem_mb = 8000,
         runtime = 1440
@@ -185,11 +184,11 @@ rule multiBigwigSummary_ATAC:
       --labels {params.labels} 
     '''
 
-rule plotPCA_ATAC:
+rule plotPCA_chip:
     input:
-        mat = 'results/atac_summ.npz'
+        mat = 'results/chip_summ.npz'
     output:
-        png = 'results/atac_pca.png'
+        png = 'results/chip_pca.png'
     resources:
         mem_mb = 4000,
         runtime = 1440
@@ -197,17 +196,19 @@ rule plotPCA_ATAC:
     plotPCA \
       -in {input.mat} \
       -o {output.png} \
-      --colors blue blue red red \
-      --plotWidth 6 \
-      --plotHeight 12 \
-      --addLabels 
+      --colors green green blue blue orange orange red red purple purple \
+               green green blue blue orange orange red red purple purple \
+      --plotWidth 8 \
+      --plotHeight 16 \
+      --addLabels \
+      --markers o:10 s:10
     '''
 
-rule plotCorrelation_ATAC:
+rule plotCorrelation_chip:
     input:
-        mat = 'results/atac_summ.npz'
+        mat = 'results/chip_summ.npz'
     output:
-        png = 'results/atac_correlation.png'
+        png = 'results/chip_correlation.png'
     resources:
         mem_mb = 4000,
         runtime = 1440
@@ -218,20 +219,19 @@ rule plotCorrelation_ATAC:
       --corMethod pearson \
       --whatToPlot heatmap \
       --colorMap RdYlBu \
-      --plotNumbers \
       --skipZeros \
-      --plotWidth 6 \
-      --plotHeight 6
+      --plotWidth 8 \
+      --plotHeight 8
     '''
 
 rule plotEnrichment_ATAC:
     input:
         bams = expand('deeptools_input/{atacsample}.bam', atacsample=ATACSAMPLES),
-        bed = 'deeptools_input/upreg_ATAC.bed'
+        bed = ['deeptools_input/upreg_ATAC.bed', 'deeptools_input/downreg_ATAC.bed']
     output:
         png = 'results/atac_enrichment.png'
     params:
-        labels = lambda wildcards, input: ' '.join( [i.split('_')[2] + '-' + i.split('_')[4] for i in input.bams] )
+        labels = lambda wildcards, input: ' '.join( [i.split('_')[3] + '-' + i.split('_')[5].split('.')[0] for i in input.bams] )
     threads: 10
     resources:
         mem_mb = 4000,
@@ -243,10 +243,11 @@ rule plotEnrichment_ATAC:
       -o {output.png} \
       --BED {input.bed} \
       --labels {params.labels}  \
-      --colors blue blue red red \
-      --plotWidth 6 \
-      --plotHeight 6 \
-      --variableScales
+      --colors blue blue orange orange \
+      --plotWidth 8 \
+      --plotHeight 8 \
+      --variableScales \
+      --regionLabels "up regulated" "down regulated" 
     '''    
 
 rule computeMatrix_meth:
@@ -314,9 +315,9 @@ rule combine_figure:
 
 rule combine_supplemental_figure:
     input:
-        atac_pca = 'results/atac_pca.png',
-        atac_corr = 'results/atac_correlation.png',
-        atac_enrich = 'results/atac_enrichment.png'
+        pca = 'results/chip_pca.png',
+        corr = 'results/chip_correlation.png',
+        enrich = 'results/atac_enrichment.png'
     output:
         pdf = 'results/supplemental_figure_combined.pdf',
         png = 'results/supplemental_figure_combined.png',

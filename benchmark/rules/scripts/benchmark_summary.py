@@ -39,9 +39,10 @@ time = (
          .dropna(subset=['dt3', 'dt4'])
 )
 time['speedup'] = time['dt3'] / time['dt4']
-speed_summary = time.groupby('tool')[['speedup']].mean()
-speed_summary.columns = [f'mean_speedup_{max_threads}threads']
+speed_summary = time.groupby('tool')['speedup'].agg(['mean', 'median'])
+speed_summary.columns = ['mean_speedup', 'median_speedup']
 
 summary = mem_summary.join(speed_summary, how='outer').reset_index()
-summary = summary[['tool', f'mean_speedup_{max_threads}threads', 'mean_mem_diff_pct', 'mean_mem_diff_gb']]
+summary = summary[['tool', 'mean_speedup', 'median_speedup', 'mean_mem_diff_pct', 'mean_mem_diff_gb']]
+summary = summary.round(2)
 summary.to_csv(snakemake.output.tsv, sep='\t', index=False)

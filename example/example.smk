@@ -74,6 +74,7 @@ cmap = {
 wildcard_constraints:
     sample = "|".join(SAMPLES),
     mergedpeak = "|".join(['ATAC'] + CHIPS),
+    chip = "|".join(CHIPS),
 
 include: 'rules/get_data.smk'
 include: 'rules/get_regions.smk'
@@ -105,5 +106,8 @@ rule all:
     'results/figure_combined.pdf',
     'results/figure_combined.png',
     'results/figure_combined.tiff',
+    'results/supplemental_figure1.pdf',
+    'results/supplemental_figure1.png',
+    'results/supplemental_figure1.tiff',
     # Sample information
     'results/sample_stats.tsv'

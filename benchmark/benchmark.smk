@@ -137,6 +137,7 @@ include: 'rules/bamcompare.smk'
 include: 'rules/multibamsummary.smk'
 include: 'rules/computematrix.smk'
 include: 'rules/plotter.smk'
+include: 'rules/benchmark_summary.smk'
 include: 'rules/download_data.smk'
 include: '../.shared_rules/sample_stats.smk'
 
@@ -187,3 +188,4 @@ rule all:
         expand("bamfiles/{cramfile}.bam", cramfile=CRAMFILES),
         function_runners(config['what']),
         'results/sample_stats.tsv',
+        'results/benchmark_summary.tsv',

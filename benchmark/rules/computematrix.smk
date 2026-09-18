@@ -9,7 +9,7 @@ rule computeMatrix_dt4:
   benchmark: "benchmarks/computeMatrix/{run}_dt4_t{n}_rep{rep}.txt"
   threads: lambda wildcards: int(wildcards.n)
   resources:
-    mem_mb = 20000,
+    mem_mb = lambda wildcards: 40000 if int(wildcards.n) > 10 else 20000,
     runtime = 1440
   shell:'''
   computeMatrix reference-point -p {threads} \

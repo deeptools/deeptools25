@@ -106,8 +106,8 @@ rule all:
     'results/figure_combined.pdf',
     'results/figure_combined.png',
     'results/figure_combined.tiff',
-    'results/supplemental_figure1.pdf',
-    'results/supplemental_figure1.png',
-    'results/supplemental_figure1.tiff',
+    'results/example_viz.pdf',
+    'results/example_viz.png',
+    'results/example_viz.tiff',
     # Sample information
     'results/sample_stats.tsv'

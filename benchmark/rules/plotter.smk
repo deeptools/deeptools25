@@ -22,3 +22,19 @@ rule plot_benchmarks:
   threads: 2
   script:
     'scripts/plotter.py'
+
+rule plot_benchmarks:
+  localrule: True
+  input:
+    csv = 'results/performance.csv',
+  output:
+    runpng = 'results/performance_runtime.png',
+    runpdf = 'results/performance_runtime.pdf',
+    runtiff = 'results/performance_runtime.tiff',
+    mempng = 'results/performance_memory.png',
+    mempdf = 'results/performance_memory.pdf',
+    memtiff = 'results/performance_memory.tiff'
+  conda: 'env/plotter.yaml'
+  threads: 2
+  script:
+    'scripts/benchmark_supfigs.py'

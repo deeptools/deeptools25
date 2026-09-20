@@ -179,7 +179,9 @@ def function_runners(conf_what):
                 expand("benchmarks/multibamsummary/{multibamsummary}_dt4_t{n}_rep{rep}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS), rep=REPS),
                 expand("benchmarks/multibamsummary/{multibamsummary}_dt3_t{n}_rep{rep}.txt", multibamsummary=multibamSummary_samples.keys(), n=thread_range(MULTIBAMSUMMARY_THREADS), rep=REPS),
                 'results/performance.csv',
-                'results/performance.png'
+                'results/performance.png',
+                'results/performance_runtime.png',
+                'results/performance_memory.png'
             ]
 
 rule all:

@@ -23,7 +23,7 @@ rule plot_benchmarks:
   script:
     'scripts/plotter.py'
 
-rule plot_benchmarks:
+rule plot_benchmarks_suppfigs:
   localrule: True
   input:
     csv = 'results/performance.csv',

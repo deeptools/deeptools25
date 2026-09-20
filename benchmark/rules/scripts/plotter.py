@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FixedLocator, ScalarFormatter, NullFormatter
+import re
 
 _stem_re = re.compile(r'_(dt[34])_t(\d+)_rep(\d+)$')
 

@@ -248,9 +248,9 @@ rule combine_supplemental_figure:
         bams = lambda wildcards: sorted(expand('deeptools_input/{sample}.bam', sample=[i for i in SAMPLES if 'H3' in i])),
         npz = 'regions/ChIPs.npz'
     output:
-        pdf = 'results/supplemental_figure1.pdf',
-        png = 'results/supplemental_figure1.png',
-        tiff = 'results/supplemental_figure1.tiff',
+        pdf = 'results/example_viz.pdf',
+        png = 'results/example_viz.png',
+        tiff = 'results/example_viz.tiff',
     resources:
         mem_mb = 4000,
         runtime = 60

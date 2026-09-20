@@ -1,8 +1,9 @@
-import re
-import numpy as np
 import pandas as pd
-import seaborn as sns
+import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.ticker import FixedLocator, ScalarFormatter, NullFormatter
+import re
 
 _stem_re = re.compile(r'_(dt[34])_t(\d+)_rep(\d+)$')
 
@@ -32,6 +33,8 @@ df['datatype'] = df['sample'].str.rsplit('_', n=1).str[1]
 df['version'] = df['version'].map({'dt3': 'v3', 'dt4': 'v4'})
 modalities = df["modality"].unique()
 organisms  = ["human", "triticum"]
+versions   = ["v3", "v4"]
+
 baseline = (
     df[df.version == 'v3']
     .groupby(['sample', 'threads'])[['s', 'max_rss']]
@@ -41,27 +44,32 @@ baseline = (
 df = df.merge(baseline, on=['sample', 'threads'], how='left')
 df['s_speedup']   = df['s_base'] / df['s']
 df['rss_speedup'] = df['rss_base'] / df['max_rss']
+
 def sem(x):
     return np.std(x, ddof=1) / np.sqrt(len(x))
+
 def summarize(sub, cols):
     return (
         sub.groupby("threads")[cols]
            .agg(['mean', sem])
            .reset_index()
     )
-org_colors    = {"human": "#5B8FC7", "triticum": "#C76B95"}
-version_style = {"v3": dict(linestyle="--", marker="s"),
+
+org_colors     = {"human": "#5B8FC7", "triticum": "#C76B95"}
+version_style  = {"v3": dict(linestyle="--", marker="s"),
                   "v4": dict(linestyle="-",  marker="o")}
+version_colors = {"v3": "tab:gray", "v4": "tab:red"}
+
+MEM_LOG_Y = True
+
 n_panels = len(modalities) + 1
 ncols = -(-n_panels // 2)
 fig, axes = plt.subplots(
-    nrows=2,
-    ncols=ncols,
-    figsize=(12, 6),
-    squeeze=False,
-    constrained_layout=True
+    nrows=2, ncols=ncols, figsize=(12, 8),
+    squeeze=False, constrained_layout=True
 )
 axes = axes.flatten()
+
 for i, mod in enumerate(modalities):
     ax = axes[i]
     sub_mod = df[df["modality"] == mod]
@@ -70,7 +78,7 @@ for i, mod in enumerate(modalities):
         sub_org = sub_mod[sub_mod["organism"] == org]
         color = org_colors[org]
         last_x, last_y = None, None
-        for v in ["v3", "v4"]:
+        for v in versions:
             sub = sub_org[sub_org["version"] == v]
             if sub.empty:
                 continue
@@ -113,17 +121,78 @@ for i, mod in enumerate(modalities):
     labels[-1] = ""
     ax.set_xticks(ticks)
     ax.set_xticklabels(labels)
-mem_ax = axes[len(modalities)]
-sns.barplot(
-    data=df, x="modality", y="max_rss", hue="version",
-    ax=mem_ax, errorbar="se",
-    palette={"v3": "tab:gray", "v4": "tab:red"}
+
+slot = axes[len(modalities)]
+gs = slot.get_subplotspec().subgridspec(2, 1, hspace=0)
+slot.remove()
+ax_bot = fig.add_subplot(gs[1])
+ax_top = fig.add_subplot(gs[0], sharex=ax_bot)
+mem_axes = dict(zip(organisms, [ax_top, ax_bot]))
+
+per_sample = (
+    df.groupby(["modality", "version", "sample", "organism"], as_index=False)["max_rss"]
+      .mean()
 )
-mem_ax.set_title("memory usage")
-mem_ax.set_xlabel("")
-mem_ax.set_ylabel("max RSS (MB)")
-mem_ax.set_xticklabels(mem_ax.get_xticklabels(), rotation=30, ha='right')
-mem_ax.legend(fontsize=8, title=None, loc='upper left')
+
+bar_width = 0.8
+hue_w = bar_width / len(versions)
+x_base = np.arange(len(modalities))
+rng = np.random.default_rng(0)
+
+for org, ax in mem_axes.items():
+    color = org_colors[org]
+    sub_org = per_sample[per_sample.organism == org]
+
+    if MEM_LOG_Y:
+        ymin_data = sub_org["max_rss"].min()
+        floor = 10 ** np.floor(np.log10(ymin_data * 0.8))
+    else:
+        floor = 0
+
+    for v_i, v in enumerate(versions):
+        xs = x_base - bar_width / 2 + hue_w * (v_i + 0.5)
+        sub_v = sub_org[sub_org.version == v]
+        stats = (sub_v.groupby("modality")["max_rss"]
+                      .agg(["mean", sem]).reindex(modalities))
+
+        ax.bar(xs, stats["mean"] - floor, bottom=floor, width=hue_w * 0.85,
+               fill=False, edgecolor=color, linewidth=1.2,
+               linestyle=version_style[v]["linestyle"], zorder=1)
+        ax.errorbar(xs, stats["mean"], yerr=stats["sem"], fmt="none",
+                    ecolor=color, capsize=3, linewidth=1, zorder=2)
+        for m_i, mod in enumerate(modalities):
+            pts = sub_v.loc[sub_v.modality == mod, "max_rss"]
+            jitter = rng.uniform(-hue_w * 0.22, hue_w * 0.22, len(pts))
+            ax.scatter(xs[m_i] + jitter, pts, s=32, color=color,
+                       marker=version_style[v]["marker"],
+                       edgecolors="black", linewidths=0.6, alpha=0.9, zorder=3)
+
+    if MEM_LOG_Y:
+        ax.set_yscale("log")
+        top = sub_org["max_rss"].max()
+        ax.set_ylim(floor, top * 8)
+        ax.yaxis.set_major_locator(FixedLocator([50, 100, 1000, 5000, 10000, 50000]))
+        fmt = ScalarFormatter(); fmt.set_scientific(False)
+        ax.yaxis.set_major_formatter(fmt)
+        ax.yaxis.set_minor_formatter(NullFormatter())
+    else:
+        ax.set_ylim(0, ax.get_ylim()[1] * 1.35)
+    ax.set_ylabel("max RSS (MB)", fontsize=9)
+    ax.text(0.02, 0.95, org, transform=ax.transAxes,
+            color=color, fontsize=9, va="top")
+
+ax_top.set_title("memory usage")
+ax_top.tick_params(labelbottom=False)
+ax_bot.set_xticks(x_base)
+ax_bot.set_xticklabels([m.lower() for m in modalities], rotation=30, ha="right")
+
+ver_handles = [
+    Line2D([], [], color="black", label=v, linewidth=1.2, **version_style[v])
+    for v in versions
+]
+ax_top.legend(handles=ver_handles, fontsize=8, loc="upper right",
+              frameon=False, ncol=2, handlelength=2.5)
+
 for j in range(len(modalities) + 1, len(axes)):
     axes[j].axis('off')
 

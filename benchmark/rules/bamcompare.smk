@@ -29,3 +29,17 @@ rule bamcompare_dt3:
   bamCompare_old -b1 {input.bam} -b2 {input.ctrlbam} -o {output.bw} \
     --binSize 10 -p {threads}
   '''
+
+rule compare_bamcompare:
+  input:
+    dt3 = lambda wildcards: f"output/bamcompare_{wildcards.bamcompare}.dt3_t{BAMCOMPARE_THREADS}_rep1.bw",
+    dt4 = lambda wildcards: f"output/bamcompare_{wildcards.bamcompare}.dt4_t{BAMCOMPARE_THREADS}_rep1.bw"
+  output:
+    tsv = "results/numerical_diff/bamcompare_{bamcompare}.tsv"
+  params:
+    mode = "bigwig",
+    tool = "bamCompare",
+    sample = lambda wildcards: wildcards.bamcompare
+  localrule: True
+  script:
+    "scripts/compare_dt3_dt4.py"

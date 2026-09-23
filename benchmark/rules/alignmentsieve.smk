@@ -27,3 +27,17 @@ rule alsieve_dt3:
   alignmentSieve_old -b {input.bam} -o {output.bam} \
     -p {threads} --ATACshift
   '''
+
+rule compare_alignmentsieve:
+  input:
+    dt3 = lambda wildcards: f"output/alignmentsieve_{wildcards.alignmentsieve}.dt3_t{ALSIEVE_THREADS}_rep1.bam",
+    dt4 = lambda wildcards: f"output/alignmentsieve_{wildcards.alignmentsieve}.dt4_t{ALSIEVE_THREADS}_rep1.bam"
+  output:
+    tsv = "results/numerical_diff/alignmentsieve_{alignmentsieve}.tsv"
+  params:
+    mode = "bam",
+    tool = "alignmentSieve",
+    sample = lambda wildcards: wildcards.alignmentsieve
+  localrule: True
+  script:
+    "scripts/compare_dt3_dt4.py"

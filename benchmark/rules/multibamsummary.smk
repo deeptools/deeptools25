@@ -33,3 +33,17 @@ rule multibamsummary_dt3:
     -o {output.npz} \
     -b {input.bam_files}
   """
+
+rule compare_multibamsummary:
+  input:
+    dt3 = lambda wildcards: f"output/mbs_{wildcards.run}.dt3_t{MULTIBAMSUMMARY_THREADS}_rep1.npz",
+    dt4 = lambda wildcards: f"output/mbs_{wildcards.run}.dt4_t{MULTIBAMSUMMARY_THREADS}_rep1.npz"
+  output:
+    tsv = "results/numerical_diff/multibamsummary_{run}.tsv"
+  params:
+    mode = "npz",
+    tool = "multiBamSummary",
+    sample = lambda wildcards: wildcards.run
+  localrule: True
+  script:
+    "scripts/compare_dt3_dt4.py"

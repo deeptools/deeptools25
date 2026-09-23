@@ -191,3 +191,4 @@ rule all:
         function_runners(config['what']),
         'results/sample_stats.tsv',
         'results/benchmark_summary.tsv',
+        'results/numerical_diff.tsv',

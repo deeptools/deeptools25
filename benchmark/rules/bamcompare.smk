@@ -40,6 +40,8 @@ rule compare_bamcompare:
     mode = "bigwig",
     tool = "bamCompare",
     sample = lambda wildcards: wildcards.bamcompare
-  localrule: True
+  resources:
+    mem_mb = 20000,
+    runtime = 1440
   script:
     "scripts/compare_dt3_dt4.py"

@@ -38,6 +38,8 @@ rule compare_bamcoverage:
     mode = "bigwig",
     tool = "bamCoverage",
     sample = lambda wildcards: wildcards.bamcoverage
-  localrule: True
+  resources:
+    mem_mb = 20000,
+    runtime = 1440
   script:
     "scripts/compare_dt3_dt4.py"

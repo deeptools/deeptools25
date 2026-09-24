@@ -38,6 +38,8 @@ rule compare_alignmentsieve:
     mode = "bam",
     tool = "alignmentSieve",
     sample = lambda wildcards: wildcards.alignmentsieve
-  localrule: True
+  resources:
+    mem_mb = 40000,
+    runtime = 1440
   script:
     "scripts/compare_dt3_dt4.py"

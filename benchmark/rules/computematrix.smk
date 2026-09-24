@@ -48,6 +48,8 @@ rule compare_computematrix:
     mode = "matrix",
     tool = "computeMatrix",
     sample = lambda wildcards: wildcards.run
-  localrule: True
+  resources:
+    mem_mb = 20000,
+    runtime = 1440
   script:
     "scripts/compare_dt3_dt4.py"

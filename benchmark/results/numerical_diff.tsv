@@ -1,0 +1,23 @@
+tool	sample	n_reads_dt3	n_reads_dt4	n_common_reads_sampled	n_pos_mismatch	n_qlen_mismatch	n_flag_mismatch	n_values	pearson_r	max_abs_diff	shape_dt3	shape_dt4	shape_mismatch	n_bins_dt3	n_bins_dt4	n_common_bins	n_common_bins_sampled
+alignmentSieve	alsieve_human_chip	29727000.0	29727000.0	20000.0	0.0	0.0	0.0										
+alignmentSieve	alsieve_human_rna	97744386.0	97744386.0	20000.0	0.0	0.0	0.0										
+alignmentSieve	alsieve_human_wgs	934945514.0	934945514.0	20000.0	0.0	0.0	0.0										
+alignmentSieve	alsieve_triticum_chip	46427552.0	46427552.0	20000.0	0.0	0.0	0.0										
+alignmentSieve	alsieve_triticum_rna	19232922.0	19232922.0	20000.0	0.0	0.0	0.0										
+alignmentSieve	alsieve_triticum_wgs	1051310232.0	1051310232.0	20000.0	0.0	0.0	0.0										
+bamCoverage	bcov_human_chip							3099750718.0	1.000000000800915	0.05078125							
+bamCoverage	bcov_human_rna							3099750718.0	1.0000000000248048	4.75							
+bamCoverage	bcov_human_wgs							3099750718.0	0.9999999851626744	0.05078125							
+bamCoverage	bcov_triticum_chip							14547261565.0	0.9999999953596062	0.010009765625							
+bamCoverage	bcov_triticum_rna							14547261565.0	1.0000000000500875	0.0625							
+bamCoverage	bcov_triticum_wgs							14547261565.0	0.9999999674945368	0.0498046875							
+bamCompare	bcom_human_chip							3099750718.0	0.9999956220626666	0.0050001144409179							
+bamCompare	bcom_triticum_chip							14547261565.0	0.99999115944461	0.0050001144409179							
+multiBamSummary	mbs_human_3							60000.0	1.0	0.0	(310096, 6)	(310096, 6)	False	310096.0	310096.0	310096.0	20000.0
+multiBamSummary	mbs_human_15							300000.0	0.9999999999999968	3.0	(310096, 18)	(310096, 18)	False	310096.0	310096.0	310096.0	20000.0
+multiBamSummary	mbs_triticum_3							60000.0	1.0	0.0	(1454737, 6)	(1454737, 6)	False	1454737.0	1454737.0	1454737.0	20000.0
+multiBamSummary	mbs_triticum_15							300000.0	0.9999999999999992	0.0600000000558793	(1454737, 18)	(1454737, 18)	False	1454737.0	1454737.0	1454737.0	20000.0
+computeMatrix	cm_human_3							12000000.0	1.0	0.0031250000029103	(200310, 600)	(200310, 600)	False				
+computeMatrix	cm_human_15							60000000.0	0.9999999999999823	0.0031250000029103	(200310, 3000)	(200310, 3000)	False				
+computeMatrix	cm_triticum_3							12000000.0	1.0	0.0007810000024619	(146597, 600)	(146597, 600)	False				
+computeMatrix	cm_triticum_15							60000000.0	0.9999999999999856	0.0007810000024619	(146597, 3000)	(146597, 3000)	False				

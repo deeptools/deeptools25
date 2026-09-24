@@ -25,10 +25,12 @@ mem = (
       .unstack('version')
       .dropna(subset=['dt3', 'dt4'])
 )
+mem['dt3_gb'] = mem['dt3'] / 1024
+mem['dt4_gb'] = mem['dt4'] / 1024
 mem['mem_diff_gb'] = (mem['dt4'] - mem['dt3']) / 1024
 mem['mem_diff_pct'] = 100 * (mem['dt4'] - mem['dt3']) / mem['dt3']
-mem_summary = mem.groupby('tool')[['mem_diff_pct', 'mem_diff_gb']].mean()
-mem_summary.columns = ['mean_mem_diff_pct', 'mean_mem_diff_gb']
+mem_summary = mem.groupby('tool')[['dt3_gb', 'dt4_gb', 'mem_diff_pct', 'mem_diff_gb']].mean()
+mem_summary.columns = ['mean_mem_dt3_gb', 'mean_mem_dt4_gb', 'mean_mem_diff_pct', 'mean_mem_diff_gb']
 
 # runtime speedup (dt3 / dt4) at max_threads, averaged per sample
 t_max = df[df['threads'] == max_threads]
@@ -43,6 +45,6 @@ speed_summary = time.groupby('tool')['speedup'].agg(['mean', 'median'])
 speed_summary.columns = ['mean_speedup', 'median_speedup']
 
 summary = mem_summary.join(speed_summary, how='outer').reset_index()
-summary = summary[['tool', 'mean_speedup', 'median_speedup', 'mean_mem_diff_pct', 'mean_mem_diff_gb']]
+summary = summary[['tool', 'mean_speedup', 'median_speedup', 'mean_mem_dt3_gb', 'mean_mem_dt4_gb', 'mean_mem_diff_pct', 'mean_mem_diff_gb']]
 summary = summary.round(2)
 summary.to_csv(snakemake.output.tsv, sep='\t', index=False)

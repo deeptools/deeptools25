@@ -27,3 +27,19 @@ rule bamcoverage_dt3_human:
   bamCoverage_old -b {input.bam} -o {output.bw} \
     --binSize 10 --normalizeUsing RPKM -p {threads}
   '''
+
+rule compare_bamcoverage:
+  input:
+    dt3 = lambda wildcards: f"output/bamcoverage_{wildcards.bamcoverage}.dt3_t{BAMCOVERAGE_THREADS}_rep1.bw",
+    dt4 = lambda wildcards: f"output/bamcoverage_{wildcards.bamcoverage}.dt4_t{BAMCOVERAGE_THREADS}_rep1.bw"
+  output:
+    tsv = "results/numerical_diff/bamcoverage_{bamcoverage}.tsv"
+  params:
+    mode = "bigwig",
+    tool = "bamCoverage",
+    sample = lambda wildcards: wildcards.bamcoverage
+  resources:
+    mem_mb = 20000,
+    runtime = 1440
+  script:
+    "scripts/compare_dt3_dt4.py"

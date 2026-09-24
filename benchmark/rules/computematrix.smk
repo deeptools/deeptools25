@@ -37,3 +37,19 @@ rule computeMatrix_dt3:
     -R {input.gtf} \
     -S {input.bw_files}
   '''
+
+rule compare_computematrix:
+  input:
+    dt3 = lambda wildcards: f"output/computeMatrix_{wildcards.run}.dt3_t{COMPUTEMATRIX_THREADS}_rep1.npz",
+    dt4 = lambda wildcards: f"output/computeMatrix_{wildcards.run}.dt4_t{COMPUTEMATRIX_THREADS}_rep1.npz"
+  output:
+    tsv = "results/numerical_diff/computematrix_{run}.tsv"
+  params:
+    mode = "matrix",
+    tool = "computeMatrix",
+    sample = lambda wildcards: wildcards.run
+  resources:
+    mem_mb = 20000,
+    runtime = 1440
+  script:
+    "scripts/compare_dt3_dt4.py"

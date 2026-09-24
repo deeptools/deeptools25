@@ -18,3 +18,18 @@ rule benchmark_summary:
   conda: 'env/plotter.yaml'
   script:
     'scripts/benchmark_summary.py'
+
+rule combine_numerical_diff:
+  localrule: True
+  input:
+    expand("results/numerical_diff/alignmentsieve_{s}.tsv", s=alignmentSieve_samples.keys()),
+    expand("results/numerical_diff/bamcoverage_{s}.tsv", s=bamCoverage_samples.keys()),
+    expand("results/numerical_diff/bamcompare_{s}.tsv", s=bamCompare_samples.keys()),
+    expand("results/numerical_diff/multibamsummary_{s}.tsv", s=multibamSummary_samples.keys()),
+    expand("results/numerical_diff/computematrix_{s}.tsv", s=computeMatrix_samples.keys())
+  output:
+    tsv = 'results/numerical_diff.tsv'
+  run:
+    import pandas as pd
+    df = pd.concat([pd.read_csv(f, sep="\t") for f in input], ignore_index=True)
+    df.to_csv(output.tsv, sep="\t", index=False)

@@ -20,13 +20,10 @@ cp "$SCRIPT_DIR/../benchmark/results/performance_runtime.pdf" "$SCRIPT_DIR/supp_
 cp "$SCRIPT_DIR/../benchmark/results/performance_memory.png" "$SCRIPT_DIR/supp_figure2.png"
 cp "$SCRIPT_DIR/../benchmark/results/performance_memory.pdf" "$SCRIPT_DIR/supp_figure2.pdf"
 
+## Figure 3 - example (generated before, results committed to repo)cp
+cp "$SCRIPT_DIR/../example/results/figure_combined.png" "$SCRIPT_DIR/figure3.png"
+cp "$SCRIPT_DIR/../example/results/figure_combined.pdf" "$SCRIPT_DIR/figure3.pdf"
 
-## Figure 3 - galaxy, to implement
-
-## Figure 4 - example (generated before, results committed to repo)cp
-cp "$SCRIPT_DIR/../example/results/figure_combined.png" "$SCRIPT_DIR/figure4.png"
-cp "$SCRIPT_DIR/../example/results/figure_combined.pdf" "$SCRIPT_DIR/figure4.pdf"
-
-## Supp. Figure - supplemental figure (generated before, results committed to repo)
+## Supp. Figure 3 - supplemental figure (generated before, results committed to repo)
 cp "$SCRIPT_DIR/../example/results/example_viz.png" "$SCRIPT_DIR/supp_figure3.png"
 cp "$SCRIPT_DIR/../example/results/example_viz.pdf" "$SCRIPT_DIR/supp_figure3.pdf"

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from deeptools import heatmapper
-from matplotlib.colors import PowerNorm
+from matplotlib.colors import PowerNorm, LinearSegmentedColormap
 from matplotlib.cm import ScalarMappable
 from matplotlib.patches import Rectangle
 from matplotlib.path import Path
@@ -10,6 +10,7 @@ from matplotlib.patches import PathPatch
 
 CHIPS = snakemake.params.chips
 CMAP = snakemake.params.cmap
+BROWN_CM = LinearSegmentedColormap.from_list('brown', ['#ffffff', '#8c510a'])
 DE_COLORS = {'ns': '#e0e0e0', 'ns - viz': '#8c8c8c', 'down': '#2166ac', 'up': '#b2182b'}
 GROUP_COLORS = {'up': DE_COLORS['up'], 'down': DE_COLORS['down'], 'non-de': DE_COLORS['ns - viz']}
 GENE_COLORS = [DE_COLORS['up'], DE_COLORS['ns - viz'], DE_COLORS['down']]
@@ -125,7 +126,7 @@ def plot_mark_profiles_ridgeline(ax, marks, condition, height=0.85, show_ylabels
 def add_heatmap_panel(fig, outer_spec, matrix_path, mark_title, cmap='YlOrRd',
                        zmin=None, zmax=None, pct=(5, 95), gamma=0.6,
                        missing_color='lightgrey', sample_titles=True,
-                       sample_wspace=0, group_hspace=0.025, annot_width_ratio=0.12,
+                       sample_wspace=0, group_hspace=0.025, annot_width_ratio=0.3,
                        cbar_height_ratio=0.04, title_height_ratio=0.06):
     hm = load_matrix(matrix_path)
     n_samples = hm.matrix.get_num_samples()
@@ -363,8 +364,8 @@ ax_ko.set_ylim(ax_wt.get_ylim())
 
 # HEATMAPS ######################################################################################################
 
-add_heatmap_panel(fig, gs_bottom[0, 0], snakemake.input.atac, 'ATAC', cmap='Reds')
-add_heatmap_panel(fig, gs_bottom[0, 1], snakemake.input.meth, 'CpG Meth.', cmap='Greys', missing_color='#ffffff')
+add_heatmap_panel(fig, gs_bottom[0, 0], snakemake.input.atac, 'ATAC', cmap='Oranges')
+add_heatmap_panel(fig, gs_bottom[0, 1], snakemake.input.meth, 'CpG Meth.', cmap=BROWN_CM, missing_color='#ffffff')
 
 for col, chip in enumerate(snakemake.input.chips, start=2):
     chipname = chip.split('/')[-1].replace('.npz', '').replace('chip_', '')

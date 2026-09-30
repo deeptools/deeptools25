@@ -255,4 +255,4 @@ rule combine_supplemental_figure:
         mem_mb = 4000,
         runtime = 60
     script:
-        'scripts/combined_supfig1.py'
+        'scripts/combined_example_supfig.py'

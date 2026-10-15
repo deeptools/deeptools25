@@ -24,7 +24,7 @@ def summarize(sub, cols):
            .reset_index()
     )
 
-org_colors    = {"human": "#5B8FC7", "triticum": "#C76B95"}
+version_colors = {"v3": "#5B8FC7", "v4": "#C76B95"}
 version_style = {"v3": dict(linestyle="--", marker="s"), "v4": dict(linestyle="-",  marker="o")}
 
 FIGSIZE = (12, 8)
@@ -42,35 +42,43 @@ def plot_org_lines(ax, sub_mod, ycol):
     label_points = []
     for org in organisms:
         sub_org = sub_mod[sub_mod["organism"] == org]
-        color = org_colors[org]
-        last = None
         for v in versions:
             sub = sub_org[sub_org["version"] == v]
             if sub.empty:
                 continue
+            color = version_colors[v]
             agg = summarize(sub, [ycol])
             ax.errorbar(
                 agg["threads"], agg[(ycol, "mean")], yerr=agg[(ycol, "sem")],
                 color=color, capsize=3, **version_style[v]
             )
-            if v == "v4":
-                last = (agg["threads"].iloc[-1], agg[(ycol, "mean")].iloc[-1])
-        if last is not None:
-            label_points.append([org, color, *last, 0.0])
+            label_points.append([org, color, agg["threads"].iloc[-1],
+                                 agg[(ycol, "mean")].iloc[-1], 0.0])
     annotate_labels(ax, label_points)
 
 
 def annotate_labels(ax, label_points, min_gap_pt=11):
-    if len(label_points) == 2:
-        ax.autoscale_view()
-        fig = ax.figure
-        px = [ax.transData.transform((p[2], p[3]))[1] for p in label_points]
-        gap_pt = (px[1] - px[0]) * 72 / fig.dpi
-        if abs(gap_pt) < min_gap_pt:
-            shift = (min_gap_pt - abs(gap_pt)) / 2
-            direction = 1 if gap_pt >= 0 else -1
-            label_points[0][4] = -shift * direction
-            label_points[1][4] =  shift * direction
+    """Label each curve end with its organism; spread labels vertically so
+    they do not overlap."""
+    ax.autoscale_view()
+    fig = ax.figure
+    pt_per_px = 72 / fig.dpi
+    ypt = [ax.transData.transform((p[2], p[3]))[1] * pt_per_px for p in label_points]
+    order = sorted(range(len(label_points)), key=lambda i: ypt[i])
+    pos = [ypt[i] for i in order]
+    for _ in range(100):
+        moved = False
+        for k in range(1, len(pos)):
+            gap = pos[k] - pos[k - 1]
+            if gap < min_gap_pt - 1e-6:
+                d = (min_gap_pt - gap) / 2
+                pos[k - 1] -= d
+                pos[k] += d
+                moved = True
+        if not moved:
+            break
+    for k, i in enumerate(order):
+        label_points[i][4] = pos[k] - ypt[i]
     for text, color, x, y, dy in label_points:
         ax.annotate(
             text, (x, y),
@@ -102,7 +110,7 @@ def make_grid():
 
 def split_summary_panel(fig, slot, ycol, ylabel, title, ticks):
     """Replace `slot` by two stacked panels (human / triticum): open bars
-    (organism colour, version line style) + individual samples, log y."""
+    (version colour and line style) + individual samples, log y."""
     gs = slot.get_subplotspec().subgridspec(2, 1, hspace=0)
     slot.remove()
     ax_bot = fig.add_subplot(gs[1])
@@ -121,12 +129,12 @@ def split_summary_panel(fig, slot, ycol, ylabel, title, ticks):
     rng = np.random.default_rng(0)
 
     for org, ax in split_axes.items():
-        color = org_colors[org]
         sub_org = per_sample[per_sample.organism == org]
         # log axis: bars start from a common floor instead of 0
         floor = 10 ** np.floor(np.log10(sub_org[ycol].min() * 0.8))
 
         for v_i, v in enumerate(versions):
+            color = version_colors[v]
             xs = x_base - bar_width / 2 + hue_w * (v_i + 0.5)
             sub_v = sub_org[sub_org.version == v]
             stats = (sub_v.groupby("modality")[ycol]
@@ -147,7 +155,7 @@ def split_summary_panel(fig, slot, ycol, ylabel, title, ticks):
         ax.set_ylim(floor, sub_org[ycol].max() * 8)   # headroom for label / legend
         ax.set_ylabel(ylabel, fontsize=9)
         ax.text(0.02, 0.95, org, transform=ax.transAxes,
-                color=color, fontsize=9, va="top")
+                color="black", fontsize=9, va="top")
 
     ax_top.set_title(title)
     ax_top.tick_params(labelbottom=False)
@@ -155,7 +163,7 @@ def split_summary_panel(fig, slot, ycol, ylabel, title, ticks):
     ax_bot.set_xticklabels([m.lower() for m in modalities], rotation=30, ha="right")
 
     ver_handles = [
-        Line2D([], [], color="black", label=v, linewidth=1.2, **version_style[v])
+        Line2D([], [], color=version_colors[v], label=v, linewidth=1.2, **version_style[v])
         for v in versions
     ]
     ax_top.legend(handles=ver_handles, fontsize=8, loc="upper right",

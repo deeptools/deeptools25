@@ -55,10 +55,9 @@ def summarize(sub, cols):
            .reset_index()
     )
 
-org_colors     = {"human": "#5B8FC7", "triticum": "#C76B95"}
 version_style  = {"v3": dict(linestyle="--", marker="s"),
                   "v4": dict(linestyle="-",  marker="o")}
-version_colors = {"v3": "tab:gray", "v4": "tab:red"}
+version_colors = {"v3": "#5B8FC7", "v4": "#C76B95"}
 
 MEM_LOG_Y = True
 
@@ -76,37 +75,49 @@ for i, mod in enumerate(modalities):
     label_points = []
     for org in organisms:
         sub_org = sub_mod[sub_mod["organism"] == org]
-        color = org_colors[org]
-        last_x, last_y = None, None
         for v in versions:
             sub = sub_org[sub_org["version"] == v]
             if sub.empty:
                 continue
+            color = version_colors[v]
             agg = summarize(sub, ["s_speedup", "rss_speedup"])
             threads = agg["threads"]
-            ax.errorbar(
-                threads, agg[("s_speedup", "mean")], yerr=agg[("s_speedup", "sem")],
-                color=color, capsize=3, **version_style[v]
-            )
-            if v == "v4":
-                last_x = threads.iloc[-1]
-                last_y = agg[("s_speedup", "mean")].iloc[-1]
-        if last_x is not None:
-            label_points.append([org, color, last_x, last_y])
-    if len(label_points) == 2:
-        y0, y1 = label_points[0][3], label_points[1][3]
-        y_range = ax.get_ylim()[1] - ax.get_ylim()[0]
-        min_gap = 0.06 * y_range
-        gap = y1 - y0
-        if abs(gap) < min_gap:
-            shift = (min_gap - abs(gap)) / 2
-            direction = 1 if gap >= 0 else -1
-            label_points[0][3] -= shift * direction
-            label_points[1][3] += shift * direction
-    for org, color, x, y in label_points:
+            if v == "v3":
+                # baseline: std only (no line / markers)
+                ax.errorbar(
+                    threads, agg[("s_speedup", "mean")], yerr=agg[("s_speedup", "sem")],
+                    fmt="none", ecolor=color, capsize=3
+                )
+            else:
+                ax.errorbar(
+                    threads, agg[("s_speedup", "mean")], yerr=agg[("s_speedup", "sem")],
+                    color=color, capsize=3, **version_style[v]
+                )
+            label_points.append([org, color, threads.iloc[-1],
+                                 agg[("s_speedup", "mean")].iloc[-1], 0.0])
+    ax.autoscale_view()
+    pt_per_px = 72 / fig.dpi
+    min_gap_pt = 11
+    ypt = [ax.transData.transform((p[2], p[3]))[1] * pt_per_px for p in label_points]
+    order = sorted(range(len(label_points)), key=lambda i: ypt[i])
+    pos = [ypt[i] for i in order]
+    for _ in range(100):
+        moved = False
+        for k in range(1, len(pos)):
+            gap = pos[k] - pos[k - 1]
+            if gap < min_gap_pt - 1e-6:
+                d = (min_gap_pt - gap) / 2
+                pos[k - 1] -= d
+                pos[k] += d
+                moved = True
+        if not moved:
+            break
+    for k, i in enumerate(order):
+        label_points[i][4] = pos[k] - ypt[i]
+    for org, color, x, y, dy in label_points:
         ax.annotate(
             org, (x, y),
-            textcoords="offset points", xytext=(8, 0),
+            textcoords="offset points", xytext=(8, dy),
             fontsize=9, color=color, va="center"
         )
     ax.axhline(1.0, color="grey", linewidth=0.8, linestyle=":")
@@ -140,7 +151,6 @@ x_base = np.arange(len(modalities))
 rng = np.random.default_rng(0)
 
 for org, ax in mem_axes.items():
-    color = org_colors[org]
     sub_org = per_sample[per_sample.organism == org]
 
     if MEM_LOG_Y:
@@ -150,6 +160,7 @@ for org, ax in mem_axes.items():
         floor = 0
 
     for v_i, v in enumerate(versions):
+        color = version_colors[v]
         xs = x_base - bar_width / 2 + hue_w * (v_i + 0.5)
         sub_v = sub_org[sub_org.version == v]
         stats = (sub_v.groupby("modality")["max_rss"]
@@ -179,7 +190,7 @@ for org, ax in mem_axes.items():
         ax.set_ylim(0, ax.get_ylim()[1] * 1.35)
     ax.set_ylabel("max RSS (MB)", fontsize=9)
     ax.text(0.02, 0.95, org, transform=ax.transAxes,
-            color=color, fontsize=9, va="top")
+            color="black", fontsize=9, va="top")
 
 ax_top.set_title("memory usage")
 ax_top.tick_params(labelbottom=False)
@@ -187,7 +198,7 @@ ax_bot.set_xticks(x_base)
 ax_bot.set_xticklabels([m.lower() for m in modalities], rotation=30, ha="right")
 
 ver_handles = [
-    Line2D([], [], color="black", label=v, linewidth=1.2, **version_style[v])
+    Line2D([], [], color=version_colors[v], label=v, linewidth=1.2, **version_style[v])
     for v in versions
 ]
 ax_top.legend(handles=ver_handles, fontsize=8, loc="upper right",
